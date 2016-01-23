@@ -1,13 +1,13 @@
 {
   "name": "rollup-plugin-vue",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Roll .vue files",
   "main": "dist/rollup-plugin-vue.common.js",
   "jsnext": "src/index.js",
   "scripts": {
     "build": "NODE_ENV=production node --harmony config/build.js",
     "test": "NODE_ENV=production mocha test/test.js --slow=5000 --timeout=10000",
-    "coveralls": "NODE_ENV=production istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- test/test.js && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+    "coveralls": "NODE_ENV=production istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly  --  --slow=5000 --timeout=10000 test/test.js && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
   "repository": {
     "type": "git",
