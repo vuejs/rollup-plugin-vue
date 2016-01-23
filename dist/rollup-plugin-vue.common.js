@@ -1,5 +1,5 @@
 /*!
- * rollup-plugin-vue v1.0.1
+ * rollup-plugin-vue v1.0.2
  * (c) 2016 undefined
  * Release under the MIT License.
  */
@@ -39,6 +39,6 @@ function plugin() {
 }
 
 plugin.compiler = vueify.compiler;
-plugin.version = '1.0.1';
+plugin.version = '1.0.2';
 
 module.exports = plugin;

@@ -2,8 +2,8 @@
 
 "use strict";
 
-import vuePlugin  from '../src';
 
+const vuePlugin = require('..');
 const assert = require('assert');
 const fs = require('fs');
 const rollup = require('rollup').rollup;
