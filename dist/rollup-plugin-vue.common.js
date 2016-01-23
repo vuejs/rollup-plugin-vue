@@ -6,31 +6,39 @@
 'use strict';
 
 var rollupPluginutils = require('rollup-pluginutils');
-
-var _require = require('vueify');
-
-var compiler = _require.compiler;
+var vueify = require('vueify');
 
 function plugin() {
     var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
-    var filter = rollupPluginutils.createFilter(options['include'], options['exclude']);
+    var filter = rollupPluginutils.createFilter(options.include || '**/*.vue', options.exclude || 'node_modules/**');
 
     return {
         transform: function transform(code, id) {
-            if (!filter(id)) return;
+            if (!filter(id)) {
+                return null;
+            }
 
             return new Promise(function (resolve, reject) {
-                compiler['compile'](code, id, function (error, compiled) {
-                    if (error) reject(compiled);
+                vueify.compiler['compile'](code, id, function (error, compiled) {
+                    var temp = {
+                        code: compiled,
+                        map: { mappings: '' }
+                    };
 
-                    resolve(compiled);
+                    if (error) {
+                        temp.error = error;
+                        reject(temp);
+                    }
+
+                    resolve(temp);
                 });
             });
         }
     };
 }
 
+plugin.compiler = vueify.compiler;
 plugin.version = '1.0.1';
 
 module.exports = plugin;

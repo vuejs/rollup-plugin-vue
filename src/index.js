@@ -1,21 +1,32 @@
 import {createFilter} from 'rollup-pluginutils';
-const {compiler} = require('vueify');
+import {compiler} from 'vueify';
 
 export default plugin;
 
+
 function plugin(options = {}) {
-    let filter = createFilter(options['include'], options['exclude']);
+    let filter = createFilter(options.include || '**/*.vue', options.exclude || 'node_modules/**');
 
     return {
         transform(code, id) {
-            if (!filter(id)) return;
+            if (!filter(id)) {
+                return null;
+            }
 
             return new Promise(
                 function (resolve, reject) {
                     compiler['compile'](code, id, function (error, compiled) {
-                        if (error) reject(compiled);
+                        let temp = {
+                            code: compiled,
+                            map: {mappings: ''}
+                        };
 
-                        resolve(compiled);
+                        if (error) {
+                            temp.error = error;
+                            reject(temp);
+                        }
+
+                        resolve(temp);
                     });
                 }
             );
@@ -23,5 +34,6 @@ function plugin(options = {}) {
     };
 }
 
+plugin.compiler = compiler;
 plugin.version = '1.0.1';
 
