@@ -2,8 +2,10 @@
   "name": "rollup-plugin-vue",
   "version": "1.0.0",
   "description": "Roll .vue files",
-  "main": "index.js",
-  "scripts": {},
+  "main": "dist/rollup-plugin-vue.common.js",
+  "scripts": {
+    "build": "node --harmony config/build.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/znck/rollup-plugin-vue.git"
@@ -21,5 +23,11 @@
   "dependencies": {
     "rollup-pluginutils": "latest",
     "vueify": "latest"
+  },
+  "devDependencies": {
+    "babel-preset-es2015-rollup": "^1.1.1",
+    "rollup": "^0.25.1",
+    "rollup-plugin-babel": "^2.3.9",
+    "rollup-plugin-replace": "^1.1.0"
   }
 }

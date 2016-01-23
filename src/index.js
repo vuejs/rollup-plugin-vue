@@ -1,9 +1,9 @@
 import {createFilter} from 'rollup-pluginutils';
 const {compiler} = require('vueify');
 
-export default vue;
+export default plugin;
 
-function vue(options = {}) {
+function plugin(options = {}) {
     let filter = createFilter(options['include'], options['exclude']);
 
     return {
@@ -23,5 +23,5 @@ function vue(options = {}) {
     };
 }
 
-vue.version = '1.0.0';
+plugin.version = '1.0.0';
 
