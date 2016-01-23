@@ -3,10 +3,10 @@
 "use strict";
 
 
-const vuePlugin = require('..');
-const assert = require('assert');
-const fs = require('fs');
-const rollup = require('rollup').rollup;
+var vuePlugin = require('..');
+var assert = require('assert');
+var fs = require('fs');
+var rollup = require('rollup').rollup;
 var diff = require('diff');
 var path = require('path');
 var hash = require('hash-sum');
@@ -16,7 +16,7 @@ process.chdir(__dirname);
 vuePlugin.compiler.applyConfig({
     // test cutom transform.
     customCompilers: {
-        test: (content, cb) => {
+        test: function (content, cb) {
             content = content.replace('not ', '');
             cb(null, content)
         }
@@ -28,10 +28,10 @@ function read(file) {
 }
 
 function test(name) {
-    it(`should rollup ${name}.vue`, function () {
+    it('should rollup ' + name + '.vue', function () {
 
-        const entry = `./fixtures/${name}.vue`;
-        const expected = read('expects/' + name + '.js').replace(/\{\{id}}/g, '_v-' + hash(require.resolve(entry)));
+        var entry = './fixtures/' + name + '.vue';
+        var expected = read('expects/' + name + '.js').replace(/\{\{id}}/g, '_v-' + hash(require.resolve(entry)));
 
         let deps = [];
 
@@ -48,8 +48,8 @@ function test(name) {
             entry: entry,
             plugins: [vuePlugin()]
         }).then(function (bundle) {
-            const result = bundle['generate']();
-            const code = result.code;
+            var result = bundle['generate']();
+            var code = result.code;
 
             //if (code !== expected) {
             //console.warn([code, expected]);
