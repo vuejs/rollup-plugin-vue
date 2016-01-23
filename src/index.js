@@ -23,5 +23,5 @@ function plugin(options = {}) {
     };
 }
 
-plugin.version = '1.0.0';
+plugin.version = '1.0.1';
 

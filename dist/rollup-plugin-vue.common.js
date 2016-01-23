@@ -1,5 +1,5 @@
 /*!
- * rollup-plugin-vue v1.0.0
+ * rollup-plugin-vue v1.0.1
  * (c) 2016 undefined
  * Release under the MIT License.
  */
@@ -31,6 +31,6 @@ function plugin() {
     };
 }
 
-plugin.version = '1.0.0';
+plugin.version = '1.0.1';
 
 module.exports = plugin;
