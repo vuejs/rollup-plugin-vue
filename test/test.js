@@ -33,7 +33,7 @@ function test(name) {
         var entry = './fixtures/' + name + '.vue';
         var expected = read('expects/' + name + '.js').replace(/\{\{id}}/g, '_v-' + hash(require.resolve(entry)));
 
-        let deps = [];
+        var deps = [];
 
         function addDep(file) {
             deps.push(file)
