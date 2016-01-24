@@ -35,5 +35,5 @@ function plugin(options = {}) {
 }
 
 plugin.compiler = compiler;
-plugin.version = '1.0.2';
+plugin.version = '1.0.3';
 
