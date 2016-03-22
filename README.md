@@ -27,13 +27,13 @@ With rollup you can break your application into reusable modules.
   </a>
 </p>
 
-### Installation
+## Installation
 [Node](http://nodejs.org/) and [Rollup](http://rollupjs.org) are required.
 ```
 npm install --save-dev rollup-plugin-vue
 ```
 
-### Usage
+## Usage
 
 ```js
 import {rollup} from 'rollup';
@@ -45,7 +45,7 @@ rollup({
 });
 ```
 
-### Development milestones
+## Development milestones
 - [x] Basic *.vue files (ES6 script, html template and no style tag.)
 - [ ] Include style.
 - [ ] Trans-compiler for script: coffee etc.
