@@ -1,39 +1,27 @@
-import {createFilter} from 'rollup-pluginutils';
-import {compiler} from 'vueify';
+import {createFilter} from 'rollup-pluginutils'
+import Compiler from './compiler'
+import objectAssign from 'object-assign'
+import path from 'path'
+const compiler = new Compiler()
 
-export default plugin;
+export default function plugin (options = {}) {
+  options = objectAssign({}, options, {extensions: ['.vue'] })
+  let filter = createFilter(options.include, options.exclude)
+  const extensions = options.extensions
+  delete options.extensions
+  delete options.include
+  delete options.exclude
 
+  return {
+    transform (code, id) {
+      if (!filter(id)) return null
+      if (extensions.indexOf(path.extname(id)) === -1) return null
 
-function plugin(options = {}) {
-    let filter = createFilter(options.include || '**/*.vue', options.exclude || 'node_modules/**');
-
-    return {
-        transform(code, id) {
-            if (!filter(id)) {
-                return null;
-            }
-
-            return new Promise(
-                function (resolve, reject) {
-                    compiler['compile'](code, id, function (error, compiled) {
-                        let temp = {
-                            code: compiled,
-                            map: {mappings: ''}
-                        };
-
-                        if (error) {
-                            temp.error = error;
-                            reject(temp);
-                        }
-
-                        resolve(temp);
-                    });
-                }
-            );
-        }
-    };
+      return new Promise((resolve) => {
+        compiler
+            .compile(code, id)
+            .then((compiled) => resolve(compiled))
+      })
+    }
+  }
 }
-
-plugin.compiler = compiler;
-plugin.version = '1.0.3';
-

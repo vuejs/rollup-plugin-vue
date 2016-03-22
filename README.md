@@ -23,7 +23,7 @@ With rollup you can break your application into reusable modules.
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square" alt="Software License" />
   </a>
-  <a href="https://npmjs.org/package/znck/rollup-plugin-vue">
+  <a href="https://npmjs.org/package/rollup-plugin-vue">
     <img src="https://img.shields.io/npm/v/rollup-plugin-vue.svg?style=flat-square" alt="NPM" />
   </a>
   <a href="https://github.com/znck/rollup-plugin-vue/releases">
