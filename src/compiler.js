@@ -7,6 +7,8 @@ import chalk from 'chalk'
 import compilers from './compilers/index'
 import options from './options'
 
+require('es6-promise').polyfill()
+
 /**
  * Ensure there's only one template node.
  *
@@ -30,6 +32,7 @@ function validateNodeCount (fragment) {
  * @returns {DocumentFragment}
  */
 function parseContent (content) {
+  // noinspection JSValidateTypes
   return parse5.parseFragment(content, {locationInfo: true})
 }
 
@@ -49,23 +52,6 @@ function checkLang (node) {
       }
     }
   }
-}
-
-/**
- * Extract parts from resolved array.
- *
- * @param {Array} parts
- * @param {String} type
- */
-function extract (parts, type) {
-  return parts
-      .filter(function (part) {
-        return part.type === type
-      })
-      .map(function (part) {
-        return part.code
-      })
-      .join('\n')
 }
 
 function padContent (content) {
@@ -115,7 +101,7 @@ export default class Compiler {
    * @return {String}
    */
   checkSrc (node, filePath) {
-    // TODO: Up next.
+    // TODO: Up next. ${node}, ${filePath}
     return null
   }
   /**

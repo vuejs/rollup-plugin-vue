@@ -107,6 +107,8 @@ var babel$1 = {
 
 var compilers = { babel: babel$1 };
 
+require('es6-promise').polyfill();
+
 /**
  * Ensure there's only one template node.
  *
@@ -130,6 +132,7 @@ function validateNodeCount(fragment) {
  * @returns {DocumentFragment}
  */
 function parseContent(content) {
+  // noinspection JSValidateTypes
   return parse5.parseFragment(content, { locationInfo: true });
 }
 
@@ -230,7 +233,7 @@ var Compiler = function () {
   }, {
     key: 'checkSrc',
     value: function checkSrc(node, filePath) {
-      // TODO: Up next.
+      // TODO: Up next. ${node}, ${filePath}
       return null;
     }
     /**

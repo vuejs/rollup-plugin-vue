@@ -1,15 +1,3 @@
-var Test = function () {
-  function Test() {
-    babelHelpers.classCallCheck(this, Test);
-  }
-
-  babelHelpers.createClass(Test, [{
-    key: "ok",
-    value: function ok() {}
-  }]);
-  return Test;
-}();
-
 var evens = [2, 4, 6, 8];
 var odds = evens.map(function (v) {
   return v + 1;

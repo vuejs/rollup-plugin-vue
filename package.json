@@ -24,22 +24,24 @@
   },
   "homepage": "https://github.com/znck/rollup-plugin-vue#readme",
   "dependencies": {
-    "parse5": "latest",
-    "lru-cache": "latest",
-    "rollup-pluginutils": "latest",
-    "promise": "latest",
-    "postcss": "latest",
-    "object-assign": "latest",
-    "postcss-selector-parser": "latest",
     "autoprefixer": "latest",
-    "cssnano": "latest",
-    "hash-sum": "latest",
-    "vue-template-validator": "latest",
+    "babel-core": "latest",
+    "babel-preset-es2015-rollup": "^1.1.1",
     "chalk": "latest",
+    "cssnano": "latest",
     "de-indent": "latest",
+    "es6-promise": "^3.1.2",
+    "hash-sum": "latest",
     "html-minifier": "latest",
+    "lru-cache": "latest",
+    "object-assign": "latest",
+    "parse5": "latest",
+    "postcss": "latest",
+    "postcss-selector-parser": "latest",
+    "promise": "latest",
     "rollup-plugin-babel": "latest",
-    "babel-core": "latest"
+    "rollup-pluginutils": "latest",
+    "vue-template-validator": "latest"
   },
   "devDependencies": {
     "coveralls": "^2.11.6",
@@ -48,6 +50,7 @@
     "mocha": "^2.3.4",
     "mocha-lcov-reporter": "^1.0.0",
     "vue-hot-reload-api": "^1.2.2",
-    "rollup": "latest"
+    "rollup": "latest",
+    "rollup-plugin-replace": "latest"
   }
 }

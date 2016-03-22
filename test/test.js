@@ -1,8 +1,8 @@
 /* global describe, it */
-var vuePlugin = require('..')
+var vuePlugin = require('../')
 var assert = require('assert')
 var fs = require('fs')
-var rollup = require('rollup').rollup
+var rollup = require('rollup')
 var path = require('path')
 
 process.chdir(__dirname)
@@ -16,14 +16,14 @@ function test (name) {
 
     var entry = './fixtures/' + name + '.vue'
     var expected = read('expects/' + name + '.js')
-    return rollup({
+    return rollup.rollup({
+      format: 'cjs',
       entry: entry,
       plugins: [vuePlugin()]
     }).then(function (bundle) {
       var result = bundle.generate()
       var code = result.code
       assert.equal(code, expected, 'should compile correctly')
-      return result
     }).catch(function (error) {
       throw error
     })
