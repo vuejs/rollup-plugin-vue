@@ -33,6 +33,14 @@ With rollup you can break your application into reusable modules.
 npm install --save-dev rollup-plugin-vue
 ```
 
+> There is no stable release of this repository. Wait for version 1.0+, if planning to use it for production.
+### Development milestones
+- [ ] Basic *.vue files (ES6 script, html template and no style tag.)
+- [ ] Include style.
+- [ ] Transcompiler for script: coffee etc.
+- [ ] Scoped css.
+- [ ] Import script or template.
+
 ### Usage
 
 ```js
