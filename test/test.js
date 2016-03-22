@@ -51,10 +51,6 @@ function test(name) {
             var result = bundle['generate']();
             var code = result.code;
 
-            //if (code !== expected) {
-            //console.warn([code, expected]);
-            //}
-
             assert.equal(code, expected, 'should compile correctly');
             // check src
 

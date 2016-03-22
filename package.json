@@ -7,7 +7,7 @@
   "scripts": {
     "build": "NODE_ENV=production node --harmony config/build.js",
     "test": "NODE_ENV=production mocha test/test.js --slow=5000 --timeout=10000",
-    "coveralls": "NODE_ENV=production istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly  --  --slow=5000 --timeout=10000 test/test.js && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
+    "coveralls": "NODE_ENV=production istanbul cover --default-excludes -x 'dist/**' -x 'config/**' ./node_modules/mocha/bin/_mocha --report lcovonly  --  --slow=5000 --timeout=10000 test/test.js && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
   "repository": {
     "type": "git",
@@ -25,9 +25,8 @@
   "homepage": "https://github.com/znck/rollup-plugin-vue#readme",
   "dependencies": {
     "rollup-pluginutils": "latest",
-    "vueify": "latest"
-  },
-  "devDependencies": {
+    "rollup": "latest",
+    "vueify": "latest",
     "babel-core": "^6.1.2",
     "babel-plugin-transform-runtime": "latest",
     "babel-preset-es2015": "latest",
@@ -35,23 +34,25 @@
     "babel-register": "latest",
     "babel-runtime": "^5.8.0",
     "coffee-script": "^1.10.0",
-    "coveralls": "^2.11.6",
     "diff": "^2.2.1",
     "hash-sum": "latest",
     "html-minifier": "^1.1.1",
-    "istanbul": "^0.4.2",
     "jade": "^1.11.0",
     "less": "^2.5.3",
     "minify": "^2.0.3",
-    "mocha": "^2.3.4",
-    "mocha-lcov-reporter": "^1.0.0",
     "node-sass": "^3.4.2",
     "rollup": "^0.25.1",
     "rollup-plugin-babel": "^2.3.9",
     "rollup-plugin-commonjs": "^2.2.0",
     "rollup-plugin-replace": "^1.1.0",
     "stylus": "^0.53.0",
-    "vue-hot-reload-api": "^1.2.2",
     "vueify-insert-css": "^1.0.0"
+  },
+  "devDependencies": {
+    "coveralls": "^2.11.6",
+    "istanbul": "^0.4.2",
+    "mocha": "^2.3.4",
+    "mocha-lcov-reporter": "^1.0.0",
+    "vue-hot-reload-api": "^1.2.2"
   }
 }
