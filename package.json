@@ -27,7 +27,6 @@
     "parse5": "latest",
     "lru-cache": "latest",
     "rollup-pluginutils": "latest",
-    "Promise": "latest",
     "promise": "latest",
     "postcss": "latest",
     "object-assign": "latest",
