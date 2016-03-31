@@ -4,36 +4,10 @@ All Notable changes to `rollup-plugin-vue` will be documented in this file.
 
 ## [Unreleased]
 
-### Added
-- Nothing
-
-### Deprecated
-- Nothing
-
-### Fixed
-- Nothing
-
-### Removed
-- Nothing
-
-### Security
-- Nothing
-
-## [1.0.3] - 2016-01-24
+## [2.0.0]
 
 ### Added
-- Initial release.
+- Compile *.vue files.
 
-### Deprecated
-- Nothing
-
-### Fixed
-- Nothing
-
-### Removed
-- Nothing
-
-### Security
-- Nothing
-
-[Unreleased]: https://github.com/znck/rollup-plugin-vue/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/znck/rollup-plugin-vue/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/znck/rollup-plugin-vue/compare/v1.0.3...v2.0.0
