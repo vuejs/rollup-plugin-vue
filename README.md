@@ -3,7 +3,13 @@ As vue-loader is for webpack and vueify is for browserify, similarly its for rol
 
 With rollup you can break your application into reusable modules.
 
-> [Working on next version](https://github.com/znck/rollup-plugin-vue/compare/v1.0.3...HEAD)
+> Working on next version. [See changes](https://github.com/znck/rollup-plugin-vue/compare/v1.0.3...HEAD)
+> ## Development milestones
+- [x] Basic *.vue files (ES6 script, html template and no style tag.)
+- [ ] Include style.
+- [ ] Trans-compiler for script: coffee etc.
+- [ ] Scoped css.
+- [ ] Import script or template.
 
 ![Rollup Plugin for Vue](cover.png)
 
@@ -46,13 +52,6 @@ rollup({
 	plugins: [vue()]
 });
 ```
-
-## Development milestones
-- [x] Basic *.vue files (ES6 script, html template and no style tag.)
-- [ ] Include style.
-- [ ] Trans-compiler for script: coffee etc.
-- [ ] Scoped css.
-- [ ] Import script or template.
 
 ## Change log
 
