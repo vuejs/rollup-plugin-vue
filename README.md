@@ -20,6 +20,9 @@ With rollup you can break your application into reusable modules.
   <a href="https://coveralls.io/github/znck/rollup-plugin-vue?branch=master">
     <img src="https://coveralls.io/repos/github/znck/rollup-plugin-vue/badge.svg?branch=master&style=flat-square" alt="Coverage Status" />
   </a>
+  <a href="https://www.codacy.com/app/znck/rollup-plugin-vue">
+    <img src="https://api.codacy.com/project/badge/grade/e3402df0135240c29a1d25bab93932a0"/>
+  </a>
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square" alt="Software License" />
   </a>
