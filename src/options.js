@@ -34,5 +34,9 @@ export default {
     useShortDoctype: true,
     removeEmptyAttributes: true,
     removeOptionalTags: true
+  },
+  postcss: {
+    plugins: [],
+    options: {}
   }
 }

@@ -5,6 +5,7 @@ import parse5 from 'parse5'
 import htmlMinifier from 'html-minifier'
 import chalk from 'chalk'
 import compilers from './compilers/index'
+import postcss from 'postcss'
 
 require('es6-promise').polyfill()
 
@@ -94,6 +95,15 @@ export default class Compiler {
         .then(() => {
           return this.processTemplate(components.template, filePath, content)
         })
+        .then((template) => {
+          if (components.style) {
+            return this.processStyle(components.style, filePath, content)
+                .then((style) => {
+                  return {template: template.code, style: style.code}
+                })
+          }
+          return {template: template.code, style: ''}
+        })
         .then((compiled) => {
           return this.processScript(components.script, filePath, content, compiled)
         })
@@ -131,9 +141,8 @@ export default class Compiler {
         })
       }
     }
-
     return this.compileAsPromise('template', template, lang, filePath)
-        .then(function (res) {
+        .then((res) => {
           res.code = htmlMinifier.minify(res.code, this.options.htmlMinifier)
           return res
         })
@@ -147,6 +156,7 @@ export default class Compiler {
   processScript (node, filePath, content, compiled) {
     const lang = checkLang(node) || 'babel'
     let script = this.checkSrc(node, filePath)
+    let {template} = compiled
     if (!script) {
       script = parse5.serialize(node)
       // pad the script to ensure correct line number for syntax errors
@@ -154,16 +164,42 @@ export default class Compiler {
       const before = padContent(content.slice(0, location))
       script = before + script
     }
-    script = this.injectTemplate(script, compiled.code, lang)
+    script = this.injectTemplate(script, template, lang)
     script = deIndent(script)
     return this.compileAsPromise('script', script, lang, filePath)
+        .then((res) => {
+          return {code: res.code}
+        })
   }
   /**
    * @param {Node} node
-   * @param {string} path
+   * @param {string} filePath
    * @param {string} content
    */
-  processStyle (node, path, content) {}
+  processStyle (node, filePath, content) {
+    const lang = checkLang(node) || 'css'
+    let style = this.checkSrc(node, filePath)
+    const injectFnName = '__$styleInject'
+    if (!style) {
+      style = parse5.serialize(node)
+      const location = content.indexOf(style)
+      const before = padContent(content.slice(0, location))
+      style = before + style
+    }
+    let options = this.options.postcss
+    options.from = filePath
+    options.to = filePath
+    return this.compileAsPromise('style', style, lang, filePath)
+        .then((res) => {
+          return postcss(this.options.postcss.plugins || [])
+              .process(res.code, options)
+              .then((res) => {
+                const code = `export ${injectFnName}(${JSON.stringify(res.css)});`
+                return {code: code, type: 'style'}
+              })
+        })
+  }
+
   compileAsPromise (type, code, lang, filePath) {
     var compiler = compilers[lang]
     if (compiler) {

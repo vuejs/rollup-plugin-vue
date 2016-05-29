@@ -2,9 +2,10 @@ import {createFilter} from 'rollup-pluginutils'
 import Compiler from './compiler'
 import objectAssign from 'object-assign'
 import path from 'path'
+import defaultOptions from './options'
 
 export default function plugin (options = {}) {
-  options = objectAssign({}, options, {extensions: ['.vue'] })
+  options = objectAssign({}, defaultOptions, options, {extensions: ['.vue'] })
   let filter = createFilter(options.include, options.exclude)
   const extensions = options.extensions
   delete options.extensions

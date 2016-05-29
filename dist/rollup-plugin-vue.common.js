@@ -1,5 +1,5 @@
 /*!
- * rollup-plugin-vue v1.0.3
+ * rollup-plugin-vue v2.0.0
  * (c) 2016 undefined
  * Release under the MIT License.
  */
@@ -16,6 +16,7 @@ var htmlMinifier = _interopDefault(require('html-minifier'));
 var chalk = _interopDefault(require('chalk'));
 var babel = _interopDefault(require('babel-core'));
 var fs = _interopDefault(require('fs'));
+var postcss = _interopDefault(require('postcss'));
 var objectAssign = _interopDefault(require('object-assign'));
 
 var babelHelpers = {};
@@ -77,6 +78,10 @@ var options = {
     useShortDoctype: true,
     removeEmptyAttributes: true,
     removeOptionalTags: true
+  },
+  postcss: {
+    plugins: [],
+    options: {}
   }
 };
 
@@ -154,6 +159,12 @@ function checkLang(node) {
   }
 }
 
+/**
+ * Pad content with empty lines to get correct line number in errors.
+ *
+ * @param content
+ * @returns {string}
+ */
 function padContent(content) {
   return content.split(/\r?\n/g).map(function () {
     return '';
@@ -162,7 +173,10 @@ function padContent(content) {
 
 var Compiler = function () {
   function Compiler() {
+    var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
     babelHelpers.classCallCheck(this, Compiler);
+
+    this.options = options;
   }
 
   babelHelpers.createClass(Compiler, [{
@@ -215,6 +229,13 @@ var Compiler = function () {
       });
       return promise.then(function () {
         return _this.processTemplate(components.template, filePath, content);
+      }).then(function (template) {
+        if (components.style) {
+          return _this.processStyle(components.style, filePath, content).then(function (style) {
+            return { template: template.code, style: style.code };
+          });
+        }
+        return { template: template.code, style: '' };
       }).then(function (compiled) {
         return _this.processScript(components.script, filePath, content, compiled);
       });
@@ -236,7 +257,9 @@ var Compiler = function () {
       // TODO: Up next. ${node}, ${filePath}
       return null;
     }
+
     /**
+     * Compile template: DeIndent and minify html.
      * @param {Node} node
      * @param {string} filePath
      * @param {string} content
@@ -245,6 +268,8 @@ var Compiler = function () {
   }, {
     key: 'processTemplate',
     value: function processTemplate(node, filePath, content) {
+      var _this2 = this;
+
       var template = deIndent(this.checkSrc(node, filePath) || parse5.serialize(node.content));
       var lang = checkLang(node);
       if (!lang) {
@@ -258,9 +283,8 @@ var Compiler = function () {
           })();
         }
       }
-
       return this.compileAsPromise('template', template, lang, filePath).then(function (res) {
-        res.code = htmlMinifier.minify(res.code, options.htmlMinifier);
+        res.code = htmlMinifier.minify(res.code, _this2.options.htmlMinifier);
         return res;
       });
     }
@@ -276,6 +300,8 @@ var Compiler = function () {
     value: function processScript(node, filePath, content, compiled) {
       var lang = checkLang(node) || 'babel';
       var script = this.checkSrc(node, filePath);
+      var template = compiled.template;
+
       if (!script) {
         script = parse5.serialize(node);
         // pad the script to ensure correct line number for syntax errors
@@ -283,29 +309,52 @@ var Compiler = function () {
         var before = padContent(content.slice(0, location));
         script = before + script;
       }
-      script = this.injectTemplate(script, compiled.code, lang);
+      script = this.injectTemplate(script, template, lang);
       script = deIndent(script);
-      return this.compileAsPromise('script', script, lang, filePath);
+      return this.compileAsPromise('script', script, lang, filePath).then(function (res) {
+        return { code: res.code };
+      });
     }
     /**
      * @param {Node} node
-     * @param {string} path
+     * @param {string} filePath
      * @param {string} content
      */
 
   }, {
     key: 'processStyle',
-    value: function processStyle(node, path, content) {}
+    value: function processStyle(node, filePath, content) {
+      var _this3 = this;
+
+      var lang = checkLang(node) || 'css';
+      var style = this.checkSrc(node, filePath);
+      var injectFnName = '__$styleInject';
+      if (!style) {
+        style = parse5.serialize(node);
+        var location = content.indexOf(style);
+        var before = padContent(content.slice(0, location));
+        style = before + style;
+      }
+      var options = this.options.postcss;
+      options.from = filePath;
+      options.to = filePath;
+      return this.compileAsPromise('style', style, lang, filePath).then(function (res) {
+        return postcss(_this3.options.postcss.plugins || []).process(res.code, options).then(function (res) {
+          var code = 'export ' + injectFnName + '(' + JSON.stringify(res.css) + ');';
+          return { code: code, type: 'style' };
+        });
+      });
+    }
   }, {
     key: 'compileAsPromise',
     value: function compileAsPromise(type, code, lang, filePath) {
-      var _this2 = this;
+      var _this4 = this;
 
       var compiler = compilers[lang];
       if (compiler) {
         return new Promise(function (resolve, reject) {
           try {
-            var compiled = compiler.compile(code, _this2, filePath);
+            var compiled = compiler.compile(code, _this4, filePath);
             resolve(compiled);
           } catch (e) {
             reject(e);
@@ -327,22 +376,26 @@ var Compiler = function () {
   return Compiler;
 }();
 
-var compiler = new Compiler();
-
 function plugin() {
-  var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+  var options$$ = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
-  options = objectAssign({}, options, { extensions: ['.vue'] });
-  var filter = rollupPluginutils.createFilter(options.include, options.exclude);
-  var extensions = options.extensions;
-  delete options.extensions;
-  delete options.include;
-  delete options.exclude;
+  options$$ = objectAssign({}, options, options$$, { extensions: ['.vue'] });
+  var filter = rollupPluginutils.createFilter(options$$.include, options$$.exclude);
+  var extensions = options$$.extensions;
+  delete options$$.extensions;
+  delete options$$.include;
+  delete options$$.exclude;
+
+  var compiler = new Compiler(options$$);
 
   return {
     transform: function transform(code, id) {
-      if (!filter(id)) return null;
-      if (extensions.indexOf(path.extname(id)) === -1) return null;
+      if (!filter(id)) {
+        return null;
+      }
+      if (extensions.indexOf(path.extname(id)) === -1) {
+        return null;
+      }
 
       return new Promise(function (resolve) {
         compiler.compile(code, id).then(function (compiled) {
