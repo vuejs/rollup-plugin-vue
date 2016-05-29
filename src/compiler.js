@@ -5,7 +5,6 @@ import parse5 from 'parse5'
 import htmlMinifier from 'html-minifier'
 import chalk from 'chalk'
 import compilers from './compilers/index'
-import options from './options'
 
 require('es6-promise').polyfill()
 
@@ -54,6 +53,12 @@ function checkLang (node) {
   }
 }
 
+/**
+ * Pad content with empty lines to get correct line number in errors.
+ *
+ * @param content
+ * @returns {string}
+ */
 function padContent (content) {
   return content
       .split(/\r?\n/g)
@@ -62,6 +67,9 @@ function padContent (content) {
 }
 
 export default class Compiler {
+  constructor (options = {}) {
+    this.options = options
+  }
   compile (content, filePath) {
     // 1. Parse the file into an HTML tree
     const fragment = parseContent(content)
@@ -104,7 +112,9 @@ export default class Compiler {
     // TODO: Up next. ${node}, ${filePath}
     return null
   }
+
   /**
+   * Compile template: DeIndent and minify html.
    * @param {Node} node
    * @param {string} filePath
    * @param {string} content
@@ -124,7 +134,7 @@ export default class Compiler {
 
     return this.compileAsPromise('template', template, lang, filePath)
         .then(function (res) {
-          res.code = htmlMinifier.minify(res.code, options.htmlMinifier)
+          res.code = htmlMinifier.minify(res.code, this.options.htmlMinifier)
           return res
         })
   }

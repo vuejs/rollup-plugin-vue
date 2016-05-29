@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+
 let defaultBabelOptions = {
   presets: ['es2015-rollup']
 }
