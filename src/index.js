@@ -15,8 +15,8 @@ export default function plugin (options = {}) {
 
   return {
     transform (code, id) {
-      if (!filter(id)) return null
-      if (extensions.indexOf(path.extname(id)) === -1) return null
+      if (!filter(id)) { return null }
+      if (extensions.indexOf(path.extname(id)) === -1) { return null }
 
       return new Promise((resolve) => {
         compiler
