@@ -1,2 +1,2 @@
-import babel from './babel'
-export default {babel}
+import buble from './buble'
+export default {buble}

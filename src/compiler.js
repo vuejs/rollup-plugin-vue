@@ -154,7 +154,7 @@ export default class Compiler {
    * @param {*} compiled
    */
   processScript (node, filePath, content, compiled) {
-    const lang = checkLang(node) || 'babel'
+    const lang = checkLang(node) || 'buble'
     let script = this.checkSrc(node, filePath)
     let {template} = compiled
     if (!script) {

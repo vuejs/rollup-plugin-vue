@@ -1,4 +1,4 @@
-import babel from 'babel-core'
+import buble from 'buble'
 import options from '../options'
 function last (arr) {
   if (arr && arr.length) {
@@ -8,7 +8,7 @@ function last (arr) {
 }
 export default {
   compile (code, _, id) {
-    const res = babel.transform(code, options.babel)
+    const res = buble.transform(code, options.buble)
     return {
       code: res.code,
       map: res.map,
@@ -20,7 +20,7 @@ export default {
     if (matches) {
       return script.split(matches[1]).join(`${matches[1]} template: ${JSON.stringify(template)},`)
     }
-    console.log('Lang: babel\n Script: ' + last(script.split('export default')))
+    console.log('Lang: buble\n Script: ' + last(script.split('export default')))
     throw new Error('[rollup-vue-plugin] failed to inject template in script.\n Create an issue at https://github.com/znck/rollup-plugin-vue/issues. Include above text.')
   }
 }

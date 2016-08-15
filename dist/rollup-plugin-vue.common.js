@@ -15,32 +15,33 @@ var path__default = path['default'];
 var parse5 = _interopDefault(require('parse5'));
 var htmlMinifier = _interopDefault(require('html-minifier'));
 var chalk = _interopDefault(require('chalk'));
-var babel = _interopDefault(require('babel-core'));
+var buble = _interopDefault(require('buble'));
 var fs = _interopDefault(require('fs'));
 var postcss = _interopDefault(require('postcss'));
 var objectAssign = _interopDefault(require('object-assign'));
 
-var defaultBabelOptions = {
-  presets: ['es2015-rollup']
+var defaultBubleOptions = {
+  transforms: {
+    modules: false
+  }
 }
-var babelRcPath = path__default.resolve(process.cwd(), '.babelrc')
-var babelOptions = fs.existsSync(babelRcPath)
-    ? getBabelRc() || defaultBabelOptions
-    : defaultBabelOptions
+// Not sure if 'buble.config.js' is the supposed filename
+var bubleOptionsPath = path__default.resolve(process.cwd(), 'buble.config.js')
+var bubleOptions = fs.existsSync(bubleOptionsPath) && getBubleConfig() || defaultBubleOptions
 
-function getBabelRc () {
+function getBubleConfig () {
   var rc = null
   try {
-    rc = JSON.parse(fs.readFileSync(babelRcPath, 'utf-8'))
+    rc = JSON.parse(fs.readFileSync(bubleOptionsPath, 'utf-8'))
   } catch (e) {
-    throw new Error('[rollup-plugin-vue] Your .babelrc seems to be incorrectly formatted.')
+    throw new Error('[rollup-plugin-vue] Your buble.config.js seems to be incorrectly formatted.')
   }
   return rc
 }
 
 var options = {
   autoprefixer: {remove: false},
-  babel: babelOptions,
+  buble: bubleOptions,
   htmlMinifier: {
     customAttrSurround: [[/@/, new RegExp('')], [/:/, new RegExp('')]],
     collapseWhitespace: true,
@@ -66,9 +67,9 @@ function last (arr) {
   }
   return arr
 }
-var babel$1 = {
+var buble$1 = {
   compile: function compile (code, _, id) {
-    var res = babel.transform(code, options.babel)
+    var res = buble.transform(code, options.buble)
     return {
       code: res.code,
       map: res.map,
@@ -80,12 +81,12 @@ var babel$1 = {
     if (matches) {
       return script.split(matches[1]).join(((matches[1]) + " template: " + (JSON.stringify(template)) + ","))
     }
-    console.log('Lang: babel\n Script: ' + last(script.split('export default')))
+    console.log('Lang: buble\n Script: ' + last(script.split('export default')))
     throw new Error('[rollup-vue-plugin] failed to inject template in script.\n Create an issue at https://github.com/znck/rollup-plugin-vue/issues. Include above text.')
   }
 }
 
-var compilers = {babel: babel$1}
+var compilers = {buble: buble$1}
 
 require('es6-promise').polyfill()
 
@@ -241,7 +242,7 @@ Compiler.prototype.processTemplate = function processTemplate (node, filePath, c
  * @param {*} compiled
  */
 Compiler.prototype.processScript = function processScript (node, filePath, content, compiled) {
-  var lang = checkLang(node) || 'babel'
+  var lang = checkLang(node) || 'buble'
   var script = this.checkSrc(node, filePath)
   var template = compiled.template;
   if (!script) {
