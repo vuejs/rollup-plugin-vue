@@ -1,6 +1,6 @@
 import deIndent from 'de-indent'
 import validateTemplate from 'vue-template-validator'
-import * as path from 'path'
+import {relative} from 'path'
 import parse5 from 'parse5'
 import htmlMinifier from 'html-minifier'
 import chalk from 'chalk'
@@ -135,7 +135,7 @@ export default class Compiler {
     if (!lang) {
       const warnings = validateTemplate(node.content, content)
       if (warnings) {
-        const relativePath = path.relative(process.cwd(), filePath)
+        const relativePath = relative(process.cwd(), filePath)
         warnings.forEach(function (msg) {
           console.warn(chalk.red(`\n Error in ${relativePath}:\n ${msg}`))
         })
@@ -154,7 +154,7 @@ export default class Compiler {
    * @param {*} compiled
    */
   processScript (node, filePath, content, compiled) {
-    const lang = checkLang(node) || 'babel'
+    const lang = checkLang(node) || 'buble'
     let script = this.checkSrc(node, filePath)
     let {template} = compiled
     if (!script) {

@@ -1,27 +1,28 @@
 import fs from 'fs'
 import path from 'path'
 
-let defaultBabelOptions = {
-  presets: ['es2015-rollup']
+let defaultBubleOptions = {
+  transforms: {
+    modules: false
+  }
 }
-let babelRcPath = path.resolve(process.cwd(), '.babelrc')
-let babelOptions = fs.existsSync(babelRcPath)
-    ? getBabelRc() || defaultBabelOptions
-    : defaultBabelOptions
+// Not sure if 'buble.config.js' is the supposed filename
+let bubleOptionsPath = path.resolve(process.cwd(), 'buble.config.js')
+let bubleOptions = fs.existsSync(bubleOptionsPath) && getBubleConfig() || defaultBubleOptions
 
-function getBabelRc () {
+function getBubleConfig () {
   let rc = null
   try {
-    rc = JSON.parse(fs.readFileSync(babelRcPath, 'utf-8'))
+    rc = JSON.parse(fs.readFileSync(bubleOptionsPath, 'utf-8'))
   } catch (e) {
-    throw new Error('[rollup-plugin-vue] Your .babelrc seems to be incorrectly formatted.')
+    throw new Error('[rollup-plugin-vue] Your buble.config.js seems to be incorrectly formatted.')
   }
   return rc
 }
 
 export default {
   autoprefixer: {remove: false},
-  babel: babelOptions,
+  buble: bubleOptions,
   htmlMinifier: {
     customAttrSurround: [[/@/, new RegExp('')], [/:/, new RegExp('')]],
     collapseWhitespace: true,

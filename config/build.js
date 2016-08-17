@@ -1,6 +1,6 @@
 "use strict";
 
-const babel = require('rollup-plugin-babel');
+const buble = require('rollup-plugin-buble');
 const rollup = require('rollup');
 const replace = require('rollup-plugin-replace');
 const zlib = require('zlib');
@@ -21,8 +21,10 @@ fs.writeFileSync('src/index.js', main);
 rollup.rollup({
         entry: 'src/index.js',
         plugins: [
-            babel({
-                presets: ['es2015-rollup']
+            buble({
+                transforms: {
+                    dangerousForOf: true
+                }
             })
         ]
     })
