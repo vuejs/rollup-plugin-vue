@@ -7,7 +7,7 @@ const YEAR = new Date().getFullYear();
 
 const BANNER = `/*!
  * ${pack.name} v${VERSION}
- * (c) ${YEAR} ${pack.author.name}
+ * (c) ${YEAR} ${pack.author}
  * Release under the ${pack.license} License.
  */`;
 

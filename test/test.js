@@ -15,7 +15,7 @@ function test (name) {
   it('should rollup ' + name + '.vue', function () {
 
     var entry = './fixtures/' + name + '.vue'
-    var expected = read('expects/' + name + '.js')
+    var expected = read('expects/' + name + '.js').replace(/\r/g, '')
     return rollup.rollup({
       format: 'cjs',
       entry: entry,

@@ -24,21 +24,9 @@
   },
   "homepage": "https://github.com/znck/rollup-plugin-vue#readme",
   "dependencies": {
-    "autoprefixer": "latest",
-    "buble": "latest",
-    "chalk": "latest",
-    "cssnano": "latest",
     "de-indent": "latest",
-    "es6-promise": "^3.1.2",
-    "hash-sum": "latest",
     "html-minifier": "latest",
-    "lru-cache": "latest",
-    "object-assign": "latest",
     "parse5": "latest",
-    "postcss": "latest",
-    "postcss-selector-parser": "latest",
-    "promise": "latest",
-    "rollup-plugin-buble": "latest",
     "rollup-pluginutils": "latest",
     "vue-template-validator": "latest"
   },
@@ -48,8 +36,7 @@
     "istanbul": "^0.4.2",
     "mocha": "^2.3.4",
     "mocha-lcov-reporter": "^1.0.0",
-    "vue-hot-reload-api": "^1.2.2",
     "rollup": "latest",
-    "rollup-plugin-replace": "latest"
+    "rollup-plugin-buble": "^0.13.0"
   }
 }
