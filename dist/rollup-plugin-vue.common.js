@@ -13,6 +13,8 @@ var htmlMinifier = _interopDefault(require('html-minifier'));
 var parse5 = _interopDefault(require('parse5'));
 var validateTemplate = _interopDefault(require('vue-template-validator'));
 var path = require('path');
+var fs = require('fs');
+var humanSize = _interopDefault(require('human-size'));
 
 var options = {
   htmlMinifier: {
@@ -126,31 +128,82 @@ function vueTransform (code, filePath) {
     throw new Error('There must be at least one script tag or one template tag per *.vue file.')
   }
 
-  // 4. Process style
-  if (nodes.style) {
-    console.warn('<style> is not yet supported')
-  }
-
-  // 5. Process template
+  // 4. Process template
   var template = processTemplate(nodes.template, filePath, code)
 
-  // 6. Process script
-  return processScript(nodes.script, filePath, code, template)
+  // 5. Process script
+  var output = {
+    js: processScript(nodes.script, filePath, code, template)
+  }
+
+  // 6. Process style
+  if (nodes.style) {
+    output.css = parse5.serialize(nodes.style)
+    output.cssLang = checkLang(nodes.style)
+  }
+
+  return output
+}
+
+function writeStyles (content, lang, bundle) {
+  // Merge content and lang
+  var data = {}
+  for (var key in content) {
+    data[lang[key]] = (data[lang[key]] || '') + content[key]
+  }
+
+  // Write files
+  for (var key$1 in data) {
+    var ext = '.' + key$1
+    var dest = bundle.replace('.js', ext)
+    if (dest.indexOf(ext) === -1) {
+      dest += ext
+    }
+    console.log('Writing', humanSize(data[key$1].length), 'to', dest)
+    fs.writeFileSync(dest, data[key$1])
+  }
 }
 
 function vue (options) {
   if ( options === void 0 ) options = {};
 
   var filter = rollupPluginutils.createFilter(options.include, options.exclude)
+  var cssMap = {}
+  var cssLang = {}
+  var dest = 'bundle.js'
 
   return {
     name: 'vue',
-    transform: function transform (code, id) {
+    options: function options$1 (options) {
+      // Get the bundle destination
+      dest = options.dest
+    },
+    transform: function transform (source, id) {
       if (!filter(id) || !id.endsWith('.vue')) {
         return null
       }
 
-      return vueTransform(code, id)
+      var ref = vueTransform(source, id)
+
+      // Map of every stylesheet
+      cssMap[id] = ref.css || ''
+
+      // Last custom style language
+      cssLang[id] = ref.cssLang || 'css'
+
+      // Script with inlined template
+      return ref.js
+    },
+    banner: function banner () {
+      // Abusing the banner method to write styles
+      var count = 0
+      for (var key in cssMap) {
+        count += cssMap[key].length
+      }
+      if (count) {
+        writeStyles(cssMap, cssLang, dest)
+      }
+      return ''
     }
   }
 }
