@@ -4,7 +4,7 @@ import writeStyles from './writeStyles'
 
 export default function vue (options = {}) {
   let filter = createFilter(options.include, options.exclude)
-  let cssMap = {}
+  let cssContent = {}
   let cssLang = {}
   let dest = 'bundle.js'
 
@@ -21,23 +21,23 @@ export default function vue (options = {}) {
 
       var ref = vueTransform(source, id)
 
-      // Map of every stylesheet
-      cssMap[id] = ref.css || ''
+      // Map of every stylesheet content
+      cssContent[id] = ref.css || ''
 
-      // Last custom style language
+      // Map of every stylesheet lang
       cssLang[id] = ref.cssLang || 'css'
 
-      // Script with inlined template
+      // Component javascript with inlined html template
       return ref.js
     },
     banner () {
       // Abusing the banner method to write styles
       var count = 0
-      for (let key in cssMap) {
-        count += cssMap[key].length
+      for (let key in cssContent) {
+        count += cssContent[key].length
       }
       if (count) {
-        writeStyles(cssMap, cssLang, dest)
+        writeStyles(cssContent, cssLang, dest)
       }
       return ''
     }

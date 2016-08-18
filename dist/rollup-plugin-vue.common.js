@@ -168,7 +168,7 @@ function vue (options) {
   if ( options === void 0 ) options = {};
 
   var filter = rollupPluginutils.createFilter(options.include, options.exclude)
-  var cssMap = {}
+  var cssContent = {}
   var cssLang = {}
   var dest = 'bundle.js'
 
@@ -185,23 +185,23 @@ function vue (options) {
 
       var ref = vueTransform(source, id)
 
-      // Map of every stylesheet
-      cssMap[id] = ref.css || ''
+      // Map of every stylesheet content
+      cssContent[id] = ref.css || ''
 
-      // Last custom style language
+      // Map of every stylesheet lang
       cssLang[id] = ref.cssLang || 'css'
 
-      // Script with inlined template
+      // Component javascript with inlined html template
       return ref.js
     },
     banner: function banner () {
       // Abusing the banner method to write styles
       var count = 0
-      for (var key in cssMap) {
-        count += cssMap[key].length
+      for (var key in cssContent) {
+        count += cssContent[key].length
       }
       if (count) {
-        writeStyles(cssMap, cssLang, dest)
+        writeStyles(cssContent, cssLang, dest)
       }
       return ''
     }
