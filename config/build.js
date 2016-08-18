@@ -2,7 +2,6 @@
 
 const buble = require('rollup-plugin-buble');
 const rollup = require('rollup');
-const replace = require('rollup-plugin-replace');
 const zlib = require('zlib');
 const fs = require('fs');
 const pack = require('../package.json');
@@ -21,11 +20,7 @@ fs.writeFileSync('src/index.js', main);
 rollup.rollup({
         entry: 'src/index.js',
         plugins: [
-            buble({
-                transforms: {
-                    dangerousForOf: true
-                }
-            })
+            buble()
         ]
     })
     .then(function (bundle) {
