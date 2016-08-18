@@ -102,14 +102,19 @@ export default function vueTransform (code, filePath) {
     throw new Error('There must be at least one script tag or one template tag per *.vue file.')
   }
 
-  // 4. Process style
-  if (nodes.style) {
-    console.warn('<style> is not yet supported')
-  }
-
-  // 5. Process template
+  // 4. Process template
   const template = processTemplate(nodes.template, filePath, code)
 
-  // 6. Process script
-  return processScript(nodes.script, filePath, code, template)
+  // 5. Process script
+  const output = {
+    js: processScript(nodes.script, filePath, code, template)
+  }
+
+  // 6. Process style
+  if (nodes.style) {
+    output.css = parse5.serialize(nodes.style)
+    output.cssLang = checkLang(nodes.style)
+  }
+
+  return output
 }

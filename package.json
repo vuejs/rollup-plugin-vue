@@ -26,6 +26,7 @@
   "dependencies": {
     "de-indent": "latest",
     "html-minifier": "latest",
+    "human-size": "^1.1.0",
     "parse5": "latest",
     "rollup-pluginutils": "latest",
     "vue-template-validator": "latest"
