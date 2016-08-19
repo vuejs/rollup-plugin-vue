@@ -1,6 +1,8 @@
+import humanSize from 'human-size'
 import {createFilter} from 'rollup-pluginutils'
+import {writeFileSync} from 'fs'
+
 import vueTransform from './vueTransform'
-import writeStyles from './writeStyles'
 
 export default function vue (options = {}) {
   let filter = createFilter(options.include, options.exclude)
@@ -10,10 +12,6 @@ export default function vue (options = {}) {
 
   return {
     name: 'vue',
-    options (options) {
-      // Get the bundle destination
-      dest = options.dest
-    },
     transform (source, id) {
       if (!filter(id) || !id.endsWith('.vue')) {
         return null
@@ -30,16 +28,30 @@ export default function vue (options = {}) {
       // Component javascript with inlined html template
       return ref.js
     },
-    banner () {
-      // Abusing the banner method to write styles
-      var count = 0
+    ongenerate (opts) {
+
+      // Combine all stylesheets
+      var css = ''
       for (let key in cssContent) {
-        count += cssContent[key].length
+        css += cssContent[key]
       }
-      if (count) {
-        writeStyles(cssContent, cssLang, dest)
+
+      // Emit styles through callback or file
+      if (typeof options.css === 'function') {
+        return options.css(css)
       }
-      return ''
+
+      // Guess destination filename
+      if (typeof options.css !== 'string') {
+        dest = opts.dest || 'bundle.js'
+        if (dest.endsWith('.js')) {
+          dest = dest.slice(0, -3)
+        }
+        options.css = dest + '.css'
+      }
+
+      console.log('Writing', humanSize(css.length), 'to', options.css)
+      writeFileSync(options.css, css)
     }
   }
 }

@@ -7,14 +7,14 @@
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
+var humanSize = _interopDefault(require('human-size'));
 var rollupPluginutils = require('rollup-pluginutils');
+var fs = require('fs');
 var deIndent = _interopDefault(require('de-indent'));
 var htmlMinifier = _interopDefault(require('html-minifier'));
 var parse5 = _interopDefault(require('parse5'));
 var validateTemplate = _interopDefault(require('vue-template-validator'));
 var path = require('path');
-var fs = require('fs');
-var humanSize = _interopDefault(require('human-size'));
 
 var options = {
   htmlMinifier: {
@@ -145,25 +145,6 @@ function vueTransform (code, filePath) {
   return output
 }
 
-function writeStyles (content, lang, bundle) {
-  // Merge content and lang
-  var data = {}
-  for (var key in content) {
-    data[lang[key]] = (data[lang[key]] || '') + content[key]
-  }
-
-  // Write files
-  for (var key$1 in data) {
-    var ext = '.' + key$1
-    var dest = bundle.replace('.js', ext)
-    if (dest.indexOf(ext) === -1) {
-      dest += ext
-    }
-    console.log('Writing', humanSize(data[key$1].length), 'to', dest)
-    fs.writeFileSync(dest, data[key$1])
-  }
-}
-
 function vue (options) {
   if ( options === void 0 ) options = {};
 
@@ -174,10 +155,6 @@ function vue (options) {
 
   return {
     name: 'vue',
-    options: function options$1 (options) {
-      // Get the bundle destination
-      dest = options.dest
-    },
     transform: function transform (source, id) {
       if (!filter(id) || !id.endsWith('.vue')) {
         return null
@@ -194,16 +171,30 @@ function vue (options) {
       // Component javascript with inlined html template
       return ref.js
     },
-    banner: function banner () {
-      // Abusing the banner method to write styles
-      var count = 0
+    ongenerate: function ongenerate (opts) {
+
+      // Combine all stylesheets
+      var css = ''
       for (var key in cssContent) {
-        count += cssContent[key].length
+        css += cssContent[key]
       }
-      if (count) {
-        writeStyles(cssContent, cssLang, dest)
+
+      // Emit styles through callback or file
+      if (typeof options.css === 'function') {
+        return options.css(css)
       }
-      return ''
+
+      // Guess destination filename
+      if (typeof options.css !== 'string') {
+        dest = opts.dest || 'bundle.js'
+        if (dest.endsWith('.js')) {
+          dest = dest.slice(0, -3)
+        }
+        options.css = dest + '.css'
+      }
+
+      console.log('Writing', humanSize(css.length), 'to', options.css)
+      fs.writeFileSync(options.css, css)
     }
   }
 }
