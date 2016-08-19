@@ -16,14 +16,27 @@ function test (name) {
 
     var entry = './fixtures/' + name + '.vue'
     var expected = read('expects/' + name + '.js').replace(/\r/g, '')
+    var actualCss
     return rollup.rollup({
       format: 'cjs',
       entry: entry,
-      plugins: [vuePlugin()]
+      plugins: [vuePlugin({
+        css (css) {
+          actualCss = css
+        }
+      })]
     }).then(function (bundle) {
       var result = bundle.generate()
       var code = result.code
-      assert.equal(code, expected, 'should compile correctly')
+      assert.equal(code, expected, 'should compile code correctly')
+
+      // Check css output
+      if (name === 'style') {
+        var css = read('expects/' + name + '.css').replace(/\r/g, '')
+        assert.equal(actualCss, css, 'should output style tag content')
+      } else {
+        assert.equal(actualCss, '', 'should always call css()')
+      }
     }).catch(function (error) {
       throw error
     })
@@ -31,8 +44,8 @@ function test (name) {
 }
 
 describe('rollup-plugin-vue', function () {
-  fs.readdirSync(path.resolve(__dirname, 'expects'))
+  fs.readdirSync(path.resolve(__dirname, 'fixtures'))
     .forEach(function (file) {
-      test(file.substr(0, file.length - 3))
+      test(file.substr(0, file.length - 4))
     })
 })
