@@ -33,9 +33,11 @@
     "vue-template-validator": "latest"
   },
   "devDependencies": {
+    "babel-eslint": "^6.1.2",
     "coveralls": "^2.11.6",
-    "eslint": "^2.4.0",
+    "eslint": "^3.3.1",
     "eslint-config-airbnb": "^10.0.1",
+    "eslint-config-airbnb-base": "^5.0.2",
     "eslint-plugin-html": "^1.5.2",
     "eslint-plugin-import": "^1.13.0",
     "eslint-plugin-jsx-a11y": "^2.1.0",
