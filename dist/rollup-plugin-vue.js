@@ -1,19 +1,14 @@
-'use strict';
-
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-var rollupPluginutils = require('rollup-pluginutils');
-var deIndent = _interopDefault(require('de-indent'));
-var validateTemplate = _interopDefault(require('vue-template-validator'));
-var path = require('path');
-var path__default = _interopDefault(path);
-var parse5 = _interopDefault(require('parse5'));
-var htmlMinifier = _interopDefault(require('html-minifier'));
-var chalk = _interopDefault(require('chalk'));
-var buble = _interopDefault(require('buble'));
-var fs = _interopDefault(require('fs'));
-var postcss = _interopDefault(require('postcss'));
-var objectAssign = _interopDefault(require('object-assign'));
+import { createFilter } from 'rollup-pluginutils';
+import deIndent from 'de-indent';
+import validateTemplate from 'vue-template-validator';
+import path, { relative } from 'path';
+import parse5 from 'parse5';
+import htmlMinifier from 'html-minifier';
+import chalk from 'chalk';
+import buble from 'buble';
+import fs from 'fs';
+import postcss from 'postcss';
+import objectAssign from 'object-assign';
 
 var defaultBubleOptions = {
   transforms: {
@@ -336,4 +331,4 @@ function plugin (options$$) {
   }
 }
 
-module.exports = plugin;
+export default plugin;

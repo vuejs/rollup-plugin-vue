@@ -3,10 +3,12 @@
   "version": "2.0.0",
   "description": "Roll .vue files",
   "main": "dist/rollup-plugin-vue.common.js",
-  "jsnext": "src/index.js",
+  "jsnext": "dist/rollup-plugin-vue.js",
   "scripts": {
-    "build": "NODE_ENV=production node --harmony config/build.js",
-    "test": "NODE_ENV=production mocha test/test.js --slow=5000 --timeout=10000",
+    "test": "npm run lint && npm run build && npm run unit",
+    "build": "node config/build.js",
+    "unit": "NODE_ENV=production mocha test/test.js --slow=5000 --timeout=10000",
+    "lint": "eslint src/**",
     "coveralls": "NODE_ENV=production istanbul cover --default-excludes -x 'dist/**' -x 'config/**' ./node_modules/mocha/bin/_mocha --report lcovonly  --  --slow=5000 --timeout=10000 test/test.js && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
   "repository": {
@@ -25,14 +27,17 @@
   "homepage": "https://github.com/znck/rollup-plugin-vue#readme",
   "dependencies": {
     "autoprefixer": "latest",
+    "babel-eslint": "^6.1.2",
     "buble": "latest",
     "chalk": "latest",
     "cssnano": "latest",
     "de-indent": "latest",
-    "es6-promise": "^3.1.2",
+    "es6-promise": "^3.2.1",
+    "eslint": "^3.3.1",
     "hash-sum": "latest",
     "html-minifier": "latest",
     "lru-cache": "latest",
+    "mocha": "^3.0.2",
     "object-assign": "latest",
     "parse5": "latest",
     "postcss": "latest",
@@ -45,11 +50,16 @@
   "devDependencies": {
     "coveralls": "^2.11.6",
     "eslint": "^2.4.0",
+    "eslint-config-airbnb": "^10.0.1",
+    "eslint-plugin-html": "^1.5.2",
+    "eslint-plugin-import": "^1.13.0",
+    "eslint-plugin-jsx-a11y": "^2.1.0",
+    "eslint-plugin-react": "^6.1.2",
     "istanbul": "^0.4.2",
     "mocha": "^2.3.4",
     "mocha-lcov-reporter": "^1.0.0",
-    "vue-hot-reload-api": "^1.2.2",
     "rollup": "latest",
-    "rollup-plugin-replace": "latest"
+    "rollup-plugin-replace": "latest",
+    "vue-hot-reload-api": "^1.2.2"
   }
 }
