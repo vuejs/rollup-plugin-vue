@@ -7,7 +7,6 @@
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var humanSize = _interopDefault(require('human-size'));
 var rollupPluginutils = require('rollup-pluginutils');
 var fs = require('fs');
 var deIndent = _interopDefault(require('de-indent'));
@@ -172,6 +171,9 @@ function vue (options) {
       return ref.js
     },
     ongenerate: function ongenerate (opts) {
+      if (options.css === false) {
+        return
+      }
 
       // Combine all stylesheets
       var css = ''
@@ -193,10 +195,27 @@ function vue (options) {
         options.css = dest + '.css'
       }
 
-      console.log('Writing', humanSize(css.length), 'to', options.css)
-      fs.writeFileSync(options.css, css)
+      fs.writeFile(options.css, css, function (err) {
+        if (err) {
+          throw err
+        }
+        emitted(options.css, css.length)
+      })
     }
   }
+}
+
+function emitted (text, bytes) {
+  console.log(green(text), getSize(bytes))
+}
+
+function green (text) {
+  return '\u001b[1m\u001b[32m' + text + '\u001b[39m\u001b[22m'
+}
+
+function getSize (bytes) {
+  bytes /= 1024
+  return bytes < 1000 ? bytes.toPrecision(3) + ' kB' : (bytes / 1024).toPrecision(3) + ' MB'
 }
 
 module.exports = vue;

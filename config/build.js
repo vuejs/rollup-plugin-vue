@@ -19,6 +19,7 @@ fs.writeFileSync('src/index.js', main);
 // and used by bundlers like Webpack and Browserify.
 rollup.rollup({
         entry: 'src/index.js',
+        onwarn: function () {},
         plugins: [
             buble()
         ]
@@ -35,20 +36,22 @@ function write(dest, code) {
     return new Promise(function (resolve, reject) {
         fs.writeFile(dest, code, function (err) {
             if (err) return reject(err)
-            console.log(blue(dest) + ' ' + getSize(code))
+            console.log('Rolled', green(dest), getSize(code.length))
             resolve()
         })
     })
 }
 
-function getSize(code) {
-    return (code.length / 1024).toFixed(2) + 'kb'
+function getSize (bytes) {
+  bytes /= 1024
+  return bytes < 1000 ? bytes.toPrecision(3) + ' kB' : (bytes / 1024).toPrecision(3) + ' MB'
 }
 
 function logError(e) {
     console.log(e)
 }
 
-function blue(str) {
-    return '\x1b[1m\x1b[34m' + str + '\x1b[39m\x1b[22m'
+function green (str) {
+  return '\u001b[1m\u001b[32m' + str + '\u001b[39m\u001b[22m'
 }
+
