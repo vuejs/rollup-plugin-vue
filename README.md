@@ -77,7 +77,7 @@ If you discover any security related issues, please email hi@znck.me instead of 
 ## Credits
 
 - [Rahul Kadyan][link-author]
-- [Thomas Ghysels][https://github/thgh]
+- [Thomas Ghysels](https://github/thgh)
 - [All Contributors][link-contributors]
 
 ## License
