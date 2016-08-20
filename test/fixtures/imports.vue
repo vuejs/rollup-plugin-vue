@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import Basic from './Basic.vue'
+import Basic from './basic.vue'
 
 export default {
   components: {
