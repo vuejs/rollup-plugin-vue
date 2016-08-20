@@ -33,7 +33,7 @@ rollup.rollup({
               format: 'es',
               dest: 'dist/' + pack.name + '.js',
           });
-        })
+      })
       .catch(function logError(e) {
           console.log(e)
       });
