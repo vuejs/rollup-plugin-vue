@@ -56,6 +56,45 @@ rollup({
 });
 ```
 
+Below is how you can use it from the command line with Bublé.
+Run `rollup -c` and it will find the config.
+
+```js
+// rollup.config.js
+import vue from 'rollup-plugin-vue'
+import buble from 'rollup-plugin-buble' // rollup-plugin-babel also works
+
+export default {
+  entry: 'index.js',
+  plugins: [
+    vue(),
+    buble()
+  ]
+}
+```
+
+### Options
+
+```js
+vue({
+  // Filename to write all styles to
+  css: 'bundle.scss',
+
+  // Callback that will be called ongenerate with two arguments:
+  // - styles: the contents of all style tags combined
+  // - styleNodes: an array of style objects: [{lang: 'css', content: 'body { color: green }'}]
+  css: function (styles, styleNodes) {
+    writeFileSync(cssPath, styles)
+  }
+
+  // Disable any style output or callbacks
+  css: false,
+
+  // Default behaviour is to write all styles to the bundle destination where .js is replaced by .css
+  css: null
+})
+```
+
 ## Change log
 
 Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
@@ -77,7 +116,7 @@ If you discover any security related issues, please email hi@znck.me instead of 
 ## Credits
 
 - [Rahul Kadyan][link-author]
-- [Thomas Ghysels](https://github/thgh)
+- [Thomas Ghysels](https://github.com/thgh)
 - [All Contributors][link-contributors]
 
 ## License
