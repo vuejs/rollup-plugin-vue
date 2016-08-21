@@ -109,16 +109,12 @@ export default function vueTransform(code, filePath) {
     // 4. Process template
     const template = processTemplate(nodes.template, filePath, code);
 
-    // 5. Process script
-    const output = {
+    // 5. Process script & style
+    return {
         js: processScript(nodes.script, filePath, code, template),
+        css: nodes.style && {
+            content: parse5.serialize(nodes.style),
+            lang: checkLang(nodes.style),
+        },
     };
-
-    // 6. Process style
-    if (nodes.style) {
-        output.css = parse5.serialize(nodes.style);
-        output.cssLang = checkLang(nodes.style);
-    }
-
-    return output;
 }

@@ -5,29 +5,27 @@ import vueTransform from './vueTransform';
 
 export default function vue(options = {}) {
     const filter = createFilter(options.include, options.exclude);
-    const cssContent = {};
-    const cssLang = {};
+    const styles = {};
+    let dest = options.css;
 
     return {
         name: 'vue',
         transform(source, id) {
             if (!filter(id) || !id.endsWith('.vue')) {
                 if (id.endsWith('vue.common.js')) {
-                    return source.replace(/process\.env\.NODE_ENV/g, process.env.NODE_ENV || 'window.NODE_ENV')
+                    return source.replace(/process\.env\.NODE_ENV/g,
+                        process.env.NODE_ENV || 'window.NODE_ENV');
                 }
                 return null;
             }
 
-            const ref = vueTransform(source, id);
+            const { js, css } = vueTransform(source, id);
 
-            // Map of every stylesheet content
-            cssContent[id] = ref.css || '';
-
-            // Map of every stylesheet lang
-            cssLang[id] = ref.cssLang || 'css';
+            // Map of every stylesheet
+            styles[id] = css || {};
 
             // Component javascript with inlined html template
-            return ref.js;
+            return js;
         },
         ongenerate(opts) {
             if (options.css === false) {
@@ -36,38 +34,36 @@ export default function vue(options = {}) {
 
             // Combine all stylesheets
             let css = '';
-            Object.keys(cssContent).forEach((key) => {
-                css += cssContent[key];
+            Object.keys(styles).forEach((key) => {
+                css += styles[key].content || '';
             });
 
-            // Emit styles through callback or file
+            // Emit styles through callback
             if (typeof options.css === 'function') {
-                options.css(css);
-
+                options.css(css, styles);
                 return;
             }
 
-            if (typeof options.css !== 'string') {
+            if (typeof dest !== 'string') {
                 // Don't create unwanted empty stylesheets
                 if (!css.length) {
                     return;
                 }
 
                 // Guess destination filename
-                let dest = opts.dest || 'bundle.js';
+                dest = opts.dest || 'bundle.js';
                 if (dest.endsWith('.js')) {
                     dest = dest.slice(0, -3);
                 }
-                /* eslint-disable */
-                options.css = `${dest}.css`;
-                /* eslint-enable */
+                dest = `${dest}.css`;
             }
 
-            writeFile(options.css, css, (err) => {
+            // Emit styles to file
+            writeFile(dest, css, (err) => {
                 if (err) {
                     throw err;
                 }
-                emitted(options.css, css.length);
+                emitted(dest, css.length);
             });
         },
     };
@@ -81,7 +77,11 @@ function green(text) {
     return `\u001b[1m\u001b[32m${text}\u001b[39m\u001b[22m`;
 }
 
-function getSize(size) {
-    const bytes = size / 1024;
-    return bytes < 1000 ? `${bytes.toPrecision(3)} kB` : `${(bytes / 1024).toPrecision(3)} MB`;
+function getSize(bytes) {
+    if (bytes < 10000) {
+        return `${bytes.toFixed(0)} B`;
+    }
+    return bytes < 1024000
+        ? `${(bytes / 1024).toPrecision(3)} kB'`
+        : `${(bytes / 1024 / 1024).toPrecision(4)} MB`;
 }
