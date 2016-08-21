@@ -7,7 +7,6 @@ export default function vue(options = {}) {
     const filter = createFilter(options.include, options.exclude);
     const cssContent = {};
     const cssLang = {};
-    let dest = 'bundle.js';
 
     return {
         name: 'vue',
@@ -45,9 +44,14 @@ export default function vue(options = {}) {
                 return;
             }
 
-            // Guess destination filename
             if (typeof options.css !== 'string') {
-                dest = opts.dest || 'bundle.js';
+                // Don't create unwanted empty stylesheets
+                if (!css.length) {
+                    return;
+                }
+
+                // Guess destination filename
+                let dest = opts.dest || 'bundle.js';
                 if (dest.endsWith('.js')) {
                     dest = dest.slice(0, -3);
                 }
