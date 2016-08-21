@@ -12,6 +12,9 @@ export default function vue(options = {}) {
         name: 'vue',
         transform(source, id) {
             if (!filter(id) || !id.endsWith('.vue')) {
+                if (id.endsWith('vue.common.js')) {
+                    return source.replace(/process\.env\.NODE_ENV/g, process.env.NODE_ENV || 'window.NODE_ENV')
+                }
                 return null;
             }
 
