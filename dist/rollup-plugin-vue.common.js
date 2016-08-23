@@ -129,45 +129,43 @@ function vueTransform(code, filePath) {
     // 4. Process template
     var template = processTemplate(nodes.template, filePath, code);
 
-    // 5. Process script
-    var output = {
+    // 5. Process script & style
+    return {
         js: processScript(nodes.script, filePath, code, template),
+        css: nodes.style && {
+            content: parse5.serialize(nodes.style),
+            lang: checkLang(nodes.style),
+        },
     };
-
-    // 6. Process style
-    if (nodes.style) {
-        output.css = parse5.serialize(nodes.style);
-        output.cssLang = checkLang(nodes.style);
-    }
-
-    return output;
 }
 
 function vue(options) {
     if ( options === void 0 ) options = {};
 
     var filter = rollupPluginutils.createFilter(options.include, options.exclude);
-    var cssContent = {};
-    var cssLang = {};
-    var dest = 'bundle.js';
+    var styles = {};
+    var dest = options.css;
 
     return {
         name: 'vue',
         transform: function transform(source, id) {
             if (!filter(id) || !id.endsWith('.vue')) {
+                if (id.endsWith('vue.common.js')) {
+                    return source.replace(/process\.env\.NODE_ENV/g,
+                        process.env.NODE_ENV || 'window.NODE_ENV');
+                }
                 return null;
             }
 
             var ref = vueTransform(source, id);
+            var js = ref.js;
+            var css = ref.css;
 
-            // Map of every stylesheet content
-            cssContent[id] = ref.css || '';
-
-            // Map of every stylesheet lang
-            cssLang[id] = ref.cssLang || 'css';
+            // Map of every stylesheet
+            styles[id] = css || {};
 
             // Component javascript with inlined html template
-            return ref.js;
+            return js;
         },
         ongenerate: function ongenerate(opts) {
             if (options.css === false) {
@@ -176,33 +174,36 @@ function vue(options) {
 
             // Combine all stylesheets
             var css = '';
-            Object.keys(cssContent).forEach(function (key) {
-                css += cssContent[key];
+            Object.keys(styles).forEach(function (key) {
+                css += styles[key].content || '';
             });
 
-            // Emit styles through callback or file
+            // Emit styles through callback
             if (typeof options.css === 'function') {
-                options.css(css);
-
+                options.css(css, styles);
                 return;
             }
 
-            // Guess destination filename
-            if (typeof options.css !== 'string') {
+            if (typeof dest !== 'string') {
+                // Don't create unwanted empty stylesheets
+                if (!css.length) {
+                    return;
+                }
+
+                // Guess destination filename
                 dest = opts.dest || 'bundle.js';
                 if (dest.endsWith('.js')) {
                     dest = dest.slice(0, -3);
                 }
-                /* eslint-disable */
-                options.css = dest + ".css";
-                /* eslint-enable */
+                dest = dest + ".css";
             }
 
-            fs.writeFile(options.css, css, function (err) {
+            // Emit styles to file
+            fs.writeFile(dest, css, function (err) {
                 if (err) {
                     throw err;
                 }
-                emitted(options.css, css.length);
+                emitted(dest, css.length);
             });
         },
     };
@@ -216,9 +217,13 @@ function green(text) {
     return ("\u001b[1m\u001b[32m" + text + "\u001b[39m\u001b[22m");
 }
 
-function getSize(size) {
-    var bytes = size / 1024;
-    return bytes < 1000 ? ((bytes.toPrecision(3)) + " kB") : (((bytes / 1024).toPrecision(3)) + " MB");
+function getSize(bytes) {
+    if (bytes < 10000) {
+        return ((bytes.toFixed(0)) + " B");
+    }
+    return bytes < 1024000
+        ? (((bytes / 1024).toPrecision(3)) + " kB'")
+        : (((bytes / 1024 / 1024).toPrecision(4)) + " MB");
 }
 
 module.exports = vue;
