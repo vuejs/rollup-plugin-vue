@@ -27,7 +27,9 @@ export default function vue(options = {}) {
             // Component javascript with inlined html template
             return js;
         },
-        ongenerate(opts) {
+        ongenerate(opts, rendered) {
+            // Put with statements back
+            rendered.code = rendered.code.replace(/if\s*\("__VUE_WITH__"\)/g, 'with(this)');
             if (options.css === false) {
                 return;
             }

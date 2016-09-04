@@ -50,7 +50,9 @@ function injectRender(script, render) {
   const matches = /(export default[^{]*\{)/g.exec(script);
   if (matches) {
     function toFunction (code) {
-      return `function(){${code}}`;
+      // Replace with(this) by something that works on strict mode
+      // https://github.com/vuejs/vue-template-es2015-compiler/blob/master/index.js
+      return `function(){${code.replace(/with\(this\)/g, 'if("__VUE_WITH__")')}}`;
     }
     return script.split(matches[1])
       .join(`${matches[1]} render: ${toFunction(render.render)}, staticRenderFns: [${render.staticRenderFns.map(toFunction).join(',')}],`);
