@@ -48,6 +48,7 @@
     "rollup": "latest",
     "rollup-plugin-buble": "^0.13.0",
     "rollup-plugin-replace": "latest",
-    "vue-hot-reload-api": "^1.2.2"
+    "vue-hot-reload-api": "^1.2.2",
+    "vue-template-compiler": "^2.0.0-rc.4"
   }
 }
