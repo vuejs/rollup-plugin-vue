@@ -50,10 +50,10 @@ function injectRender(script, render) {
   const matches = /(export default[^{]*\{)/g.exec(script);
   if (matches) {
     function toFunction (code) {
-      return `function(){${code}})`;
+      return `function(){${code}}`;
     }
     return script.split(matches[1])
-      .join(`${matches[1]} render: ${toFunction(render.render)}, staticRenderFns: [${render.staticRenderFns.map(toFunction).join(',')}]`);
+      .join(`${matches[1]} render: ${toFunction(render.render)}, staticRenderFns: [${render.staticRenderFns.map(toFunction).join(',')}],`);
   }
   throw new Error('[rollup-plugin-vue] could not find place to inject template in script.');
 }
