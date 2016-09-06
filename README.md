@@ -75,6 +75,8 @@ export default {
 
 ### Options
 
+#### `css`
+
 ```js
 vue({
   // Filename to write all styles to
@@ -92,6 +94,15 @@ vue({
 
   // Default behaviour is to write all styles to the bundle destination where .js is replaced by .css
   css: null
+})
+```
+
+#### `compileTemplate`
+
+```js
+vue({
+  // Compile templates to render functions (Vue 2 only)
+  compileTemplate: true,
 })
 ```
 
