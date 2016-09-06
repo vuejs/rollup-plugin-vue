@@ -23,7 +23,8 @@ function test(name) {
             plugins: [vuePlugin({
                 css (css) {
                     actualCss = css
-                }
+                },
+                compileTemplate: name === 'compileTemplate'
             })]
         }).then(function (bundle) {
             var result = bundle.generate()
