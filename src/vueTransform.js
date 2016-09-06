@@ -66,7 +66,7 @@ function injectRender(script, render) {
             .join(`${matches[1]}` +
                   `render: ${wrapRenderFunction(render.render)},` +
                   'staticRenderFns: [' +
-                  `${render.staticRenderFns.map(wrapRenderFunction).join(',')}]`
+                  `${render.staticRenderFns.map(wrapRenderFunction).join(',')}],`
                  );
     }
     throw new Error('[rollup-plugin-vue] could not find place to inject template in script.');
