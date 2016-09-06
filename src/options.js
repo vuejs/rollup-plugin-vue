@@ -12,4 +12,5 @@ export default {
         removeEmptyAttributes: true,
         removeOptionalTags: true,
     },
+    VUE_WITH_STATEMENT: '__VUE_WITH_STATEMENT__',
 };

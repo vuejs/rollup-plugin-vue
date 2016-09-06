@@ -7,6 +7,7 @@ export default function vue(options = {}) {
     const filter = createFilter(options.include, options.exclude);
     const styles = {};
     let dest = options.css;
+    const compileTemplate = !!options.compileTemplate;
 
     return {
         name: 'vue',
@@ -19,7 +20,7 @@ export default function vue(options = {}) {
                 return null;
             }
 
-            const { js, css } = vueTransform(source, id);
+            const { js, css } = vueTransform(source, id, { compileTemplate });
 
             // Map of every stylesheet
             styles[id] = css || {};
@@ -27,7 +28,11 @@ export default function vue(options = {}) {
             // Component javascript with inlined html template
             return js;
         },
-        ongenerate(opts) {
+        ongenerate(opts, rendered) {
+            // Put with statements back
+            /* eslint-disable no-param-reassign */
+            rendered.code = rendered.code.replace(/if\s*\(""__VUE_WITH_STATEMENT__"\)/g,
+                                                  'with(this)');
             if (options.css === false) {
                 return;
             }

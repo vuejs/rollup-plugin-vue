@@ -30,6 +30,7 @@
     "html-minifier": "latest",
     "parse5": "latest",
     "rollup-pluginutils": "latest",
+    "vue-template-compiler": "^2.0.0-rc.4",
     "vue-template-validator": "latest"
   },
   "devDependencies": {

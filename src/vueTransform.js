@@ -1,5 +1,6 @@
 import deIndent from 'de-indent';
 import htmlMinifier from 'html-minifier';
+import { compile as compileTemplate } from 'vue-template-compiler';
 import parse5 from 'parse5';
 import validateTemplate from 'vue-template-validator';
 import { relative } from 'path';
@@ -36,6 +37,39 @@ function padContent(content) {
           .split(/\r?\n/g)
           .map(() => '')
           .join('\n');
+}
+
+/**
+ * Wrap code inside a with statement inside a function
+ * This is necessary for Vue 2 template compilation
+ *
+ * @param {string} code
+ * @returns {string}
+ */
+function wrapRenderFunction(code) {
+    // Replace with(this) by something that works on strict mode
+    // https://github.com/vuejs/vue-template-es2015-compiler/blob/master/index.js
+    return `function(){${code.replace(/with\(this\)/g, 'if("__VUE_WITH_STATEMENT__")')}}`;
+}
+
+/**
+ * Only support for es5 modules
+ *
+ * @param script
+ * @param render
+ * @returns {string}
+ */
+function injectRender(script, render) {
+    const matches = /(export default[^{]*\{)/g.exec(script);
+    if (matches) {
+        return script.split(matches[1])
+            .join(`${matches[1]}` +
+                  `render: ${wrapRenderFunction(render.render)},` +
+                  'staticRenderFns: [' +
+                  `${render.staticRenderFns.map(wrapRenderFunction).join(',')}],`
+                 );
+    }
+    throw new Error('[rollup-plugin-vue] could not find place to inject template in script.');
 }
 
 /**
@@ -78,19 +112,24 @@ function processTemplate(node, filePath, content) {
  * @param {string} content
  * @param {string} template
  */
-function processScript(node, filePath, content, template) {
+function processScript(node, filePath, content, { template, render }) {
     const lang = checkLang(node) || 'js';
     let script = parse5.serialize(node);
     // pad the script to ensure correct line number for syntax errors
     const location = content.indexOf(script);
     const before = padContent(content.slice(0, location));
     script = before + script;
-    script = injectTemplate(script, template, lang);
+    if (template) {
+        script = injectTemplate(script, template, lang);
+    } else if (render) {
+        script = injectRender(script, render, lang);
+    }
     script = deIndent(script);
+
     return script;
 }
 
-export default function vueTransform(code, filePath) {
+export default function vueTransform(code, filePath, transformOptions) {
     // 1. Parse the file into an HTML tree
     const fragment = parse5.parseFragment(code, { locationInfo: true });
 
@@ -108,10 +147,17 @@ export default function vueTransform(code, filePath) {
 
     // 4. Process template
     const template = processTemplate(nodes.template, filePath, code);
+    let js;
+    if (transformOptions.compileTemplate) {
+        const render = compileTemplate(template);
+        js = processScript(nodes.script, filePath, code, { render });
+    } else {
+        js = processScript(nodes.script, filePath, code, { template });
+    }
 
     // 5. Process script & style
     return {
-        js: processScript(nodes.script, filePath, code, template),
+        js,
         css: nodes.style && {
             content: parse5.serialize(nodes.style),
             lang: checkLang(nodes.style),
