@@ -7,6 +7,7 @@ export default function vue(options = {}) {
     const filter = createFilter(options.include, options.exclude);
     const styles = {};
     let dest = options.css;
+  const compileTemplate = !!options.compileTemplate
 
     return {
         name: 'vue',
@@ -19,7 +20,7 @@ export default function vue(options = {}) {
                 return null;
             }
 
-            const { js, css } = vueTransform(source, id);
+          const { js, css } = vueTransform(source, id, { compileTemplate });
 
             // Map of every stylesheet
             styles[id] = css || {};

@@ -55,7 +55,7 @@ function injectRender(script, render) {
       return `function(){${code.replace(/with\(this\)/g, 'if("__VUE_WITH__")')}}`;
     }
     return script.split(matches[1])
-      .join(`${matches[1]} render: ${toFunction(render.render)}, staticRenderFns: [${render.staticRenderFns.map(toFunction).join(',')}],`);
+      .join(`${matches[1]} \n /* istanbul ignore next */\n render: ${toFunction(render.render)},\n /* istanbul ignore next */\n staticRenderFns: [${render.staticRenderFns.map(toFunction).join(',')}],`);
   }
   throw new Error('[rollup-plugin-vue] could not find place to inject template in script.');
 }
@@ -114,11 +114,10 @@ function processScript(node, filePath, content, {template, render}) {
     }
     script = deIndent(script);
 
-    console.log(script)
     return script;
 }
 
-export default function vueTransform(code, filePath) {
+export default function vueTransform(code, filePath, options) {
     // 1. Parse the file into an HTML tree
     const fragment = parse5.parseFragment(code, { locationInfo: true });
 
@@ -136,11 +135,17 @@ export default function vueTransform(code, filePath) {
 
     // 4. Process template
     const template = processTemplate(nodes.template, filePath, code);
+  let js = null
+  if (options.compileTemplate) {
     const render = compileTemplate(template);
+    js = processScript(nodes.script, filePath, code, { render })
+  } else {
+    js = processScript(nodes.script, filePath, code, { template })
+  }
 
     // 5. Process script & style
     return {
-        js: processScript(nodes.script, filePath, code, { render }),
+        js,
         css: nodes.style && {
             content: parse5.serialize(nodes.style),
             lang: checkLang(nodes.style),
