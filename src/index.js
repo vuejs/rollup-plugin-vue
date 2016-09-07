@@ -2,25 +2,46 @@ import { createFilter } from 'rollup-pluginutils';
 import { writeFile } from 'fs';
 
 import vueTransform from './vueTransform';
+import DEFAULT_OPTIONS from './options';
+
+function mergeOptions(options, defaults) {
+    Object.keys(defaults).forEach((key) => {
+        const val = defaults[key];
+
+        if (key in options) {
+            if (typeof options[key] === 'object') {
+                mergeOptions(options[key], val);
+            }
+        } else {
+            options[key] = val;
+        }
+    });
+
+    return options;
+}
 
 export default function vue(options = {}) {
     const filter = createFilter(options.include, options.exclude);
+
+    delete options.include;
+    delete options.exclude;
+
     const styles = {};
-    let dest = options.css;
-    const compileTemplate = !!options.compileTemplate;
+
+    options = mergeOptions(options, DEFAULT_OPTIONS);
 
     return {
         name: 'vue',
         transform(source, id) {
+            if (id.endsWith('vue.common.js')) {
+                return source.replace(/process\.env\.NODE_ENV/g,
+                      process.env.NODE_ENV || 'production');
+            }
             if (!filter(id) || !id.endsWith('.vue')) {
-                if (id.endsWith('vue.common.js')) {
-                    return source.replace(/process\.env\.NODE_ENV/g,
-                        process.env.NODE_ENV || 'window.NODE_ENV');
-                }
                 return null;
             }
 
-            const { js, css } = vueTransform(source, id, { compileTemplate });
+            const { js, css } = vueTransform(source, id, options);
 
             // Map of every stylesheet
             styles[id] = css || {};
@@ -30,9 +51,9 @@ export default function vue(options = {}) {
         },
         ongenerate(opts, rendered) {
             // Put with statements back
-            /* eslint-disable no-param-reassign */
-            rendered.code = rendered.code.replace(/if\s*\(""__VUE_WITH_STATEMENT__"\)/g,
-                                                  'with(this)');
+            rendered.code = rendered.code.replace(
+                  /if[\s]*\('__VUE_WITH_STATEMENT__'\)/g, 'with(this)');
+
             if (options.css === false) {
                 return;
             }
@@ -49,6 +70,7 @@ export default function vue(options = {}) {
                 return;
             }
 
+            let dest = options.css;
             if (typeof dest !== 'string') {
                 // Don't create unwanted empty stylesheets
                 if (!css.length) {
@@ -87,6 +109,6 @@ function getSize(bytes) {
         return `${bytes.toFixed(0)} B`;
     }
     return bytes < 1024000
-        ? `${(bytes / 1024).toPrecision(3)} kB'`
-        : `${(bytes / 1024 / 1024).toPrecision(4)} MB`;
+          ? `${(bytes / 1024).toPrecision(3)} kB'`
+          : `${(bytes / 1024 / 1024).toPrecision(4)} MB`;
 }
