@@ -26,6 +26,23 @@ export default function vue(options = {}) {
     delete options.include;
     delete options.exclude;
 
+    /* eslint-disable */
+    try {
+        const vueVersion = require('vue').version;
+        if (parseInt(vueVersion.split('.')[0], 10) >= 2) {
+            if (!('compileTemplate' in options)) {
+                options.compileTemplate = true;
+            }
+        } else {
+            if (options.compileTemplate === true) {
+                console.warn('Vue version < 2.0.0 does not support compiled template.');
+            }
+            options.compileTemplate = false;
+        }
+    } catch (e) {
+    }
+    /* eslint-enable */
+
     const styles = {};
 
     options = mergeOptions(options, DEFAULT_OPTIONS);
