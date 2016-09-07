@@ -1,6 +1,5 @@
 import deIndent from 'de-indent';
 import htmlMinifier from 'html-minifier';
-import { compile as compileTemplate } from 'vue-template-compiler';
 import parse5 from 'parse5';
 import validateTemplate from 'vue-template-validator';
 import { relative } from 'path';
@@ -156,7 +155,9 @@ export default function vueTransform(code, filePath, options) {
     const template = processTemplate(nodes.template, filePath, code, options);
     let js;
     if (options.compileTemplate) {
-        const render = compileTemplate(template);
+        /* eslint-disable */
+        const render = require('vue-template-compiler').compile(template);
+        /* eslint-enable */
         js = processScript(nodes.script, filePath, code, { render });
     } else {
         js = processScript(nodes.script, filePath, code, { template });
