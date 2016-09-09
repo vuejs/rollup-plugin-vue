@@ -19,6 +19,10 @@
     "rollup-plugin",
     "vue"
   ],
+  "files": [
+    "dist/",
+    "src/"
+  ],
   "author": "Rahul Kadyan <hi@znck.me>",
   "license": "MIT",
   "bugs": {
