@@ -43,12 +43,56 @@ export default function vue(options = {}) {
     }
     /* eslint-enable */
 
-    const styles = {};
-
     options = mergeOptions(options, DEFAULT_OPTIONS);
+
+    const styles = {};
+    let rollupOptions = {};
+    const generateStyleBundle = () => {
+        if (options.css === false) {
+            return;
+        }
+
+        // Combine all stylesheets.
+        let css = '';
+        Object.keys(styles).forEach((key) => {
+            css += styles[key].content || '';
+        });
+
+        // Don't generate empty style file.
+        if (!css.trim().length) {
+            return;
+        }
+        // Emit styles through callback
+        if (typeof options.css === 'function') {
+            options.css(css, styles);
+            return;
+        }
+
+        let dest = options.css;
+        if (typeof dest !== 'string') {
+            // Guess destination filename
+            dest = rollupOptions.dest || 'bundle.js';
+            if (dest.endsWith('.js')) {
+                dest = dest.slice(0, -3);
+            }
+            dest = `${dest}.css`;
+        }
+
+        // Emit styles to file
+        writeFile(dest, css, (err) => {
+            if (err) {
+                throw err;
+            }
+            emitted(dest, css.length);
+        });
+    };
 
     return {
         name: 'vue',
+        options(o) {
+            rollupOptions = o;
+            return o;
+        },
         transform(source, id) {
             if (id.endsWith('vue.common.js')) {
                 return source.replace(/process\.env\.NODE_ENV/g,
@@ -66,49 +110,10 @@ export default function vue(options = {}) {
             // Component javascript with inlined html template
             return js;
         },
-        ongenerate(opts, rendered) {
-            // Put with statements back
-            rendered.code = rendered.code.replace(
-                  /if[\s]*\('__VUE_WITH_STATEMENT__'\)/g, 'with(this)');
+        transformBundle(source) {
+            generateStyleBundle();
 
-            if (options.css === false) {
-                return;
-            }
-
-            // Combine all stylesheets
-            let css = '';
-            Object.keys(styles).forEach((key) => {
-                css += styles[key].content || '';
-            });
-
-            // Emit styles through callback
-            if (typeof options.css === 'function') {
-                options.css(css, styles);
-                return;
-            }
-
-            let dest = options.css;
-            if (typeof dest !== 'string') {
-                // Don't create unwanted empty stylesheets
-                if (!css.length) {
-                    return;
-                }
-
-                // Guess destination filename
-                dest = opts.dest || 'bundle.js';
-                if (dest.endsWith('.js')) {
-                    dest = dest.slice(0, -3);
-                }
-                dest = `${dest}.css`;
-            }
-
-            // Emit styles to file
-            writeFile(dest, css, (err) => {
-                if (err) {
-                    throw err;
-                }
-                emitted(dest, css.length);
-            });
+            return source.replace(/if[\s]*\('__VUE_WITH_STATEMENT__'\)/g, 'with(this)');
         },
     };
 }

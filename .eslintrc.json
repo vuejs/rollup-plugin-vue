@@ -28,7 +28,9 @@
     //
     "react/require-extension": "off",
 
-    "no-param-reassign": "off"
+    "no-param-reassign": "off",
+
+    "no-console": "off"
   },
   "settings": {
     "html/indent": "0",
