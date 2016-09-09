@@ -58,13 +58,14 @@ export default function vue(options = {}) {
             css += styles[key].content || '';
         });
 
-        // Don't generate empty style file.
-        if (!css.trim().length) {
-            return;
-        }
         // Emit styles through callback
         if (typeof options.css === 'function') {
             options.css(css, styles);
+            return;
+        }
+
+        // Don't generate empty style file.
+        if (!css.trim().length) {
             return;
         }
 
@@ -110,6 +111,11 @@ export default function vue(options = {}) {
             generateStyleBundle();
 
             return source.replace(/if[\s]*\('__VUE_WITH_STATEMENT__'\)/g, 'with(this)');
+        },
+        ongenerate(opts, rendered) {
+            generateStyleBundle();
+            rendered.code = rendered.code.replace(
+                  /if[\s]*\('__VUE_WITH_STATEMENT__'\)/g, 'with(this)');
         },
     };
 }
