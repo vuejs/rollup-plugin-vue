@@ -94,10 +94,6 @@ export default function vue(options = {}) {
             return o;
         },
         transform(source, id) {
-            if (id.endsWith('vue.common.js')) {
-                return source.replace(/process\.env\.NODE_ENV/g,
-                      process.env.NODE_ENV || 'production');
-            }
             if (!filter(id) || !id.endsWith('.vue')) {
                 return null;
             }
