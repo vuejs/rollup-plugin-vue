@@ -1,5 +1,6 @@
 import { createFilter } from 'rollup-pluginutils';
 import { writeFile } from 'fs';
+import MagicString from 'magic-string';
 
 import vueTransform from './vueTransform';
 import DEFAULT_OPTIONS from './options';
@@ -106,18 +107,25 @@ export default function vue(options = {}) {
                 return null;
             }
 
-            const { js, css } = vueTransform(source, id, options);
+            const { js, css, map } = vueTransform(source, id, options);
 
             // Map of every stylesheet
             styles[id] = css || {};
 
             // Component javascript with inlined html template
-            return js;
+            return {
+                code: js,
+                map: map.generateMap({ hires: true }),
+            };
         },
         transformBundle(source) {
             generateStyleBundle();
+            const map = new MagicString(source);
 
-            return source.replace(/if[\s]*\('__VUE_WITH_STATEMENT__'\)/g, 'with(this)');
+            return {
+                code: source.replace(/if[\s]*\('__VUE_WITH_STATEMENT__'\)/g, 'with(this)'),
+                map: map.generateMap({ hires: true }),
+            };
         },
         ongenerate(opts, rendered) {
             generateStyleBundle();
