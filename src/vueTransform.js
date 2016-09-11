@@ -146,17 +146,19 @@ export default function vueTransform(code, filePath, options) {
     }
 
     // 3. Don't touch files that don't look like Vue components
-    if (!nodes.template && !nodes.script) {
+    if (!nodes.script) {
         throw new Error('There must be at least one script tag or one' +
               ' template tag per *.vue file.');
     }
 
     // 4. Process template
-    const template = processTemplate(nodes.template, filePath, code, options);
+    const template = nodes.template
+        ? processTemplate(nodes.template, filePath, code, options)
+        : undefined;
     let js;
     if (options.compileTemplate) {
         /* eslint-disable */
-        const render = require('vue-template-compiler').compile(template);
+        const render = template ? require('vue-template-compiler').compile(template) : undefined;
         /* eslint-enable */
         js = processScript(nodes.script, filePath, code, { render });
     } else {
