@@ -126,6 +126,7 @@ If you discover any security related issues, please email hi@znck.me instead of 
 
 - [Rahul Kadyan][link-author]
 - [Thomas Ghysels](https://github.com/thgh)
+- [Eduardo San Martin Morote](https://github.com/posva)
 - [All Contributors][link-contributors]
 
 ## License
