@@ -47,7 +47,7 @@ function padContent(content) {
 function wrapRenderFunction(code) {
     // Replace with(this) by something that works on strict mode
     // https://github.com/vuejs/vue-template-es2015-compiler/blob/master/index.js
-    code = code.replace(/with\(this\)/g, "if(window.__VUE_WITH_STATEMENT__)");
+    code = code.replace(/with\(this\)/g, 'if(window.__VUE_WITH_STATEMENT__)');
     return `function(){${code}}`;
 }
 
