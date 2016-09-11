@@ -123,14 +123,14 @@ export default function vue(options = {}) {
             const map = new MagicString(source);
 
             return {
-                code: source.replace(/if[\s]*\('__VUE_WITH_STATEMENT__'\)/g, 'with(this)'),
+                code: source.replace(/if[\s]*\(window\.__VUE_WITH_STATEMENT__\)/g, 'with(this)'),
                 map: map.generateMap({ hires: true }),
             };
         },
         ongenerate(opts, rendered) {
             generateStyleBundle();
             rendered.code = rendered.code.replace(
-                /if[\s]*\('__VUE_WITH_STATEMENT__'\)/g, 'with(this)');
+                /if[\s]*\(window\.__VUE_WITH_STATEMENT__\)/g, 'with(this)');
         },
     };
 }
