@@ -32,6 +32,7 @@
   "dependencies": {
     "de-indent": "latest",
     "html-minifier": "latest",
+    "magic-string": "^0.16.0",
     "parse5": "latest",
     "rollup-pluginutils": "latest",
     "vue-template-compiler": "^2.0.0-rc.4",

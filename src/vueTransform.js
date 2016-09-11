@@ -3,6 +3,7 @@ import htmlMinifier from 'html-minifier';
 import parse5 from 'parse5';
 import validateTemplate from 'vue-template-validator';
 import { relative } from 'path';
+import MagicString from 'magic-string';
 
 /**
  * Check the lang attribute of a parse5 node.
@@ -125,6 +126,8 @@ function processScript(node, filePath, content, templateOrRender) {
     const before = padContent(content.slice(0, location));
     script = before + script;
 
+    const map = new MagicString(script);
+
     if (template) {
         script = injectTemplate(script, template, lang);
     } else if (render) {
@@ -132,7 +135,10 @@ function processScript(node, filePath, content, templateOrRender) {
     }
     script = deIndent(script);
 
-    return script;
+    return {
+        code: script,
+        map,
+    };
 }
 
 export default function vueTransform(code, filePath, options) {
@@ -167,7 +173,8 @@ export default function vueTransform(code, filePath, options) {
 
     // 5. Process script & style
     return {
-        js,
+        js: js.code,
+        map: js.map,
         css: nodes.style && {
             content: parse5.serialize(nodes.style),
             lang: checkLang(nodes.style),
