@@ -47,10 +47,17 @@ export default function vue(options = {}) {
 
     const styles = {};
     let rollupOptions = {};
+    let generated = false;
     const generateStyleBundle = () => {
         if (options.css === false) {
             return;
         }
+
+        if (generated) {
+            return;
+        }
+
+        generated = true;
 
         // Combine all stylesheets.
         let css = '';
@@ -115,7 +122,7 @@ export default function vue(options = {}) {
         ongenerate(opts, rendered) {
             generateStyleBundle();
             rendered.code = rendered.code.replace(
-                  /if[\s]*\('__VUE_WITH_STATEMENT__'\)/g, 'with(this)');
+                /if[\s]*\('__VUE_WITH_STATEMENT__'\)/g, 'with(this)');
         },
     };
 }
