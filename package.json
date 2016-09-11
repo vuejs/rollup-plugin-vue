@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "babel-eslint": "^6.1.2",
+    "clean-css": "^3.4.19",
     "coveralls": "^2.11.6",
     "eslint": "^3.3.1",
     "eslint-config-airbnb": "^10.0.1",
@@ -53,6 +54,8 @@
     "rollup": "latest",
     "rollup-plugin-buble": "^0.13.0",
     "rollup-plugin-replace": "latest",
+    "stylus": "^0.54.5",
+    "uglify-js": "^2.7.3",
     "vue-hot-reload-api": "^1.2.2"
   }
 }
