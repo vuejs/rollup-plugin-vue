@@ -99,14 +99,21 @@ function injectTemplate(script, template, lang) {
  * @param {*} options
  */
 function processTemplate(node, filePath, content, options) {
-    const template = deIndent(parse5.serialize(node.content));
-    const warnings = validateTemplate(node.content, content);
+    node = node.content;
+    const warnings = validateTemplate(node, content);
     if (warnings) {
         const relativePath = relative(process.cwd(), filePath);
         warnings.forEach((msg) => {
             console.warn(`\n Warning in ${relativePath}:\n ${msg}`);
         });
     }
+
+    /* eslint-disable no-underscore-dangle */
+    const start = node.childNodes[0].__location.startOffset;
+    const end = node.childNodes[node.childNodes.length - 1].__location.endOffset;
+    const template = deIndent(content.slice(start, end));
+    /* eslint-enable no-underscore-dangle */
+
     return htmlMinifier.minify(template, options.htmlMinifier);
 }
 
