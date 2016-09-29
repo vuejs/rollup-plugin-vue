@@ -71,6 +71,11 @@ export default {
 }
 ```
 
+### Examples
+
+- [Vue 2.0 application](https://gist.github.com/znck/4ae3a705bccba0a3feecfa7b5f3da1ea)
+- [Vue component module/package](https://gist.github.com/znck/140d5e9deabfa41f2e935d053a59f23e)
+
 ### Options
 
 #### `css`
