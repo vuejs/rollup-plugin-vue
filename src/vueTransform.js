@@ -13,13 +13,10 @@ import MagicString from 'magic-string';
  */
 function checkLang(node) {
     if (node.attrs) {
-        let i = node.attrs.length;
-        while (i > 0) {
-            const attr = node.attrs[i];
+        for (const attr of node.attrs) {
             if (attr.name === 'lang') {
                 return attr.value;
             }
-            i -= 1;
         }
     }
     return undefined;
@@ -167,8 +164,8 @@ export default function vueTransform(code, filePath, options) {
 
     // 4. Process template
     const template = nodes.template
-        ? processTemplate(nodes.template, filePath, code, options)
-        : undefined;
+          ? processTemplate(nodes.template, filePath, code, options)
+          : undefined;
     let js;
     if (options.compileTemplate) {
         /* eslint-disable */
