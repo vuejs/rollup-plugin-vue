@@ -14,11 +14,12 @@ import MagicString from 'magic-string';
 function checkLang(node) {
     if (node.attrs) {
         let i = node.attrs.length;
-        while (i--) {
+        while (i > 0) {
             const attr = node.attrs[i];
             if (attr.name === 'lang') {
                 return attr.value;
             }
+            i -= 1;
         }
     }
     return undefined;
@@ -154,7 +155,7 @@ export default function vueTransform(code, filePath, options) {
 
     // 2. Walk through the top level nodes and check for their types
     const nodes = {};
-    for (let i = fragment.childNodes.length - 1; i >= 0; i--) {
+    for (let i = fragment.childNodes.length - 1; i >= 0; i -= 1) {
         nodes[fragment.childNodes[i].nodeName] = fragment.childNodes[i];
     }
 

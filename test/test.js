@@ -29,7 +29,7 @@ function test(name) {
         }).then(function (bundle) {
             var result = bundle.generate()
             var code = result.code
-            assert.equal(code, expected, 'should compile code correctly')
+            assert.equal(code.trim(), expected.trim(), 'should compile code correctly')
 
             // Check css output
             if (name === 'style') {
