@@ -109,6 +109,16 @@ vue({
 })
 ```
 
+#### `htmlMinifier`
+
+Use any option from [https://github.com/kangax/html-minifier](https://github.com/kangax/html-minifier)
+
+```js
+vue({
+  htmlMinifier: {} 
+})
+```
+
 ## Change log
 
 Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
