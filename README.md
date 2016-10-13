@@ -42,6 +42,23 @@ With rollup you can break your application into reusable modules.
 npm install --save-dev rollup-plugin-vue
 ```
 
+## Quick Start
+
+Create project with vue-cli!
+
+```
+vue init znck/vue-plugin-simple my-project
+```
+
+Rollup! Rollup! Rollup!
+
+### Create new project
+![](create.gif)
+
+### Install dependencies & build
+![](build.gif)
+
+
 ## Usage
 
 ```js
