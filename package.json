@@ -31,6 +31,7 @@
   "homepage": "https://github.com/znck/rollup-plugin-vue#readme",
   "dependencies": {
     "de-indent": "^1.0.2",
+    "debug": "^2.2.0",
     "html-minifier": "^3.1.0",
     "magic-string": "^0.16.0",
     "parse5": "^2.2.2",

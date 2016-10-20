@@ -4,6 +4,7 @@ import parse5 from 'parse5';
 import validateTemplate from 'vue-template-validator';
 import { relative } from 'path';
 import MagicString from 'magic-string';
+import debug from './debug';
 
 /**
  * Check the lang attribute of a parse5 node.
@@ -68,6 +69,8 @@ function injectRender(script, render, lang) {
                         `${render.staticRenderFns.map(wrapRenderFunction).join(',')}],`
                   );
         }
+
+        debug(`No injection location found in: \n${script}\n`);
     }
     throw new Error('[rollup-plugin-vue] could not find place to inject template in script.');
 }
@@ -85,6 +88,8 @@ function injectTemplate(script, template, lang) {
             return script.split(matches[1])
                   .join(`${matches[1]} template: ${JSON.stringify(template)},`);
         }
+
+        debug(`No injection location found in: \n${script}\n`);
     }
     throw new Error('[rollup-plugin-vue] could not find place to inject template in script.');
 }
@@ -137,7 +142,10 @@ function processScript(node, filePath, content, templateOrRender) {
         script = injectTemplate(script, template, lang);
     } else if (render) {
         script = injectRender(script, render, lang);
+    } else {
+        debug('Nothing to inject!');
     }
+
     script = deIndent(script);
 
     return {

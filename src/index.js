@@ -4,6 +4,7 @@ import MagicString from 'magic-string';
 
 import vueTransform from './vueTransform';
 import DEFAULT_OPTIONS from './options';
+import debug from './debug';
 
 function mergeOptions(options, defaults) {
     Object.keys(defaults).forEach((key) => {
@@ -22,6 +23,7 @@ function mergeOptions(options, defaults) {
 }
 
 export default function vue(options = {}) {
+    debug('Yo! rolling vue!');
     const filter = createFilter(options.include, options.exclude);
 
     delete options.include;
@@ -32,6 +34,7 @@ export default function vue(options = {}) {
         const vueVersion = require('vue').version;
         if (parseInt(vueVersion.split('.')[0], 10) >= 2) {
             if (!('compileTemplate' in options)) {
+                debug('Vue 2.0 detected. Compiling template.');
                 options.compileTemplate = true;
             }
         } else {
@@ -47,7 +50,7 @@ export default function vue(options = {}) {
     options = mergeOptions(options, DEFAULT_OPTIONS);
 
     const styles = {};
-    let rollupOptions = {};
+    let rollupOptions;
     let generated = false;
     const generateStyleBundle = () => {
         if (options.css === false) {
@@ -55,6 +58,7 @@ export default function vue(options = {}) {
         }
 
         if (generated) {
+            debug('Style already generated!');
             return;
         }
 
@@ -99,38 +103,51 @@ export default function vue(options = {}) {
     return {
         name: 'vue',
         options(o) {
-            rollupOptions = o;
-            return o;
+            if (rollupOptions === undefined) {
+                rollupOptions = o;
+                debug('Set options.');
+            }
         },
         transform(source, id) {
             if (!filter(id) || !id.endsWith('.vue')) {
+                debug(`Ignore: ${id}`);
                 return null;
             }
 
+            debug(`Transform: ${id}`);
             const { js, css, map } = vueTransform(source, id, options);
 
             // Map of every stylesheet
             styles[id] = css || {};
 
             // Component javascript with inlined html template
-            return {
+            const result = {
                 code: js,
                 map: map.generateMap({ hires: true }),
             };
+
+            debug(`Transformed: ${id}`);
+
+            return result;
         },
         transformBundle(source) {
+            debug('Replace window.__VUE_WITH_STATEMENT__ with with(this) and generate style.');
             generateStyleBundle();
             const map = new MagicString(source);
-
-            return {
+            const result = {
                 code: source.replace(/if[\s]*\(window\.__VUE_WITH_STATEMENT__\)/g, 'with(this)'),
                 map: map.generateMap({ hires: true }),
             };
+            debug('with(this) fixed!');
+
+            return result;
         },
         ongenerate(opts, rendered) {
+            debug('on generate!');
             generateStyleBundle();
             rendered.code = rendered.code.replace(
-                /if[\s]*\(window\.__VUE_WITH_STATEMENT__\)/g, 'with(this)');
+                  /if[\s]*\(window\.__VUE_WITH_STATEMENT__\)/g, 'with(this)');
+            debug('with(this) fixed!');
         },
     };
 }
