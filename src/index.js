@@ -131,11 +131,10 @@ export default function vue(options = {}) {
             return result;
         },
         transformBundle(source) {
-            debug('Replace window.__VUE_WITH_STATEMENT__ with with(this) and generate style.');
             generateStyleBundle();
             const map = new MagicString(source);
             const result = {
-                code: source.replace(/if[\s]*\(window\.__VUE_WITH_STATEMENT__\)/g, 'with(this)'),
+                code: source,
                 map: map.generateMap({ hires: true }),
             };
             debug('with(this) fixed!');

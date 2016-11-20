@@ -1,9 +1,19 @@
-var compileTemplate = {render: function(){with(this){return _h('div',[_h('p',[_s(msg)])])}},staticRenderFns: [],
+var compileTemplate = {render: function(){var _vm=this;return _vm._h('div',[_vm._h('p',[_vm._s(_vm.msg)])])},staticRenderFns: [],
   data() {
     return {
-      msg: 'Compile Template'
-    }
-  }
+      msg: 'Compile Template',
+    };
+  },
+  computed: {
+    exclamation() {
+      return `${this.msg}!`;
+    },
+    uselessFatArrow: () => 0
+  },
+  fatArrowTest() {
+    const a = [5, 7];
+    a.map(v => this.msg);
+  },
 };
 
 export default compileTemplate;

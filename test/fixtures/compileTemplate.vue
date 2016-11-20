@@ -8,8 +8,18 @@
 export default {
   data() {
     return {
-      msg: 'Compile Template'
-    }
-  }
+      msg: 'Compile Template',
+    };
+  },
+  computed: {
+    exclamation() {
+      return `${this.msg}!`;
+    },
+    uselessFatArrow: () => 0
+  },
+  fatArrowTest() {
+    const a = [5, 7];
+    a.map(v => this.msg);
+  },
 }
 </script>
