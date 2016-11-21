@@ -2,6 +2,7 @@ import deIndent from 'de-indent';
 import htmlMinifier from 'html-minifier';
 import parse5 from 'parse5';
 import validateTemplate from 'vue-template-validator';
+import transpileVueTemplate from 'vue-template-es2015-compiler';
 import { relative } from 'path';
 import MagicString from 'magic-string';
 import debug from './debug';
@@ -44,9 +45,6 @@ function padContent(content) {
  * @returns {string}
  */
 function wrapRenderFunction(code) {
-    // Replace with(this) by something that works on strict mode
-    // https://github.com/vuejs/vue-template-es2015-compiler/blob/master/index.js
-    code = code.replace(/with\(this\)/g, 'if(window.__VUE_WITH_STATEMENT__)');
     return `function(){${code}}`;
 }
 
@@ -62,12 +60,27 @@ function injectRender(script, render, lang) {
     if (['js', 'babel'].indexOf(lang.toLowerCase()) > -1) {
         const matches = /(export default[^{]*\{)/g.exec(script);
         if (matches) {
-            return script.split(matches[1])
-                  .join(`${matches[1]}` +
+            const scriptWithRender = script.split(matches[1])
+                  // buble doesn't support export default, not even with the
+                  // module: false trasforms:
+                  // https://buble.surge.sh/guide/#using-es-modules
+                  .join('module.exports={' +
                         `render: ${wrapRenderFunction(render.render)},` +
                         'staticRenderFns: [' +
                         `${render.staticRenderFns.map(wrapRenderFunction).join(',')}],`
                   );
+            return transpileVueTemplate(scriptWithRender, {
+                // Remove all trasforms added by vue since it's up to the user
+                // to use whatever he wants
+                // https://github.com/vuejs/vue-template-es2015-compiler/blob/master/index.js#L6
+                transforms: {
+                    templateString: false,
+                    conciseMethodProperty: false,
+                    stripWith: true, // remove the with statement
+                    computedProperty: false,
+                },
+                // put back the export default {
+            }).replace('module.exports={', 'export default {');
         }
 
         debug(`No injection location found in: \n${script}\n`);
