@@ -156,7 +156,7 @@ If you discover any security related issues, please email hi@znck.me instead of 
 
 ## Credits
 
-- [Rahul Kadyan][link-author]
+- [Rahul Kadyan][https://github.com/znck]
 - [Thomas Ghysels](https://github.com/thgh)
 - [Eduardo San Martin Morote](https://github.com/posva)
 - [All Contributors][link-contributors]
@@ -165,5 +165,4 @@ If you discover any security related issues, please email hi@znck.me instead of 
 
 The MIT License (MIT). Please see [License File](LICENSE) for more information.
 
-[link-author]: https://github.com/:author_username
 [link-contributors]: ../../contributors
