@@ -60,16 +60,14 @@ function injectRender(script, render, lang) {
     if (['js', 'babel'].indexOf(lang.toLowerCase()) > -1) {
         const matches = /(export default[^{]*\{)/g.exec(script);
         if (matches) {
-            const scriptWithRender = script.split(matches[1])
-                  // buble doesn't support export default, not even with the
-                  // module: false trasforms:
-                  // https://buble.surge.sh/guide/#using-es-modules
-                  .join('module.exports={' +
-                        `render: ${wrapRenderFunction(render.render)},` +
-                        'staticRenderFns: [' +
-                        `${render.staticRenderFns.map(wrapRenderFunction).join(',')}],`
-                  );
-            return transpileVueTemplate(scriptWithRender, {
+            let codes = script.split(matches[1]);
+
+            const scriptWithRender = 'module.exports={' +
+                `render: ${wrapRenderFunction(render.render)},` +
+                'staticRenderFns: [' +
+                `${render.staticRenderFns.map(wrapRenderFunction).join(',')}], ${codes[1]}`;
+
+            return codes[0] + transpileVueTemplate(scriptWithRender, {
                 // Remove all trasforms added by vue since it's up to the user
                 // to use whatever he wants
                 // https://github.com/vuejs/vue-template-es2015-compiler/blob/master/index.js#L6
