@@ -24,7 +24,7 @@ function test(name) {
                 css (css) {
                     actualCss = css
                 },
-                compileTemplate: name === 'compileTemplate'
+                compileTemplate: ['compileTemplate', 'slot', 'table'].indexOf(name) > -1
             })]
         }).then(function (bundle) {
             var result = bundle.generate()

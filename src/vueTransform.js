@@ -43,16 +43,14 @@ function injectRender(script, render, lang, options) {
     if (['js', 'babel'].indexOf(lang.toLowerCase()) > -1) {
         const matches = /(export default[^{]*\{)/g.exec(script);
         if (matches) {
-            const scriptWithRender = script.split(matches[1])
-                  // buble doesn't support export default, not even with the
-                  // module: false trasforms:
-                  // https://buble.surge.sh/guide/#using-es-modules
-                  .join('module.exports={' +
-                        `render: ${wrapRenderFunction(render.render)},` +
-                        'staticRenderFns: [' +
-                        `${render.staticRenderFns.map(wrapRenderFunction).join(',')}],`
-                  );
-            return transpileVueTemplate(scriptWithRender, options.vue).replace('module.exports={', 'export default {');
+            const renderScript = transpileVueTemplate('module.exports={' +
+                  `render: ${wrapRenderFunction(render.render)},` +
+                  'staticRenderFns: [' +
+                  `${render.staticRenderFns.map(wrapRenderFunction).join(',')}],}`, options.vue);
+            const result = script.split(matches[1])
+                  .join(renderScript.replace('module.exports={', 'export default {').replace(/\}$/, ''));
+
+            return result;
         }
 
         debug(`No injection location found in: \n${script}\n`);
