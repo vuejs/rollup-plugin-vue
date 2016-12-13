@@ -18,6 +18,7 @@ rollup.rollup({
           entry: 'src/index.js',
           plugins: [
               buble({
+                  objectAssign: 'Object.assign',
                   transforms: {
                       dangerousForOf: true
                   }
@@ -37,5 +38,3 @@ rollup.rollup({
       .catch(function logError(e) {
           console.log(e)
       });
-
-

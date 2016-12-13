@@ -7,28 +7,22 @@ import { relative } from 'path';
 import MagicString from 'magic-string';
 import debug from './debug';
 
-/**
- * Check the lang attribute of a parse5 node.
- *
- * @param {Node|*} node
- * @return {String|undefined}
- */
-function checkLang(node) {
-    if (node.attrs) {
-        for (const attr of node.attrs) {
-            if (attr.name === 'lang') {
-                return attr.value;
-            }
-        }
+function getNodeAttrs(node) {
+  if (node.attrs) {
+    const attributes = {};
+
+    for (const attr of node.attrs) {
+      attributes[attr.name] = attr.value;
     }
-    return undefined;
+
+    return attributes;
+  }
+
+  return {};
 }
 
 /**
  * Pad content with empty lines to get correct line number in errors.
- *
- * @param content
- * @returns {string}
  */
 function padContent(content) {
     return content
@@ -40,23 +34,12 @@ function padContent(content) {
 /**
  * Wrap code inside a with statement inside a function
  * This is necessary for Vue 2 template compilation
- *
- * @param {string} code
- * @returns {string}
  */
 function wrapRenderFunction(code) {
     return `function(){${code}}`;
 }
 
-/**
- * Only support for es5 modules
- *
- * @param script
- * @param render
- * @param lang
- * @returns {string}
- */
-function injectRender(script, render, lang) {
+function injectRender(script, render, lang, options) {
     if (['js', 'babel'].indexOf(lang.toLowerCase()) > -1) {
         const matches = /(export default[^{]*\{)/g.exec(script);
         if (matches) {
@@ -69,21 +52,12 @@ function injectRender(script, render, lang) {
                         'staticRenderFns: [' +
                         `${render.staticRenderFns.map(wrapRenderFunction).join(',')}],`
                   );
-            return transpileVueTemplate(scriptWithRender, {
-                // Remove all trasforms added by vue since it's up to the user
-                // to use whatever he wants
-                // https://github.com/vuejs/vue-template-es2015-compiler/blob/master/index.js#L6
-                transforms: {
-                    templateString: false,
-                    conciseMethodProperty: false,
-                    stripWith: true, // remove the with statement
-                    computedProperty: false,
-                },
-                // put back the export default {
-            }).replace('module.exports={', 'export default {');
+            return transpileVueTemplate(scriptWithRender, options.vue).replace('module.exports={', 'export default {');
         }
 
         debug(`No injection location found in: \n${script}\n`);
+    } else if (options.inject) {
+      return options.inject(script, render, lang, options);
     }
     throw new Error('[rollup-plugin-vue] could not find place to inject template in script.');
 }
@@ -94,7 +68,9 @@ function injectRender(script, render, lang) {
  * @param lang
  * @returns {string}
  */
-function injectTemplate(script, template, lang) {
+function injectTemplate(script, template, lang, options) {
+    if (template === undefined) return script;
+
     if (['js', 'babel'].indexOf(lang.toLowerCase()) > -1) {
         const matches = /(export default[^{]*\{)/g.exec(script);
         if (matches) {
@@ -103,107 +79,96 @@ function injectTemplate(script, template, lang) {
         }
 
         debug(`No injection location found in: \n${script}\n`);
+    } else if (options.inject) {
+      return options.inject(script, template, lang, options);
     }
+
     throw new Error('[rollup-plugin-vue] could not find place to inject template in script.');
 }
 
 /**
  * Compile template: DeIndent and minify html.
- * @param {Node} node
- * @param {string} filePath
- * @param {string} content
- * @param {*} options
  */
-function processTemplate(node, filePath, content, options) {
-    node = node.content;
-    const warnings = validateTemplate(node, content);
+function processTemplate(source, id, content, options) {
+    if (source === undefined) return undefined;
+
+    const {node, code} = source;
+
+    const warnings = validateTemplate(code, content);
     if (warnings) {
-        const relativePath = relative(process.cwd(), filePath);
+        const relativePath = relative(process.cwd(), id);
         warnings.forEach((msg) => {
             console.warn(`\n Warning in ${relativePath}:\n ${msg}`);
         });
     }
 
     /* eslint-disable no-underscore-dangle */
-    const start = node.childNodes[0].__location.startOffset;
-    const end = node.childNodes[node.childNodes.length - 1].__location.endOffset;
+    const start = node.content.childNodes[0].__location.startOffset;
+    const end = node.content.childNodes[node.content.childNodes.length - 1].__location.endOffset;
     const template = deIndent(content.slice(start, end));
     /* eslint-enable no-underscore-dangle */
 
     return htmlMinifier.minify(template, options.htmlMinifier);
 }
 
-/**
- * @param {Node|ASTNode} node
- * @param {string} filePath
- * @param {string} content
- * @param templateOrRender
- */
-function processScript(node, filePath, content, templateOrRender) {
-    const lang = checkLang(node) || 'js';
-    const { template, render } = templateOrRender;
-    let script = parse5.serialize(node);
+function processScript(source, id, content, options, nodes) {
+    const template = processTemplate(nodes.template[0], id, content, options, nodes);
 
-    // pad the script to ensure correct line number for syntax errors
-    const location = content.indexOf(script);
-    const before = padContent(content.slice(0, location));
-    script = before + script;
+    const lang = source.attrs.lang || 'js';
 
-    const map = new MagicString(script);
+    const script = deIndent(padContent(content.slice(0, content.indexOf(source.code))) + source.code);
+    const map = (new MagicString(script)).generateMap({ hires: true });
 
-    if (template) {
-        script = injectTemplate(script, template, lang);
-    } else if (render) {
-        script = injectRender(script, render, lang);
+    if (options.compileTemplate) {
+        const render = require('vue-template-compiler').compile(template);
+
+        return { map, code: injectRender(script, render, lang, options) };
     } else {
-        debug('Nothing to inject!');
+        return { map, code: injectTemplate(script, template, lang, options) };
     }
-
-    script = deIndent(script);
-
-    return {
-        code: script,
-        map,
-    };
 }
 
-export default function vueTransform(code, filePath, options) {
-    // 1. Parse the file into an HTML tree
-    const fragment = parse5.parseFragment(code, { locationInfo: true });
+function processStyle(styles, id) {
+    return styles.map(style => ({
+      id,
+      code: deIndent(style.code).trim(),
+      lang: style.attrs.lang || 'css',
+    }));
+}
 
-    // 2. Walk through the top level nodes and check for their types
-    const nodes = {};
-    for (let i = fragment.childNodes.length - 1; i >= 0; i -= 1) {
-        nodes[fragment.childNodes[i].nodeName] = fragment.childNodes[i];
-    }
+function parseTemplate(code) {
+  const fragment = parse5.parseFragment(code, { locationInfo: true });
 
-    // 3. Don't touch files that don't look like Vue components
-    if (!nodes.script) {
-        throw new Error('There must be at least one script tag or one' +
-              ' template tag per *.vue file.');
-    }
+  const nodes = {
+    template: [],
+    script: [],
+    style: [],
+  };
 
-    // 4. Process template
-    const template = nodes.template
-          ? processTemplate(nodes.template, filePath, code, options)
-          : undefined;
-    let js;
-    if (options.compileTemplate) {
-        /* eslint-disable */
-        const render = template ? require('vue-template-compiler').compile(template) : undefined;
-        /* eslint-enable */
-        js = processScript(nodes.script, filePath, code, { render });
-    } else {
-        js = processScript(nodes.script, filePath, code, { template });
-    }
+  for (let i = fragment.childNodes.length - 1; i >= 0; i -= 1) {
+      const name = fragment.childNodes[i].nodeName;
+      if (! (name in nodes)) {
+        nodes[name] = [];
+      }
+      nodes[name].push({
+        node: fragment.childNodes[i],
+        code: parse5.serialize(fragment.childNodes[i]),
+        attrs: getNodeAttrs(fragment.childNodes[i]),
+      });
+  }
 
-    // 5. Process script & style
-    return {
-        js: js.code,
-        map: js.map,
-        css: nodes.style && {
-            content: parse5.serialize(nodes.style),
-            lang: checkLang(nodes.style),
-        },
-    };
+  if (nodes.script.length === 0) {
+      throw new Error('There must be at least one script tag or one' +
+            ' template tag per *.vue file.');
+  }
+
+  return nodes;
+}
+
+export default function vueTransform(code, id, options) {
+    const nodes = parseTemplate(code);
+    const js = processScript(nodes.script[0], id, code, options, nodes);
+    const css = processStyle(nodes.style, id, code, options, nodes);
+
+    return { css, code: js.code, map: js.map };
 }
