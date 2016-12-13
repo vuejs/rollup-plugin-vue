@@ -1,34 +1,32 @@
-import { createFilter } from 'rollup-pluginutils';
-import { writeFile } from 'fs';
-import MagicString from 'magic-string';
+import { createFilter } from 'rollup-pluginutils'
 
-import vueTransform from './vueTransform';
-import DEFAULT_OPTIONS from './options';
-import compileStyle from './style';
-import debug from './debug';
+import vueTransform from './vueTransform'
+import DEFAULT_OPTIONS from './options'
+import compileStyle from './style'
+import debug from './debug'
 
-function mergeOptions(options, defaults) {
+function mergeOptions (options, defaults) {
     Object.keys(defaults).forEach((key) => {
-        const val = defaults[key];
+        const val = defaults[key]
 
         if (key in options) {
             if (typeof options[key] === 'object') {
-                mergeOptions(options[key], val);
+                mergeOptions(options[key], val)
             }
         } else {
-            options[key] = val;
+            options[key] = val
         }
-    });
+    })
 
-    return options;
+    return options
 }
 
-export default function vue(options = {}) {
-    debug('Yo! rolling vue!');
-    const filter = createFilter(options.include, options.exclude);
+export default function vue (options = {}) {
+    debug('Yo! rolling vue!')
+    const filter = createFilter(options.include, options.exclude)
 
-    delete options.include;
-    delete options.exclude;
+    delete options.include
+    delete options.exclude
 
     /* eslint-disable */
     try {
@@ -47,31 +45,31 @@ export default function vue(options = {}) {
     } catch (e) {}
     /* eslint-enable */
 
-    options = mergeOptions(options, DEFAULT_OPTIONS);
+    options = mergeOptions(options, DEFAULT_OPTIONS)
 
-    const styles = {};
+    const styles = {}
 
     return {
         name: 'vue',
-        transform(source, id) {
+        transform (source, id) {
             if (!filter(id) || !id.endsWith('.vue')) {
-                debug(`Ignore: ${id}`);
-                return null;
+                debug(`Ignore: ${id}`)
+                return null
             }
 
-            debug(`Transform: ${id}`);
+            debug(`Transform: ${id}`)
 
-            const { code, css, map } = vueTransform(source, id, options);
+            const { code, css, map } = vueTransform(source, id, options)
 
-            styles[id] = css;
+            styles[id] = css
 
-            debug(`Transformed: ${id}`);
+            debug(`Transformed: ${id}`)
 
-            return { code, map };
+            return { code, map }
         },
 
-        ongenerate() {
-          compileStyle(styles, options);
+        ongenerate () {
+            compileStyle(styles, options)
         }
-    };
+    }
 }

@@ -1,3 +1,3 @@
-import debug from 'debug';
+import debug from 'debug'
 
-export default debug('rollup-plugin-vue');
+export default debug('rollup-plugin-vue')

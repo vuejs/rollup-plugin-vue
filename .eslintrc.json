@@ -6,31 +6,19 @@
   "globals": {
     "Promise": true
   },
-  "extends": "airbnb",
+  "extends": "standard",
   "plugins": [ "html" ],
   "parser": "babel-eslint",
   "rules": {
-    // indentation
     "indent": [ 2, 4 ],
 
-    // spacing
     "no-multiple-empty-lines": [ 2, { "max": 1, "maxEOF": 0, "maxBOF": 0 } ],
 
-    // code arrangement matter
     "no-use-before-define": [ 2, { "functions": false } ],
 
-    // make it meaningful
     "prefer-const": 1,
 
-    // keep it simple
-    "complexity": [ 1, 5 ],
-
-    //
-    "react/require-extension": "off",
-
-    "no-param-reassign": "off",
-
-    "no-console": "off"
+    "complexity": [ 1, 5 ]
   },
   "settings": {
     "html/indent": "0",

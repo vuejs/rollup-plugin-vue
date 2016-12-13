@@ -2,7 +2,7 @@ export default {
     htmlMinifier: {
         customAttrSurround: [[/@/, new RegExp('')], [/:/, new RegExp('')]],
         collapseWhitespace: true,
-        removeComments: true,
+        removeComments: true
     },
     vue: {
         // Remove all trasforms added by vue since it's up to the user
@@ -31,7 +31,7 @@ export default {
             spreadRest: false,
             stickyRegExp: false,
             templateString: false,
-            unicodeRegExp: false,
-        },
+            unicodeRegExp: false
+        }
     }
-};
+}
