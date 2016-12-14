@@ -17,13 +17,15 @@ function test(name) {
         var entry = './fixtures/' + name + '.vue'
         var expected = read('expects/' + name + '.js').replace(/\r/g, '')
         var actualCss
+        var cssHandler = function (css) {
+            actualCss = css
+        }
+
         return rollup.rollup({
             format: 'cjs',
             entry: entry,
             plugins: [vuePlugin({
-                css (css) {
-                    actualCss = css
-                },
+                css: cssHandler,
                 compileTemplate: ['compileTemplate', 'slot', 'table'].indexOf(name) > -1
             })]
         }).then(function (bundle) {
@@ -33,10 +35,10 @@ function test(name) {
 
             // Check css output
             if (name === 'style') {
-                var css = read('expects/' + name + '.css').replace(/\r/g, '')
-                assert.equal(actualCss, css, 'should output style tag content')
+                var css = read('expects/' + name + '.css')
+                assert.equal(css, actualCss, 'should output style tag content')
             } else {
-                assert.equal(actualCss, '', 'should always call css()')
+                assert.equal('', actualCss, 'should always call css()')
             }
         }).catch(function (error) {
             throw error

@@ -37,6 +37,5 @@ export default function (files, options) {
         // Emit styles to file
     writeFile(dest, css, (err) => {
         if (err) throw err
-        console.log(dest, css.length)
     })
 };
