@@ -1,5 +1,6 @@
 /* global describe, it */
 var vuePlugin = require('../')
+var cssPlugin = require('rollup-plugin-css-only')
 var assert = require('assert')
 var fs = require('fs')
 var rollup = require('rollup')
@@ -51,4 +52,33 @@ describe('rollup-plugin-vue', function () {
           .forEach(function (file) {
               test(file.substr(0, file.length - 4))
           })
+})
+
+describe('styleToImports', function () {
+ it('should convert style to import', function () {
+   var entry = './fixtures/style.vue'
+   var expectedCss = read('expects/style.css')
+   var actualCss
+
+   return rollup.rollup({
+       format: 'cjs',
+       entry: entry,
+       plugins: [
+         vuePlugin({
+           styleToImports: true,
+         }),
+         cssPlugin({
+           output: function (css) {
+             actualCss = css
+           },
+         }),
+       ],
+   }).then(function (bundle) {
+     bundle.generate()
+
+     assert.equal(expectedCss.trim(), actualCss.trim(), 'should import style')
+   }).catch(function (error) {
+       throw error
+   })
+ })
 })
