@@ -49,7 +49,7 @@ function injectRender (script, render, lang, options) {
                   `${render.staticRenderFns.map(wrapRenderFunction).join(',')}],}`
 
             if (options.stripWith !== false) {
-              renderScript = transpileVueTemplate(renderScript, options.vue)
+                renderScript = transpileVueTemplate(renderScript, options.vue)
             }
 
             const result = script.split(matches[1])
@@ -177,11 +177,11 @@ export default function vueTransform (code, id, options) {
     const isWithStripped = options.stripWith !== false
 
     if (!isProduction && !isWithStripped) {
-      js.code = js.code + '\nmodule.exports.render._withStripped = true'
+        js.code = js.code + '\nmodule.exports.render._withStripped = true'
     }
 
     if (options.styleToImports === true) {
-        const style = css.map((s, i) => 'import '+JSON.stringify(`${id}.${i}.vue.component.${s.lang}`)+';').join(' ')
+        const style = css.map((s, i) => 'import ' + JSON.stringify(`${id}.${i}.vue.component.${s.lang}`) + ';').join(' ')
 
         return { css, code: style + js.code, map: js.map }
     }
