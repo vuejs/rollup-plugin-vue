@@ -33,5 +33,6 @@ export default {
             templateString: false,
             unicodeRegExp: false
         }
-    }
+    },
+    styleToImports: false
 }

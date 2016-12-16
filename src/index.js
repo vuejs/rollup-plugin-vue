@@ -51,25 +51,36 @@ export default function vue (options = {}) {
 
     return {
         name: 'vue',
+        resolveId (id) {
+            if (id.indexOf('.vue.component.') > -1) {
+                return id
+            }
+        },
+        load (id) {
+            if (id.indexOf('.vue.component.') > -1) {
+                const parts = id.split('.')
+                const component = parts.slice(0, parts.length - 4).join('.')
+                const index = parseInt(parts[parts.length - 4])
+
+                return styles[component][index] || ''
+            }
+        },
         transform (source, id) {
             if (!filter(id) || !id.endsWith('.vue')) {
                 debug(`Ignore: ${id}`)
                 return null
             }
 
-            debug(`Transform: ${id}`)
-
             const { code, css, map } = vueTransform(source, id, options)
-
             styles[id] = css
-
-            debug(`Transformed: ${id}`)
 
             return { code, map }
         },
 
         ongenerate () {
-            compileStyle(styles, options)
+            if (options.styleToImports !== true) {
+                compileStyle(styles, options)
+            }
         }
     }
 }

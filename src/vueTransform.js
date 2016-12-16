@@ -168,5 +168,11 @@ export default function vueTransform (code, id, options) {
     const js = processScript(nodes.script[0], id, code, options, nodes)
     const css = processStyle(nodes.style, id, code, options, nodes)
 
+    if (options.styleToImports === true) {
+        const style = css.map((s, i) => 'import '+JSON.stringify(`${id}.${i}.vue.component.${s.lang}`)+';').join(' ')
+
+        return { css, code: style + js.code, map: js.map }
+    }
+
     return { css, code: js.code, map: js.map }
 }
