@@ -43,10 +43,15 @@ function injectRender (script, render, lang, options) {
     if (['js', 'babel'].indexOf(lang.toLowerCase()) > -1) {
         const matches = /(export default[^{]*\{)/g.exec(script)
         if (matches) {
-            const renderScript = transpileVueTemplate('module.exports={' +
+            let renderScript = 'module.exports={' +
                   `render: ${wrapRenderFunction(render.render)},` +
                   'staticRenderFns: [' +
-                  `${render.staticRenderFns.map(wrapRenderFunction).join(',')}],}`, options.vue)
+                  `${render.staticRenderFns.map(wrapRenderFunction).join(',')}],}`
+
+            if (options.stripWith !== false) {
+              renderScript = transpileVueTemplate(renderScript, options.vue)
+            }
+
             const result = script.split(matches[1])
                   .join(renderScript.replace('module.exports={', 'export default {').replace(/\}$/, ''))
 
@@ -167,6 +172,13 @@ export default function vueTransform (code, id, options) {
     const nodes = parseTemplate(code)
     const js = processScript(nodes.script[0], id, code, options, nodes)
     const css = processStyle(nodes.style, id, code, options, nodes)
+
+    const isProduction = process.env.NODE_ENV === 'production'
+    const isWithStripped = options.stripWith !== false
+
+    if (!isProduction && !isWithStripped) {
+      js.code = js.code + '\nmodule.exports.render._withStripped = true'
+    }
 
     if (options.styleToImports === true) {
         const style = css.map((s, i) => 'import '+JSON.stringify(`${id}.${i}.vue.component.${s.lang}`)+';').join(' ')
