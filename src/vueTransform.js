@@ -161,8 +161,11 @@ function parseTemplate (code) {
     }
 
     if (nodes.script.length === 0) {
-        throw new Error('There must be at least one script tag or one' +
-            ' template tag per *.vue file.')
+        nodes.script.push({
+            node: null,
+            code: 'export default {\n}',
+            attrs: {}
+        })
     }
 
     return nodes
