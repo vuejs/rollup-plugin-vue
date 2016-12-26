@@ -122,7 +122,7 @@ function processScript (source, id, content, options, nodes) {
     const script = deIndent(padContent(content.slice(0, content.indexOf(source.code))) + source.code)
     const map = (new MagicString(script)).generateMap({ hires: true })
 
-    if (options.compileTemplate) {
+    if (template && options.compileTemplate) {
         const render = require('vue-template-compiler').compile(template)
 
         return { map, code: injectRender(script, render, lang, options) }
