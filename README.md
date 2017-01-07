@@ -5,7 +5,7 @@ With rollup you can break your application into reusable modules.
 
 >  See [docs](http://znck.me/rollup-plugin-vue) for installing, using and contributing.
 
-![Rollup Plugin for Vue](http://znck.me/rollup-plugin-vue/content/assets/images/cover.png)
+![Rollup Plugin for Vue](http://znck.me/rollup-plugin-vue/assets/images/cover.png)
 
 <p align="center">
   <a href="https://circleci.com/gh/znck/rollup-plugin-vue">
@@ -43,10 +43,10 @@ vue init znck/vue-plugin-simple my-project
 Rollup! Rollup! Rollup!
 
 ### Create new project
-![](create.gif)
+![](http://znck.me/rollup-plugin-vue/assets/images/create.gif)
 
 ### Install dependencies & build
-![](build.gif)
+![](http://znck.me/rollup-plugin-vue/assets/images/build.gif)
 
 
 ## Usage
@@ -126,20 +126,6 @@ vue({
 })
 ```
 
-## Change log
-
-Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
-
-## Testing
-
-``` bash
-$ npm run test
-```
-
-## Contributing
-
-Please see [CONTRIBUTING](CONTRIBUTING.md) and [CONDUCT](CONDUCT.md) for details.
-
 ## Security
 
 If you discover any security related issues, please email hi@znck.me instead of using the issue tracker.
@@ -155,4 +141,4 @@ If you discover any security related issues, please email hi@znck.me instead of 
 
 The MIT License (MIT). Please see [License File](LICENSE) for more information.
 
-[link-contributors]: ../../contributors
+[link-contributors]: https://github.com/znck/rollup-plugin-vue/graphs/contributors
