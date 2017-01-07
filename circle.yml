@@ -1,6 +1,8 @@
 machine:
   php:
     version: 7.0.4
+  node:
+    version: 5.6.0
 
 dependencies:
   pre:
@@ -9,9 +11,10 @@ dependencies:
     - mkdir -p build/logs
     - composer global require sereno/installer
     - yarn --no-progress
+    - export PATH=$PATH:"${HOME}/.config/composer/vendor/bin"
   cache_directories:
     - "~/.yarn-cache"
-    - "~/.composer/cache"
+    - "~/.config/composer"
 
 test:
   override:
