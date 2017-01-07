@@ -11,6 +11,9 @@ With rollup you can break your application into reusable modules.
   <a href="https://circleci.com/gh/znck/rollup-plugin-vue">
     <img src="https://circleci.com/gh/znck/rollup-plugin-vue.svg?style=svg" alt="Build Status" />
   </a>
+  <a href="http://standardjs.com">
+    <img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg" alt="Code Style" />
+  </a>
   <a href="https://coveralls.io/github/znck/rollup-plugin-vue?branch=master">
     <img src="https://coveralls.io/repos/github/znck/rollup-plugin-vue/badge.svg?branch=master&style=flat-square" alt="Coverage Status" />
   </a>
@@ -139,6 +142,6 @@ If you discover any security related issues, please email hi@znck.me instead of 
 
 ## License
 
-The MIT License (MIT). Please see [License File](LICENSE) for more information.
+The MIT License (MIT). Please see [License File](http://znck.me/rollup-plugin-vue/license) for more information.
 
 [link-contributors]: https://github.com/znck/rollup-plugin-vue/graphs/contributors
