@@ -9,7 +9,6 @@ dependencies:
     - curl -o- -s -L https://yarnpkg.com/install.sh | bash
   override:
     - yarn --no-progress
-    - export PATH=$PATH:"${HOME}/.config/composer/vendor/bin"
   cache_directories:
     - "~/.yarn-cache"
 
@@ -24,4 +23,5 @@ deployment:
       - documentation
     commands:
       - composer global require --no-progress sereno/installer
+      - export PATH=$PATH:"${HOME}/.config/composer/vendor/bin"
       - sereno deploy
