@@ -1,4 +1,6 @@
 dist/
+/.github/sereno/public
+/_cache
 test/style.css
 # Logs
 logs/

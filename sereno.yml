@@ -1,0 +1,27 @@
+siteName: Rollup + Vue
+siteDescription: Attach and forget about media management.
+docs_edit_url: https://github.com/znck/rollup-plugin-vue/edit/master/docs
+docs_repo: https://github.com/znck/rollup-plugin-vue
+docs_issues: https://github.com/znck/rollup-plugin-vue/issues
+
+github:
+  branch: gh-pages
+
+sereno:
+    url: http://znck.me/rollup-plugin-vue
+    public: .github/sereno/public
+    extensions:
+      - Sereno\Extensions\DocsExtension
+    directory:
+      - .github/sereno/content
+    views:
+      - .github/sereno/resources/views
+    ignore:
+      - docs/README.md
+      - '*.map'
+
+docs:
+    directory: docs
+    url_prefix: /
+    index: index
+    default: introduction

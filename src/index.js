@@ -51,6 +51,9 @@ export default function vue (options = {}) {
 
     return {
         name: 'vue',
+        options (opts) {
+            DEFAULT_OPTIONS.css = (opts.dest || 'bundle.js').replace(/js$/i, 'css')
+        },
         resolveId (id) {
             if (id.indexOf('.vue.component.') > -1) {
                 return id
@@ -79,6 +82,7 @@ export default function vue (options = {}) {
 
         ongenerate () {
             if (options.styleToImports !== true) {
+                if (options.css === undefined || options.css === null) options.css = DEFAULT_OPTIONS.css
                 compileStyle(styles, options)
             }
         }
