@@ -7,7 +7,7 @@ dependencies:
     - curl -o- -s -L https://yarnpkg.com/install.sh | bash
   override:
     - mkdir -p build/logs
-    - composer install --dev --no-interaction --no-progress
+    - composer global require sereno/installer
     - yarn --no-progress
   cache_directories:
     - "~/.yarn-cache"
