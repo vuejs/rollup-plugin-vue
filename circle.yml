@@ -8,13 +8,10 @@ dependencies:
   pre:
     - curl -o- -s -L https://yarnpkg.com/install.sh | bash
   override:
-    - mkdir -p build/logs
-    - composer global require sereno/installer
     - yarn --no-progress
     - export PATH=$PATH:"${HOME}/.config/composer/vendor/bin"
   cache_directories:
     - "~/.yarn-cache"
-    - "~/.config/composer"
 
 test:
   override:
