@@ -26,4 +26,4 @@ deployment:
       - documentation
     commands:
       - composer global require --no-progress sereno/installer
-      - ~/.config/composer/vendor/bin/sereno deploy
+      - sereno deploy
