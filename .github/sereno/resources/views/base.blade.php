@@ -21,6 +21,7 @@
     <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
     <link rel="manifest" href="/assets/icons/manifest.json">
+    <meta property="og:image" content="@url('assets/images/cover.png')">
     <meta name="msapplication-TileColor" content="#ff574a">
     <meta name="msapplication-TileImage" content="/assets/icons/ms-icon-144x144.png">
     <meta name="theme-color" content="#ff574a">
