@@ -32,7 +32,7 @@
 
 <body>
 <nav class="navbar navbar-light border-bottom">
-    <div class="container">
+    <div class="container fl">
         <a class="navbar-brand" href="@url('/')" style="margin-right: 0">
             {{$siteName}}
         </a>
