@@ -3,7 +3,21 @@ For most cases `rollup-plugin-vue` works out of the box. But, you can always con
 
 Following configuration are available to be overridden.
 
-#### The `css` option
+ Option                             | Vue 0.11 | Vue 0.12 | Vue 1.0 | Vue 2.0
+------------------------------------|:--------:|:--------:|:-------:|:-------:
+[css](#css)                         | &check;  | &check;  | &check; | &check;
+[compileTemplate](#compileTemplate) | -        | -        | -       | &check;
+[styleToImports](#styleToImports)   | &check;  | &check;  | &check; | &check;
+[stripWith](#stripWith)             | -        | -        | -       | &check;
+[include](#exclude)                 | &check;  | &check;  | &check; | &check;
+[exclude](#exclude)                 | &check;  | &check;  | &check; | &check;
+[htmlMinifier](#htmlMinifier)       | &check;  | &check;  | &check; | &check;
+[vue](#vue)                         | &check;  | &check;  | &check; | &check;
+[inject](#vue)                      | &check;  | &check;  | &check; | &check;
+
+{#css}
+### The `css` option
+
 It accepts a filename, `false`, `null` or a `Function`.
 
 - **`null`** -- If your rollup config defines `dest` then it would generate a css file with same name as defined in `dest`, else a file named `bundle.css` is generated. This is the default behavior.
@@ -90,9 +104,50 @@ It accepts a filename, `false`, `null` or a `Function`.
   };
   ```
 
-#### The `compileTemplate` option
+{#compileTemplate}
+### The `compileTemplate` option
 
-> [WIP] --
+With Vue 2.0, you can have [two builds](https://vuejs.org/v2/guide/installation.html#Standalone-vs-Runtime-only-Build); Runtime-only and Standalone.
+Runtime-only build does not include template compiler. So, it is required compile `template` string to `render` function.
+
+This option takes `boolean` value.
+  - `true` -- Always compile to `render` function.
+  - `false` -- Do not compile `template` string.
+  - You can ignore this option at all.
+
+**NOTE:** If `compileTemplate` is not set and Vue 2.0 is in project dependencies, then it would compile to `template` to `render` function.
+
+{#styleToImports}
+### The `styleToImports` option
+> [WIP]
+
+{#stripWith}
+### The `stripWith` option
+> [WIP]
+
+{#include}
+### The `include` option
+> [WIP]
+
+
+{#exclude}
+### The `exclude` option
+> [WIP]
+
+{#htmlMinifier}
+### The `htmlMinifier` option
+> [WIP]
+
+{#vue}
+### The `vue` option
+> [WIP]
+
+{#inject}
+### The `inject` option
+> [WIP]
+
+
+<br><br><br>
 
 -------------------------------
 [Edit this page on Github]({{ $docs_edit_url }}/configuration.md)
