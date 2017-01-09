@@ -25,6 +25,5 @@ deployment:
       - master
       - documentation
     commands:
-      - export COMPOSER_HOME=$HOME/.composer
       - composer global require --no-progress sereno/installer
-      - ~/.composer/vendor/bin/sereno deploy
+      - ~/.config/composer/vendor/bin/sereno deploy
