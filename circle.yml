@@ -25,4 +25,4 @@ deployment:
       - master
       - documentation
     commands:
-      - $COMPOSER_HOME/vendor/bin/sereno deploy
+      - ~/.composer/vendor/bin/sereno deploy
