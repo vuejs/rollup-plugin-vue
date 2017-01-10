@@ -8,8 +8,6 @@ Getting Started
 ---------------
 - [Installation]({{ $docs_url }}/installation)
 - [Configuration]({{ $docs_url }}/configuration)
-- [Examples]({{ $docs_url }}/examples)
-- [Advanced Usage]({{ $docs_url }}/advance)
 
 Community
 ---------

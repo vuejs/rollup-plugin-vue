@@ -4,7 +4,7 @@ For most cases `rollup-plugin-vue` works out of the box. But, you can always con
 Following configuration are available to be overridden.
 
  Option                             | Vue 0.11 | Vue 0.12 | Vue 1.0 | Vue 2.0
-------------------------------------|:--------:|:--------:|:-------:|:-------:
+:-----------------------------------|:--------:|:--------:|:-------:|:-------:
 [css](#css)                         | &check;  | &check;  | &check; | &check;
 [compileTemplate](#compileTemplate) | -        | -        | -       | &check;
 [styleToImports](#styleToImports)   | &check;  | &check;  | &check; | &check;
@@ -12,7 +12,6 @@ Following configuration are available to be overridden.
 [include](#exclude)                 | &check;  | &check;  | &check; | &check;
 [exclude](#exclude)                 | &check;  | &check;  | &check; | &check;
 [htmlMinifier](#htmlMinifier)       | &check;  | &check;  | &check; | &check;
-[vue](#vue)                         | &check;  | &check;  | &check; | &check;
 [inject](#vue)                      | &check;  | &check;  | &check; | &check;
 
 {#css}
@@ -119,33 +118,75 @@ This option takes `boolean` value.
 
 {#styleToImports}
 ### The `styleToImports` option
-> [WIP]
+Other than `css` option, the plugin allows you to convert your styles to javascript imports.
+
+Following script defers styles handling.
+``` js
+import vue from 'rollup-plugin-vue';
+import css from 'rollup-plugin-css-only';
+
+export default {
+  entry: 'src/index.js',
+  dest: 'dist/my-package.js',
+  plugins: [
+    vue({ styleToImports: true }),
+    css(),
+  ],
+};
+```
 
 {#stripWith}
 ### The `stripWith` option
-> [WIP]
+For Vue 2.0 builds, `with(this)` is stripped off by default. You can disable this by setting `{ stripWith: false }`.
 
 {#include}
 ### The `include` option
-> [WIP]
-
+A minimatch pattern or an array of minimatch patterns as required for [Rollup](https://github.com/rollup/rollup/wiki/Plugins#creating-plugins) transformer plugins.
 
 {#exclude}
 ### The `exclude` option
-> [WIP]
+A minimatch pattern or an array of minimatch patterns as required for [Rollup](https://github.com/rollup/rollup/wiki/Plugins#creating-plugins) transformer plugins.
 
 {#htmlMinifier}
 ### The `htmlMinifier` option
-> [WIP]
+The template string is minified using [htmlMinifier](https://github.com/kangax/html-minifier). The default configuration used with htmlMinifier is as follows:
 
-{#vue}
-### The `vue` option
-> [WIP]
+``` js
+{
+    customAttrSurround: [[/@/, new RegExp('')], [/:/, new RegExp('')]],
+    collapseWhitespace: true,
+    removeComments: true,
+}
+```
+
+You can add any supported option here.
+``` js
+import vue from 'rollup-plugin-vue';
+
+export default {
+  entry: 'src/index.js',
+  dest: 'dist/my-package.js',
+  plugins: [
+    vue({
+      htmlMinifier: {
+        removeRedundantAttributes: true, // This would remove duplicate attributes.
+        removeComments: false, // Keep comments.
+      },
+    }),
+  ],
+};
+```
 
 {#inject}
 ### The `inject` option
-> [WIP]
+A custom `inject` function to add `template` or `render` function to component. It would receive 3 parameters:
+  - script (String) -- Contents of script tag.
+  - template/render (String) -- Processed template or compiled render function.
+  - lang (String) -- Language of script. (Inferred from `lang` attribute on `<script>` tag.)
 
+The `inject` function should return processed script string.
+
+For reference, checkout [inject function](https://github.com/znck/rollup-plugin-vue/blob/master/src/vueTransform.js#L43-L61) for `lang=js` or `lang=babel`.
 
 <br><br><br>
 

@@ -13,7 +13,7 @@ dependencies:
     - yarn --no-progress
   cache_directories:
     - "~/.yarn-cache"
-    - "~/.cache/composer"
+    - "~/.composer/cache"
 
 test:
   override:
