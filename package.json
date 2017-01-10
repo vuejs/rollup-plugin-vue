@@ -13,7 +13,10 @@
     "lint:fix": "eslint --fix src/**",
     "coveralls": "NODE_ENV=production istanbul cover --default-excludes -x 'dist/**' -x 'config/**' ./node_modules/mocha/bin/_mocha --report lcovonly  --  --slow=5000 --timeout=10000 test/test.js && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "prepublish": "npm run build",
-    "docs": "php -S localhost:8080 -t .github/sereno/public"
+    "docs": "php -S localhost:8080 -t .github/sereno/public",
+    "sereno": "gulp --gulpfile .github/sereno/gulpfile.js watch",
+    "sereno:build": "gulp --gulpfile .github/sereno/gulpfile.js --env default",
+    "sereno:deploy": "sereno deploy"
   },
   "repository": {
     "type": "git",
@@ -54,7 +57,9 @@
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-promise": "^3.4.0",
     "eslint-plugin-standard": "^2.0.1",
+    "gulp": "^3.9.1",
     "istanbul": "^0.4.5",
+    "laravel-elixir": "^5.0.0",
     "mocha": "^3.1.2",
     "mocha-lcov-reporter": "^1.2.0",
     "rollup": "^0.37.0",
@@ -63,9 +68,6 @@
     "rollup-plugin-replace": "^1.1.1",
     "uglify-js": "^2.7.3",
     "vue-hot-reload-api": "^2.0.6",
-
-    "gulp": "^3.9.1",
-    "laravel-elixir": "^5.0.0",
     "yargs": "^4.7.0"
   }
 }

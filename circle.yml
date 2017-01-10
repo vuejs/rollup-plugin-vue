@@ -1,13 +1,15 @@
 machine:
   php:
     version: 7.0.4
+  node:
+    version: 5.6.0
 
 dependencies:
   pre:
     - curl -o- -s -L https://yarnpkg.com/install.sh | bash
+    - export COMPOSER_HOME=$HOME/.composer
+    - composer global require --no-progress sereno/installer
   override:
-    - mkdir -p build/logs
-    - composer global require sereno/installer
     - yarn --no-progress
   cache_directories:
     - "~/.yarn-cache"
@@ -23,5 +25,4 @@ deployment:
       - master
       - documentation
     commands:
-      - composer global require --no-progress sereno/installer
       - sereno deploy

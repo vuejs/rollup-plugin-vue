@@ -3,9 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="@yield('pageDescription', $siteDescription)">
 
     <title>@yield('pageTitle') {{$siteName}} - Rahul Kadyan</title>
+    <meta name="og:title" content="@yield('pageTitle') {{$siteName}}">
+    <meta name="twitter:title" content="@yield('pageTitle') {{$siteName}}">
+
+    <meta name="description" content="@yield('pageDescription', $siteDescription)">
+    <meta name="og:description" content="@yield('pageDescription', $siteDescription)">
+    <meta name="twitter:description" content="@yield('pageDescription', $siteDescription)">
+
+    <meta property="og:image" content="@url('assets/images/cover.png')">
+    <meta property="twitter:image" content="@url('assets/images/cover.png')">
+
+    <link rel="manifest" href="/assets/icons/manifest.json">
 
     <link rel="apple-touch-icon" sizes="57x57" href="/assets/icons/apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="/assets/icons/apple-icon-60x60.png">
@@ -20,7 +30,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="96x96" href="/assets/icons/favicon-96x96.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/icons/favicon-16x16.png">
-    <link rel="manifest" href="/assets/icons/manifest.json">
+
     <meta name="msapplication-TileColor" content="#ff574a">
     <meta name="msapplication-TileImage" content="/assets/icons/ms-icon-144x144.png">
     <meta name="theme-color" content="#ff574a">
@@ -32,7 +42,7 @@
 
 <body>
 <nav class="navbar navbar-light border-bottom">
-    <div class="container">
+    <div class="container fl">
         <a class="navbar-brand" href="@url('/')" style="margin-right: 0">
             {{$siteName}}
         </a>

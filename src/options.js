@@ -5,7 +5,7 @@ export default {
         removeComments: true
     },
     vue: {
-        // Remove all trasforms added by vue since it's up to the user
+        // Remove all transforms added by vue since it's up to the user
         // to use whatever he wants
         // https://github.com/vuejs/vue-template-es2015-compiler/blob/master/index.js#L6
         transforms: {

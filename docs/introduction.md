@@ -3,13 +3,16 @@ As vue-loader is for webpack and vueify is for browserify, similarly its for rol
 
 With rollup you can break your application into reusable modules.
 
->  See [docs](http://znck.me/rollup-plugin-vue) for installing, using and contributing.
+>  See [docs](http://znck.me/rollup-plugin-vue/installation) for installing, using and contributing.
 
-![Rollup Plugin for Vue](http://znck.me/rollup-plugin-vue/content/assets/images/cover.png)
+![Rollup Plugin for Vue](http://znck.me/rollup-plugin-vue/assets/images/cover.png)
 
 <p align="center">
   <a href="https://circleci.com/gh/znck/rollup-plugin-vue">
     <img src="https://circleci.com/gh/znck/rollup-plugin-vue.svg?style=svg" alt="Build Status" />
+  </a>
+  <a href="http://standardjs.com">
+    <img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg" alt="Code Style" />
   </a>
   <a href="https://coveralls.io/github/znck/rollup-plugin-vue?branch=master">
     <img src="https://coveralls.io/repos/github/znck/rollup-plugin-vue/badge.svg?branch=master&style=flat-square" alt="Coverage Status" />
@@ -32,114 +35,6 @@ With rollup you can break your application into reusable modules.
   </a>
 </p>
 
-## Quick Start
-
-Create project with vue-cli!
-
-```
-vue init znck/vue-plugin-simple my-project
-```
-
-Rollup! Rollup! Rollup!
-
-### Create new project
-![](create.gif)
-
-### Install dependencies & build
-![](build.gif)
-
-
-## Usage
-
-```js
-import {rollup} from 'rollup';
-import vue from 'rollup-plugin-vue';
-
-rollup({
-	entry: 'index.js',
-	plugins: [vue()]
-});
-```
-
-Below is how you can use it from the command line with Bublé.
-Run `rollup -c` and it will find the config.
-
-```js
-// rollup.config.js
-import vue from 'rollup-plugin-vue'
-import buble from 'rollup-plugin-buble' // rollup-plugin-babel also works
-
-export default {
-  entry: 'index.js',
-  plugins: [
-    vue(),
-    buble()
-  ]
-}
-```
-
-### Examples
-
-- [Vue 2.0 application](https://gist.github.com/znck/4ae3a705bccba0a3feecfa7b5f3da1ea)
-- [Vue component module/package](https://gist.github.com/znck/140d5e9deabfa41f2e935d053a59f23e)
-
-### Options
-
-#### `css`
-
-```js
-vue({
-  // Filename to write all styles to
-  css: 'bundle.scss',
-
-  // Callback that will be called ongenerate with two arguments:
-  // - styles: the contents of all style tags combined
-  // - styleNodes: an array of style objects: [{lang: 'css', content: 'body { color: green }'}]
-  css: function (styles, styleNodes) {
-    writeFileSync(cssPath, styles)
-  }
-
-  // Disable any style output or callbacks
-  css: false,
-
-  // Default behaviour is to write all styles to the bundle destination where .js is replaced by .css
-  css: null
-})
-```
-
-#### `compileTemplate`
-
-```js
-vue({
-  // Compile templates to render functions (Vue 2 only)
-  compileTemplate: true,
-})
-```
-
-#### `htmlMinifier`
-
-Use any option from [https://github.com/kangax/html-minifier](https://github.com/kangax/html-minifier)
-
-```js
-vue({
-  htmlMinifier: {}
-})
-```
-
-## Change log
-
-Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
-
-## Testing
-
-``` bash
-$ npm run test
-```
-
-## Contributing
-
-Please see [CONTRIBUTING](CONTRIBUTING.md) and [CONDUCT](CONDUCT.md) for details.
-
 ## Security
 
 If you discover any security related issues, please email hi@znck.me instead of using the issue tracker.
@@ -153,6 +48,6 @@ If you discover any security related issues, please email hi@znck.me instead of 
 
 ## License
 
-The MIT License (MIT). Please see [License File](LICENSE) for more information.
+The MIT License (MIT). Please see [License File](http://znck.me/rollup-plugin-vue/license) for more information.
 
-[link-contributors]: ../../contributors
+[link-contributors]: https://github.com/znck/rollup-plugin-vue/graphs/contributors
