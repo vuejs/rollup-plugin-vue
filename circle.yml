@@ -8,8 +8,8 @@ dependencies:
   pre:
     - curl -o- -s -L https://yarnpkg.com/install.sh | bash
     - export COMPOSER_HOME=$HOME/.composer
-  override:
     - composer global require --no-progress sereno/installer
+  override:
     - yarn --no-progress
   cache_directories:
     - "~/.yarn-cache"
@@ -25,5 +25,4 @@ deployment:
       - master
       - documentation
     commands:
-      - composer global require --no-progress sereno/installer
       - sereno deploy
