@@ -14,6 +14,11 @@
 
     <meta property="og:image" content="@url('assets/images/cover.png')">
     <meta property="twitter:image" content="@url('assets/images/cover.png')">
+    
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@rahulkadyan7" />
+    
+    <meta name="author" content="/humans.txt" />
 
     <link rel="manifest" href="/assets/icons/manifest.json">
 
