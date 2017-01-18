@@ -43,7 +43,6 @@
     "magic-string": "^0.19.0",
     "parse5": "^3.0.0",
     "rollup-pluginutils": "^1.5.2",
-    "vue-template-compiler": "^2.0.3",
     "vue-template-es2015-compiler": "^1.2.4",
     "vue-template-validator": "^1.1.5"
   },
@@ -69,5 +68,8 @@
     "uglify-js": "^2.7.3",
     "vue-hot-reload-api": "^2.0.6",
     "yargs": "^4.7.0"
+  },
+  "peerDependencies": {
+    "vue-template-compiler": "^2.0.0"
   }
 }
