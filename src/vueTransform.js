@@ -126,8 +126,10 @@ function processScript (source, id, content, options, nodes) {
         const render = require('vue-template-compiler').compile(template)
 
         return { map, code: injectRender(script, render, lang, options) }
-    } else {
+    } else if (template) {
         return { map, code: injectTemplate(script, template, lang, options) }
+    } else {
+      return { map, code: script }
     }
 }
 
