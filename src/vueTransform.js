@@ -129,7 +129,7 @@ function processScript (source, id, content, options, nodes) {
     } else if (template) {
         return { map, code: injectTemplate(script, template, lang, options) }
     } else {
-      return { map, code: script }
+        return { map, code: script }
     }
 }
 
