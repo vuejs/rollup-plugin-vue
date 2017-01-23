@@ -153,11 +153,15 @@ function parseTemplate (code) {
     for (let i = fragment.childNodes.length - 1; i >= 0; i -= 1) {
         const name = fragment.childNodes[i].nodeName
         if (!(name in nodes)) {
-            nodes[name] = []
+            continue
         }
+
+        const start = fragment.childNodes[i].__location.startTag.endOffset
+        const end = fragment.childNodes[i].__location.endTag.startOffset
+
         nodes[name].push({
             node: fragment.childNodes[i],
-            code: parse5.serialize(fragment.childNodes[i]),
+            code: code.substr(start, end - start),
             attrs: getNodeAttrs(fragment.childNodes[i])
         })
     }
