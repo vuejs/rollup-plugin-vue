@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-vue",
-  "version": "2.2.17",
+  "version": "2.2.18",
   "description": "Roll .vue files",
   "main": "dist/rollup-plugin-vue.common.js",
   "jsnext": "dist/rollup-plugin-vue.js",
