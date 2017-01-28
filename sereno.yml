@@ -8,7 +8,7 @@ github:
   branch: gh-pages
 
 sereno:
-    url: http://znck.me/rollup-plugin-vue
+    url: http://rollup-plugin-vue.znck.me/
     public: .github/sereno/public
     extensions:
       - Sereno\Extensions\DocsExtension

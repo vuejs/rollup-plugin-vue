@@ -1,11 +1,13 @@
-# Rollup Plugin for Vue
+<div class="text-center" style="text-align: center; margin: 20px">
+  <img src="http://rollup-plugin-vue.znck.me/assets/images/logo.png">
+</div>
+
+## Introduction
 As vue-loader is for webpack and vueify is for browserify, similarly its for rollup. As we know, webpack and browserify concat stuff and make it runnable in browser. Its difficult to share .vue components. **Now roll your [Vue](http://vuejs.org/) components.**
 
 With rollup you can break your application into reusable modules.
 
->  See [docs](http://znck.me/rollup-plugin-vue/installation) for installing, using and contributing.
-
-![Rollup Plugin for Vue](http://znck.me/rollup-plugin-vue/assets/images/cover.png)
+>  See [docs](http://rollup-plugin-vue.znck.me/installation) for installing, using and contributing.
 
 <p align="center">
   <a href="https://circleci.com/gh/znck/rollup-plugin-vue">
