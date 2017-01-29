@@ -95,21 +95,22 @@ function injectTemplate (script, template, lang, options) {
 function processTemplate (source, id, content, options) {
     if (source === undefined) return undefined
 
-    const {node, code} = source
+    const { code } = source
+    const template = deIndent(code)
+    const ignore = [
+        'Found camelCase attribute:',
+        'Tag <slot> cannot appear inside <table> due to HTML content restrictions.'
+    ]
 
     const warnings = validateTemplate(code, content)
     if (warnings) {
         const relativePath = relative(process.cwd(), id)
-        warnings.forEach((msg) => {
+        warnings.filter((warning) => {
+            return options.compileTemplate && ignore.findIndex(i => warning.indexOf(i) > -1) < 0
+        }).forEach((msg) => {
             console.warn(`\n Warning in ${relativePath}:\n ${msg}`)
         })
     }
-
-    /* eslint-disable no-underscore-dangle */
-    const start = node.content.childNodes[0].__location.startOffset
-    const end = node.content.childNodes[node.content.childNodes.length - 1].__location.endOffset
-    const template = deIndent(content.slice(start, end))
-    /* eslint-enable no-underscore-dangle */
 
     return htmlMinifier.minify(template, options.htmlMinifier)
 }

@@ -23,14 +23,13 @@ function test(name) {
         }
 
         return rollup.rollup({
-            format: 'cjs',
             entry: entry,
             plugins: [vuePlugin({
                 css: cssHandler,
-                compileTemplate: ['compileTemplate', 'slot', 'table'].indexOf(name) > -1
+                compileTemplate: ['compileTemplate', 'slot', 'table', 'table-n-slot'].indexOf(name) > -1
             })]
         }).then(function (bundle) {
-            var result = bundle.generate()
+            var result = bundle.generate({format: 'es'})
             var code = result.code
             assert.equal(code.trim(), expected.trim(), 'should compile code correctly')
 
@@ -74,7 +73,7 @@ describe('styleToImports', function () {
          }),
        ],
    }).then(function (bundle) {
-     bundle.generate()
+     bundle.generate({ format: 'es' })
 
      assert.equal(expectedCss.trim(), actualCss.trim(), 'should import style')
    }).catch(function (error) {
