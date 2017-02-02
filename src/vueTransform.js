@@ -3,6 +3,7 @@ import htmlMinifier from 'html-minifier'
 import parse5 from 'parse5'
 import validateTemplate from 'vue-template-validator'
 import transpileVueTemplate from 'vue-template-es2015-compiler'
+import { compile } from './style/index'
 import { relative } from 'path'
 import MagicString from 'magic-string'
 import debug from './debug'
@@ -39,7 +40,25 @@ function wrapRenderFunction (code) {
     return `function(){${code}}`
 }
 
-function injectRender (script, render, lang, options) {
+function injectModule (script, lang, options, modules) {
+    if (Object.keys(modules).length === 0) return script
+
+    if (['js', 'babel'].indexOf(lang.toLowerCase()) > -1) {
+        const matches = /(export default[^{]*\{)/g.exec(script)
+
+        if (matches) {
+            const moduleScript = `${matches[1]}cssModules: ${JSON.stringify(modules)},`
+
+            return script.split(matches[1]).join(moduleScript)
+        }
+    } else if (typeof (options.injectModule) === 'function') {
+        return options.injectModule(script, lang, options, modules)
+    }
+
+    throw new Error('[rollup-plugin-vue] could not inject css module in script')
+}
+
+function injectRender (script, render, lang, options, modules) {
     if (['js', 'babel'].indexOf(lang.toLowerCase()) > -1) {
         const matches = /(export default[^{]*\{)/g.exec(script)
         if (matches) {
@@ -52,14 +71,12 @@ function injectRender (script, render, lang, options) {
                 renderScript = transpileVueTemplate(renderScript, options.vue)
             }
 
-            const result = script.split(matches[1])
+            return script.split(matches[1])
                   .join(renderScript.replace('module.exports={', 'export default {').replace(/\}$/, ''))
-
-            return result
         }
 
         debug(`No injection location found in: \n${script}\n`)
-    } else if (options.inject) {
+    } else if (typeof (options.inject) === 'function') {
         return options.inject(script, render, lang, options)
     }
     throw new Error('[rollup-plugin-vue] could not find place to inject template in script.')
@@ -69,9 +86,11 @@ function injectRender (script, render, lang, options) {
  * @param script
  * @param template
  * @param lang
+ * @param options
+ * @param modules
  * @returns {string}
  */
-function injectTemplate (script, template, lang, options) {
+function injectTemplate (script, template, lang, options, modules) {
     if (template === undefined) return script
 
     if (['js', 'babel'].indexOf(lang.toLowerCase()) > -1) {
@@ -82,7 +101,7 @@ function injectTemplate (script, template, lang, options) {
         }
 
         debug(`No injection location found in: \n${script}\n`)
-    } else if (options.inject) {
+    } else if (typeof (options.inject) === 'function') {
         return options.inject(script, template, lang, options)
     }
 
@@ -97,49 +116,69 @@ function processTemplate (source, id, content, options) {
 
     const { code } = source
     const template = deIndent(code)
-    const ignore = [
-        'Found camelCase attribute:',
-        'Tag <slot> cannot appear inside <table> due to HTML content restrictions.'
-    ]
 
-    const warnings = validateTemplate(code, content)
-    if (warnings) {
-        const relativePath = relative(process.cwd(), id)
-        warnings.filter((warning) => {
-            return options.compileTemplate && ignore.findIndex(i => warning.indexOf(i) > -1) < 0
-        }).forEach((msg) => {
-            console.warn(`\n Warning in ${relativePath}:\n ${msg}`)
-        })
+    if (!options.compileTemplate) {
+        const warnings = validateTemplate(code, content)
+        if (warnings) {
+            const relativePath = relative(process.cwd(), id)
+            warnings.forEach((msg) => {
+                console.warn(`\n Warning in ${relativePath}:\n ${msg}`)
+            })
+        }
     }
 
     return htmlMinifier.minify(template, options.htmlMinifier)
 }
 
-function processScript (source, id, content, options, nodes) {
-    const template = processTemplate(nodes.template[0], id, content, options, nodes)
+function processScript (source, id, content, options, nodes, modules) {
+    const template = processTemplate(nodes.template[0], id, content, options, nodes, modules)
 
     const lang = source.attrs.lang || 'js'
 
     const script = deIndent(padContent(content.slice(0, content.indexOf(source.code))) + source.code)
     const map = (new MagicString(script)).generateMap({ hires: true })
+    const scriptWithModules = injectModule(script, lang, options, modules)
 
     if (template && options.compileTemplate) {
         const render = require('vue-template-compiler').compile(template)
 
-        return { map, code: injectRender(script, render, lang, options) }
+        return { map, code: injectRender(scriptWithModules, render, lang, options, modules) }
     } else if (template) {
-        return { map, code: injectTemplate(script, template, lang, options) }
+        return { map, code: injectTemplate(scriptWithModules, template, lang, options, modules) }
     } else {
-        return { map, code: script }
+        return { map, code: scriptWithModules }
     }
 }
 
-function processStyle (styles, id) {
-    return styles.map(style => ({
-        id,
-        code: deIndent(style.code).trim(),
-        lang: style.attrs.lang || 'css'
-    }))
+async function processStyle (styles, id, content, options) {
+    const outputs = []
+
+    for (let i = 0; i < styles.length; i += 1) {
+        const style = styles[i]
+
+        const code = deIndent(
+              padContent(content.slice(0, content.indexOf(style.code))) + style.code
+        )
+
+        const map = (new MagicString(code)).generateMap({ hires: true })
+
+        const output = {
+            id,
+            code: code,
+            map: map,
+            lang: style.attrs.lang || 'css',
+            module: 'module' in style.attrs,
+            scoped: 'scoped' in style.attrs
+        }
+
+        if (options.autoStyles) {
+            outputs.push(await compile(output, options))
+        } else {
+            outputs.push(output)
+        }
+    }
+
+    return outputs
 }
 
 function parseTemplate (code) {
@@ -178,10 +217,25 @@ function parseTemplate (code) {
     return nodes
 }
 
-export default function vueTransform (code, id, options) {
+var getModules = function (styles) {
+    let all = {}
+
+    for (let i = 0; i < styles.length; i += 1) {
+        const style = styles[i]
+
+        if (style.module) {
+            all = Object.assign(all, style.$compiled.module)
+        }
+    }
+
+    return all
+}
+
+export default async function vueTransform (code, id, options) {
     const nodes = parseTemplate(code)
-    const js = processScript(nodes.script[0], id, code, options, nodes)
-    const css = processStyle(nodes.style, id, code, options, nodes)
+    const css = await processStyle(nodes.style, id, code, options, nodes)
+    const modules = getModules(css)
+    const js = processScript(nodes.script[0], id, code, options, nodes, modules)
 
     const isProduction = process.env.NODE_ENV === 'production'
     const isWithStripped = options.stripWith !== false

@@ -2,7 +2,7 @@ import { createFilter } from 'rollup-pluginutils'
 
 import vueTransform from './vueTransform'
 import DEFAULT_OPTIONS from './options'
-import compileStyle from './style'
+import compileStyle from './style/index'
 import debug from './debug'
 
 function mergeOptions (options, defaults) {
@@ -68,13 +68,14 @@ export default function vue (options = {}) {
                 return styles[component][index] || ''
             }
         },
-        transform (source, id) {
+        async transform (source, id) {
             if (!filter(id) || !id.endsWith('.vue')) {
                 debug(`Ignore: ${id}`)
                 return null
             }
 
-            const { code, css, map } = vueTransform(source, id, options)
+            const { code, css, map } = await vueTransform(source, id, options)
+
             styles[id] = css
 
             return { code, map }

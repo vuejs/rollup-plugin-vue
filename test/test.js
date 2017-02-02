@@ -34,11 +34,11 @@ function test(name) {
             assert.equal(code.trim(), expected.trim(), 'should compile code correctly')
 
             // Check css output
-            if (name === 'style') {
+            if (['style', 'css-modules'].indexOf(name) > -1) {
                 var css = read('expects/' + name + '.css')
-                assert.equal(css, actualCss, 'should output style tag content')
+                assert.equal(css.trim(), actualCss.trim(), 'should output style tag content')
             } else {
-                assert.equal('', actualCss, 'should always call css()')
+                assert.equal('', actualCss.trim(), 'should always call css()')
             }
         }).catch(function (error) {
             throw error

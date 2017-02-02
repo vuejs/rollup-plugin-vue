@@ -1,6 +1,6 @@
 "use strict";
 
-const buble = require('rollup-plugin-buble');
+const babel = require('rollup-plugin-babel');
 const rollup = require('rollup');
 const replace = require('rollup-plugin-replace');
 const zlib = require('zlib');
@@ -17,12 +17,7 @@ fs.writeFileSync('src/index.js', main);
 rollup.rollup({
           entry: 'src/index.js',
           plugins: [
-              buble({
-                  objectAssign: 'Object.assign',
-                  transforms: {
-                      dangerousForOf: true
-                  }
-              })
+              babel({ runtimeHelpers: true })
           ]
       })
       .then(function (bundle) {

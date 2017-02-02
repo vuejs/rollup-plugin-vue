@@ -34,5 +34,9 @@ export default {
             unicodeRegExp: false
         }
     },
-    styleToImports: false
+    styleToImports: false,
+    autoStyles: true,
+    modules: {
+        generateScopedName: '[name]__[local]___[hash:base64:5]'
+    }
 }
