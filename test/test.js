@@ -18,28 +18,34 @@ function test(name) {
         var entry = './fixtures/' + name + '.vue'
         var expected = read('expects/' + name + '.js').replace(/\r/g, '')
         var actualCss
-        var cssHandler = function (css) {
-            actualCss = css
+        var cssHandler = function (css, styles) {
+            if (['scss', 'pug'].indexOf(name) > -1) {
+                actualCss = styles[0].$compiled.code
+            } else {
+                actualCss = css
+            }
         }
 
         return rollup.rollup({
-            format: 'cjs',
             entry: entry,
             plugins: [vuePlugin({
                 css: cssHandler,
-                compileTemplate: ['compileTemplate', 'slot', 'table'].indexOf(name) > -1
+                modules: {
+                    generateScopedName: '[name]__[local]'
+                },
+                compileTemplate: ['compileTemplate', 'slot', 'table', 'table-n-slot'].indexOf(name) > -1
             })]
         }).then(function (bundle) {
-            var result = bundle.generate()
+            var result = bundle.generate({format: 'es'})
             var code = result.code
             assert.equal(code.trim(), expected.trim(), 'should compile code correctly')
 
             // Check css output
-            if (name === 'style') {
+            if (['style', 'css-modules', 'css-modules-static', 'scss', 'pug'].indexOf(name) > -1) {
                 var css = read('expects/' + name + '.css')
-                assert.equal(css, actualCss, 'should output style tag content')
+                assert.equal(css.trim(), actualCss.trim(), 'should output style tag content')
             } else {
-                assert.equal('', actualCss, 'should always call css()')
+                assert.equal('', actualCss.trim(), 'should always call css()')
             }
         }).catch(function (error) {
             throw error
@@ -74,7 +80,7 @@ describe('styleToImports', function () {
          }),
        ],
    }).then(function (bundle) {
-     bundle.generate()
+     bundle.generate({ format: 'es' })
 
      assert.equal(expectedCss.trim(), actualCss.trim(), 'should import style')
    }).catch(function (error) {

@@ -1,10 +1,8 @@
 <template>
   <table>
-    <tr>
-      <td>
-        <slot></slot>
-      </td>
-    </tr>
+    <tbody>
+      <slot></slot>
+    </tbody>
   </table>
 </template>
 

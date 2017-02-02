@@ -11,6 +11,7 @@ dependencies:
     - composer global require --no-progress sereno/installer
   override:
     - yarn --no-progress
+    - npm rebuild node-sass
   cache_directories:
     - "~/.yarn-cache"
     - "~/.composer/cache"
