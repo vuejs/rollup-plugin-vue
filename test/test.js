@@ -18,14 +18,21 @@ function test(name) {
         var entry = './fixtures/' + name + '.vue'
         var expected = read('expects/' + name + '.js').replace(/\r/g, '')
         var actualCss
-        var cssHandler = function (css) {
-            actualCss = css
+        var cssHandler = function (css, styles) {
+            if (['scss', 'pug'].indexOf(name) > -1) {
+                actualCss = styles[0].$compiled.code
+            } else {
+                actualCss = css
+            }
         }
 
         return rollup.rollup({
             entry: entry,
             plugins: [vuePlugin({
                 css: cssHandler,
+                modules: {
+                    generateScopedName: '[name]__[local]'
+                },
                 compileTemplate: ['compileTemplate', 'slot', 'table', 'table-n-slot'].indexOf(name) > -1
             })]
         }).then(function (bundle) {
@@ -34,11 +41,11 @@ function test(name) {
             assert.equal(code.trim(), expected.trim(), 'should compile code correctly')
 
             // Check css output
-            if (name === 'style') {
+            if (['style', 'css-modules', 'css-modules-static', 'scss', 'pug'].indexOf(name) > -1) {
                 var css = read('expects/' + name + '.css')
-                assert.equal(css, actualCss, 'should output style tag content')
+                assert.equal(css.trim(), actualCss.trim(), 'should output style tag content')
             } else {
-                assert.equal('', actualCss, 'should always call css()')
+                assert.equal('', actualCss.trim(), 'should always call css()')
             }
         }).catch(function (error) {
             throw error
