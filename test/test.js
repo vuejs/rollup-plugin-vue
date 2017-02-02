@@ -18,8 +18,12 @@ function test(name) {
         var entry = './fixtures/' + name + '.vue'
         var expected = read('expects/' + name + '.js').replace(/\r/g, '')
         var actualCss
-        var cssHandler = function (css) {
-            actualCss = css
+        var cssHandler = function (css, styles) {
+            if (['scss'].indexOf(name) > -1) {
+                actualCss = styles[0].$compiled.code
+            } else {
+                actualCss = css
+            }
         }
 
         return rollup.rollup({
@@ -37,7 +41,7 @@ function test(name) {
             assert.equal(code.trim(), expected.trim(), 'should compile code correctly')
 
             // Check css output
-            if (['style', 'css-modules', 'css-modules-static'].indexOf(name) > -1) {
+            if (['style', 'css-modules', 'css-modules-static', 'scss'].indexOf(name) > -1) {
                 var css = read('expects/' + name + '.css')
                 assert.equal(css.trim(), actualCss.trim(), 'should output style tag content')
             } else {

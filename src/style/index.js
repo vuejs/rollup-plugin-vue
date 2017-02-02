@@ -12,7 +12,7 @@ export async function compile (style, options) {
     if (style.lang === 'css') {
         output = await compileCSS(style, options)
     } else {
-        output = await compileCSS(compilers[style.lang].call(null, style, options), options)
+        output = await compileCSS(await compilers[style.lang].call(null, style, options), options)
     }
 
     return output

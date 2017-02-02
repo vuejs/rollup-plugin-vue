@@ -1,7 +1,7 @@
 import postcss from 'postcss'
 import modules from 'postcss-modules'
 
-function compileModule (code, map, options) {
+function compileModule (code, map, source, options) {
     let style
 
     return postcss([
@@ -9,9 +9,9 @@ function compileModule (code, map, options) {
             getJSON (filename, json) {
                 style = json
             },
-            ...(options.modules || {})
+            ...options.modules
         })
-    ]).process(code, { map: { inline: false, prev: map } })
+    ]).process(code, { map: { inline: false, prev: map }, from: source.id, to: source.id })
       .then(
             result => ({ code: result.css, map: result.map, module: style }),
             error => {
@@ -24,7 +24,7 @@ export default async function (promise, options) {
     const { code, map } = ('$compiled' in style) ? style.$compiled : style
 
     if (style.module === true) {
-        return compileModule(code, map, options).then(compiled => {
+        return compileModule(code, map, style, options).then(compiled => {
             if (style.$compiled) {
                 compiled.$prev = style.$compiled
             }
