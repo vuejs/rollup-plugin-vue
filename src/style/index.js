@@ -3,7 +3,8 @@ import compileCSS from './css'
 import compileSCSS from './scss'
 
 const compilers = {
-    scss: compileSCSS
+    scss: compileSCSS,
+    sass: compileSCSS
 }
 
 export async function compile (style, options) {

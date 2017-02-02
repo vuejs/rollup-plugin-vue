@@ -19,7 +19,7 @@ function test(name) {
         var expected = read('expects/' + name + '.js').replace(/\r/g, '')
         var actualCss
         var cssHandler = function (css, styles) {
-            if (['scss'].indexOf(name) > -1) {
+            if (['scss', 'pug'].indexOf(name) > -1) {
                 actualCss = styles[0].$compiled.code
             } else {
                 actualCss = css
@@ -41,7 +41,7 @@ function test(name) {
             assert.equal(code.trim(), expected.trim(), 'should compile code correctly')
 
             // Check css output
-            if (['style', 'css-modules', 'css-modules-static', 'scss'].indexOf(name) > -1) {
+            if (['style', 'css-modules', 'css-modules-static', 'scss', 'pug'].indexOf(name) > -1) {
                 var css = read('expects/' + name + '.css')
                 assert.equal(css.trim(), actualCss.trim(), 'should output style tag content')
             } else {

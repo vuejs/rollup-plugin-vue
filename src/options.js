@@ -40,5 +40,6 @@ export default {
     modules: {
         generateScopedName: '[name]__[local]___[hash:base64:5]'
     },
-    scss: {}
+    scss: {},
+    pug: {}
 }

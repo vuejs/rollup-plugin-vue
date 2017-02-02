@@ -1,11 +1,12 @@
 import compileHTML from './html'
+import compilePug from './pug'
 
 const compilers = {
-    html: compileHTML
+    html: compileHTML,
+    pug: compilePug,
+    jade: compilePug
 }
 
 export default async function (template, extras, options) {
-    const lang = template.lang || 'html'
-
-    return await compilers[lang].call(null, template, extras, options)
+    return await compilers[extras.lang || 'html'].call(null, template, extras, options)
 }

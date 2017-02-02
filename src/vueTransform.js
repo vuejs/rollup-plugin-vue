@@ -1,7 +1,7 @@
 import deIndent from 'de-indent'
 import htmlMinifier from 'html-minifier'
 import parse5 from 'parse5'
-import validateTemplate from 'vue-template-validator'
+import templateValidator from 'vue-template-validator'
 import transpileVueTemplate from 'vue-template-es2015-compiler'
 import { compile } from './style/index'
 import templateProcessor from './template/index'
@@ -109,27 +109,31 @@ function injectTemplate (script, template, lang, options, modules) {
     throw new Error('[rollup-plugin-vue] could not find place to inject template in script.')
 }
 
+var validateTemplate = function (code, content, id) {
+    const warnings = templateValidator(code, content)
+    if (warnings) {
+        const relativePath = relative(process.cwd(), id)
+        warnings.forEach((msg) => {
+            console.warn(`\n Warning in ${relativePath}:\n ${msg}`)
+        })
+    }
+}
 /**
  * Compile template: DeIndent and minify html.
  */
 async function processTemplate (source, id, content, options, nodes, modules) {
     if (source === undefined) return undefined
 
+    const extras = { modules, id, lang: source.attrs.lang }
     const { code } = source
     const template = deIndent(
           await (options.disableCssModuleStaticReplacement !== true
-                ? templateProcessor(code, { modules }, options)
+                ? templateProcessor(code, extras, options)
                 : code)
     )
 
     if (!options.compileTemplate) {
-        const warnings = validateTemplate(code, content)
-        if (warnings) {
-            const relativePath = relative(process.cwd(), id)
-            warnings.forEach((msg) => {
-                console.warn(`\n Warning in ${relativePath}:\n ${msg}`)
-            })
-        }
+        validateTemplate(code, content, id)
     }
 
     return htmlMinifier.minify(template, options.htmlMinifier)
