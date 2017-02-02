@@ -4,6 +4,7 @@ import parse5 from 'parse5'
 import validateTemplate from 'vue-template-validator'
 import transpileVueTemplate from 'vue-template-es2015-compiler'
 import { compile } from './style/index'
+import templateProcessor from './template/index'
 import { relative } from 'path'
 import MagicString from 'magic-string'
 import debug from './debug'
@@ -111,11 +112,15 @@ function injectTemplate (script, template, lang, options, modules) {
 /**
  * Compile template: DeIndent and minify html.
  */
-function processTemplate (source, id, content, options) {
+async function processTemplate (source, id, content, options, nodes, modules) {
     if (source === undefined) return undefined
 
     const { code } = source
-    const template = deIndent(code)
+    const template = deIndent(
+          await (options.disableCssModuleStaticReplacement !== true
+                ? templateProcessor(code, { modules }, options)
+                : code)
+    )
 
     if (!options.compileTemplate) {
         const warnings = validateTemplate(code, content)
@@ -130,8 +135,8 @@ function processTemplate (source, id, content, options) {
     return htmlMinifier.minify(template, options.htmlMinifier)
 }
 
-function processScript (source, id, content, options, nodes, modules) {
-    const template = processTemplate(nodes.template[0], id, content, options, nodes, modules)
+async function processScript (source, id, content, options, nodes, modules) {
+    const template = await processTemplate(nodes.template[0], id, content, options, nodes, modules)
 
     const lang = source.attrs.lang || 'js'
 
@@ -235,7 +240,7 @@ export default async function vueTransform (code, id, options) {
     const nodes = parseTemplate(code)
     const css = await processStyle(nodes.style, id, code, options, nodes)
     const modules = getModules(css)
-    const js = processScript(nodes.script[0], id, code, options, nodes, modules)
+    const js = await processScript(nodes.script[0], id, code, options, nodes, modules)
 
     const isProduction = process.env.NODE_ENV === 'production'
     const isWithStripped = options.stripWith !== false

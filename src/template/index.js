@@ -4,6 +4,8 @@ const compilers = {
     html: compileHTML
 }
 
-export function compile (template, extras, options) {
-    return compilers[template.lang].call(null, template, extras, options)
+export default async function (template, extras, options) {
+    const lang = template.lang || 'html'
+
+    return await compilers[lang].call(null, template, extras, options)
 }
