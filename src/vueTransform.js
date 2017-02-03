@@ -109,7 +109,7 @@ function injectTemplate (script, template, lang, options, modules) {
     throw new Error('[rollup-plugin-vue] could not find place to inject template in script.')
 }
 
-var validateTemplate = function (code, content, id) {
+function validateTemplate (code, content, id) {
     const warnings = templateValidator(code, content)
     if (warnings) {
         const relativePath = relative(process.cwd(), id)

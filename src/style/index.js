@@ -1,10 +1,12 @@
 import { writeFile } from 'fs'
 import compileCSS from './css'
 import compileSCSS from './scss'
+import compileLESS from './less'
 
 const compilers = {
     scss: compileSCSS,
-    sass: compileSCSS
+    sass: compileSCSS,
+    less: compileLESS
 }
 
 export async function compile (style, options) {
@@ -30,7 +32,8 @@ export default function (files, options) {
 
     Object.keys(files).forEach((file) => {
         files[file].forEach((style) => {
-            css += style.code + '\n'
+            css += ('$compiled' in style) ? `${style.$compiled.code}\n` : `${style.code}\n`
+
             allStyles.push(style)
         })
     })
