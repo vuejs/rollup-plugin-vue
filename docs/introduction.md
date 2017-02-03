@@ -1,4 +1,4 @@
-<div class="text-center" style="align: center; margin: 20px">
+<div class="text-xs-center" align="center" style="margin: 20px">
   <img src="http://rollup-plugin-vue.znck.me/assets/images/logo.png">
 </div>
 

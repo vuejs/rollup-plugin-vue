@@ -51,7 +51,8 @@
     "rollup-pluginutils": "^2.0.1",
     "vue-template-compiler": "^2.1.10",
     "vue-template-es2015-compiler": "^1.5.0",
-    "vue-template-validator": "^1.1.5"
+    "vue-template-validator": "^1.1.5",
+    "less": "latest"
   },
   "devDependencies": {
     "babel-eslint": "^7.1.1",
