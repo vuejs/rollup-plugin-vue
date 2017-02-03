@@ -1,38 +1,67 @@
 import postcss from 'postcss'
 import modules from 'postcss-modules'
+import camelcase from 'camelcase'
+// import MagicString from 'magic-string'
+import debug from '../debug'
 
 function compileModule (code, map, source, options) {
     let style
+    debug(`CSS Modules: ${source.id}`)
 
     return postcss([
         modules({
             getJSON (filename, json) {
                 style = json
             },
-            ...options.modules
+            ...options.cssModules
         })
     ]).process(code, { map: { inline: false, prev: map }, from: source.id, to: source.id })
-      .then(
-            result => ({ code: result.css, map: result.map, module: style }),
-            error => {
-                throw error
-            })
+          .then(
+                result => ({ code: result.css, map: result.map, module: style }),
+                error => {
+                    throw error
+                }
+          )
 }
 
 export default async function (promise, options) {
     const style = await promise
+    debug(`CSS: ${style.id}`)
     const { code, map } = ('$compiled' in style) ? style.$compiled : style
 
     if (style.module === true) {
         return compileModule(code, map, style, options).then(compiled => {
             if (style.$compiled) {
                 compiled.$prev = style.$compiled
+
+                const classes = Object.keys(compiled.module)
+                const cssModule = {}
+
+                if (classes.length) {
+                    // Apply CSS modules to actual source.
+                    // TODO: Update source map.
+                    // const original = style.code
+
+                    style.code = classes.reduce(
+                          (result, name) => {
+                              cssModule[camelcase(name)] = compiled.module[name]
+
+                              return result.replace(`.${name}`, `.${compiled.module[name]}`)
+                          },
+                          style.code
+                    )
+                    // style.map = (new MagicString(original))
+
+                    compiled.module = (
+                          typeof (style.module) === 'string' && style.attrs.module.length
+                    ) ? { [style.module]: cssModule } : cssModule
+                }
             }
 
             style.$compiled = compiled
 
             return style
-        })
+        }).catch(error => debug(error))
     }
 
     const output = { code, map, lang: 'css' }

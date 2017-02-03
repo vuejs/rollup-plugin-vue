@@ -124,6 +124,8 @@ function validateTemplate (code, content, id) {
 async function processTemplate (source, id, content, options, nodes, modules) {
     if (source === undefined) return undefined
 
+    debug(`Process template: ${id}`)
+
     const extras = { modules, id, lang: source.attrs.lang }
     const { code } = source
     const template = deIndent(
@@ -142,6 +144,8 @@ async function processTemplate (source, id, content, options, nodes, modules) {
 async function processScript (source, id, content, options, nodes, modules) {
     const template = await processTemplate(nodes.template[0], id, content, options, nodes, modules)
 
+    debug(`Process script: ${id}`)
+
     const lang = source.attrs.lang || 'js'
 
     const script = deIndent(padContent(content.slice(0, content.indexOf(source.code))) + source.code)
@@ -159,9 +163,10 @@ async function processScript (source, id, content, options, nodes, modules) {
     }
 }
 
+// eslint-disable-next-line complexity
 async function processStyle (styles, id, content, options) {
+    debug(`Process styles: ${id}`)
     const outputs = []
-
     for (let i = 0; i < styles.length; i += 1) {
         const style = styles[i]
 
@@ -176,21 +181,18 @@ async function processStyle (styles, id, content, options) {
             code: code,
             map: map,
             lang: style.attrs.lang || 'css',
-            module: 'module' in style.attrs,
-            scoped: 'scoped' in style.attrs
+            module: 'module' in style.attrs ? style.attrs.module || true : false,
+            scoped: 'scoped' in style.attrs ? style.attrs.scoped || true : false
         }
 
-        if (options.autoStyles) {
-            outputs.push(await compile(output, options))
-        } else {
-            outputs.push(output)
-        }
+        outputs.push(options.autoStyles ? await compile(output, options) : output)
     }
 
     return outputs
 }
 
 function parseTemplate (code) {
+    debug('Parsing template....')
     const fragment = parse5.parseFragment(code, { locationInfo: true })
 
     const nodes = {

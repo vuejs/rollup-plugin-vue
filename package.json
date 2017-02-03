@@ -70,6 +70,7 @@
     "gulp": "^3.9.1",
     "istanbul": "^0.4.5",
     "laravel-elixir": "^6.0.0-15",
+    "merge-options": "0.0.64",
     "mocha": "^3.2.0",
     "mocha-lcov-reporter": "^1.2.0",
     "rollup": "^0.41.4",
