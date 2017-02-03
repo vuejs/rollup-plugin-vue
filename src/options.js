@@ -38,8 +38,7 @@ export default {
     autoStyles: true,
     disableCssModuleStaticReplacement: false,
     cssModules: {
-        generateScopedName: '[name]__[local]___[hash:base64:5]',
-        camelCase: true
+        generateScopedName: '[name]__[local]'
     },
     scss: {},
     pug: {}
