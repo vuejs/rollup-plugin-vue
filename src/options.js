@@ -37,8 +37,8 @@ export default {
     styleToImports: false,
     autoStyles: true,
     disableCssModuleStaticReplacement: false,
-    modules: {
-        generateScopedName: '[name]__[local]___[hash:base64:5]'
+    cssModules: {
+        generateScopedName: '[name]__[local]'
     },
     scss: {},
     pug: {}

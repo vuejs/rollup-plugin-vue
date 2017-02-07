@@ -4,49 +4,33 @@ import vueTransform from './vueTransform'
 import DEFAULT_OPTIONS from './options'
 import compileStyle from './style/index'
 import debug from './debug'
+import mergeOptions from 'merge-options'
 
-function mergeOptions (options, defaults) {
-    Object.keys(defaults).forEach((key) => {
-        const val = defaults[key]
-
-        if (key in options) {
-            if (typeof options[key] === 'object') {
-                mergeOptions(options[key], val)
-            }
-        } else {
-            options[key] = val
-        }
-    })
-
-    return options
-}
-
-export default function vue (options = {}) {
+export default function vue (opts = {}) {
     debug('Yo! rolling vue!')
-    const filter = createFilter(options.include, options.exclude)
+    const filter = createFilter(opts.include, opts.exclude)
 
-    delete options.include
-    delete options.exclude
+    delete opts.include
+    delete opts.exclude
 
     /* eslint-disable */
     try {
         const vueVersion = require('vue').version;
         if (parseInt(vueVersion.split('.')[0], 10) >= 2) {
-            if (!('compileTemplate' in options)) {
+            if (!('compileTemplate' in config)) {
                 debug('Vue 2.0 detected. Compiling template.');
-                options.compileTemplate = true;
+                opts.compileTemplate = true;
             }
         } else {
-            if (options.compileTemplate === true) {
+            if (opts.compileTemplate === true) {
                 console.warn('Vue version < 2.0.0 does not support compiled template.');
             }
-            options.compileTemplate = false;
+            opts.compileTemplate = false;
         }
     } catch (e) {}
     /* eslint-enable */
 
-    options = mergeOptions(options, DEFAULT_OPTIONS)
-
+    const config = mergeOptions(DEFAULT_OPTIONS, opts)
     const styles = {}
 
     return {
@@ -74,7 +58,9 @@ export default function vue (options = {}) {
                 return null
             }
 
-            const { code, css, map } = await vueTransform(source, id, options)
+            debug(`Compile: ${id}`)
+
+            const { code, css, map } = await vueTransform(source, id, config)
 
             styles[id] = css
 
@@ -82,9 +68,9 @@ export default function vue (options = {}) {
         },
 
         ongenerate () {
-            if (options.styleToImports !== true) {
-                if (options.css === undefined || options.css === null) options.css = DEFAULT_OPTIONS.css
-                compileStyle(styles, options)
+            if (config.styleToImports !== true) {
+                if (config.css === undefined || config.css === null) config.css = DEFAULT_OPTIONS.css
+                compileStyle(styles, config)
             }
         }
     }
