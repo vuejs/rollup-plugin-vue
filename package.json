@@ -3,7 +3,7 @@
   "version": "2.3.0-beta.2",
   "description": "Roll .vue files",
   "main": "dist/rollup-plugin-vue.common.js",
-  "jsnext": "dist/rollup-plugin-vue.js",
+  "module": "dist/rollup-plugin-vue.js",
   "scripts": {
     "test": "npm run lint && npm run build && npm run unit",
     "build": "node config/build.js",

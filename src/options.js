@@ -1,9 +1,19 @@
+import { templateJs, moduleJs, renderJs } from './injections'
+
 export default {
+    // Style compilation choices.
+    styleToImports: false,
+    autoStyles: true,
+    disableCssModuleStaticReplacement: false,
+
+    // Config for html-minifier.
     htmlMinifier: {
         customAttrSurround: [[/@/, new RegExp('')], [/:/, new RegExp('')]],
         collapseWhitespace: true,
         removeComments: true
     },
+
+    // Handle with(this)
     vue: {
         // Remove all transforms added by vue since it's up to the user
         // to use whatever he wants
@@ -34,12 +44,36 @@ export default {
             unicodeRegExp: false
         }
     },
-    styleToImports: false,
-    autoStyles: true,
-    disableCssModuleStaticReplacement: false,
+
+    // Config for postcss-modules.
     cssModules: {
         generateScopedName: '[name]__[local]'
     },
+
+    // Config for node-sass.
     scss: {},
-    pug: {}
+
+    // Config for pug compiler.
+    pug: {},
+
+    // Custom injectors.
+    inject: {
+        template: {
+            js: templateJs,
+            babel: templateJs
+        },
+
+        render: {
+            js: renderJs,
+            babel: renderJs
+        },
+
+        module: {
+            js: moduleJs,
+            babel: moduleJs
+        }
+    },
+
+    // script languages.
+    script: {}
 }

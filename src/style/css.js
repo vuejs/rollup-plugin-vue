@@ -4,7 +4,7 @@ import camelcase from 'camelcase'
 // import MagicString from 'magic-string'
 import debug from '../debug'
 
-function compileModule(code, map, source, options) {
+function compileModule (code, map, source, options) {
     let style
     debug(`CSS Modules: ${source.id}`)
 
@@ -24,7 +24,7 @@ function compileModule(code, map, source, options) {
           )
 }
 
-function escapeRegExp(str) {
+function escapeRegExp (str) {
     return str.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&')
 }
 

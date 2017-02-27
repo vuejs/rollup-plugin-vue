@@ -27,7 +27,8 @@ export default function vue (opts = {}) {
             }
             opts.compileTemplate = false;
         }
-    } catch (e) {}
+    } catch (e) {
+    }
     /* eslint-enable */
 
     const config = mergeOptions(DEFAULT_OPTIONS, opts)
@@ -44,14 +45,15 @@ export default function vue (opts = {}) {
             }
         },
         load (id) {
-            if (id.indexOf('.vue.component.') > -1) {
-                const parts = id.split('.')
-                const component = parts.slice(0, parts.length - 4).join('.')
-                const index = parseInt(parts[parts.length - 4])
+            if (id.indexOf('.vue.component.') < 0) return null
 
-                return styles[component][index] || ''
-            }
+            const parts = id.split('.')
+            const component = parts.slice(0, parts.length - 4).join('.')
+            const index = parseInt(parts[parts.length - 4])
+
+            if (index < styles[component].length) return styles[component][index]
         },
+
         async transform (source, id) {
             if (!filter(id) || !id.endsWith('.vue')) {
                 debug(`Ignore: ${id}`)
@@ -69,7 +71,10 @@ export default function vue (opts = {}) {
 
         ongenerate () {
             if (config.styleToImports !== true) {
-                if (config.css === undefined || config.css === null) config.css = DEFAULT_OPTIONS.css
+                if (config.css === undefined || config.css === null) {
+                    config.css = DEFAULT_OPTIONS.css
+                }
+
                 compileStyle(styles, config)
             }
         }

@@ -2,12 +2,12 @@ import deIndent from 'de-indent'
 import htmlMinifier from 'html-minifier'
 import parse5 from 'parse5'
 import templateValidator from 'vue-template-validator'
-import transpileVueTemplate from 'vue-template-es2015-compiler'
 import { compile } from './style/index'
 import templateProcessor from './template/index'
 import { relative } from 'path'
 import MagicString from 'magic-string'
 import debug from './debug'
+import { injectModule, injectTemplate, injectRender } from './injections'
 
 function getNodeAttrs (node) {
     if (node.attrs) {
@@ -33,86 +33,9 @@ function padContent (content) {
           .join('\n')
 }
 
-/**
- * Wrap code inside a with statement inside a function
- * This is necessary for Vue 2 template compilation
- */
-function wrapRenderFunction (code) {
-    return `function(){${code}}`
-}
-
-function injectModule (script, lang, options, modules) {
-    if (Object.keys(modules).length === 0) return script
-    debug('Inject css modules', modules)
-
-    if (['js', 'babel'].indexOf(lang.toLowerCase()) > -1) {
-        const matches = /(export default[^{]*\{)/g.exec(script)
-
-        if (matches && matches.length) {
-            const moduleScript = `${matches[1]}cssModules: ${JSON.stringify(modules)},`
-
-            return script.split(matches[1]).join(moduleScript)
-        }
-    } else if (typeof (options.injectModule) === 'function') {
-        return options.injectModule(script, lang, options, modules)
-    }
-
-    throw new Error('[rollup-plugin-vue] could not inject css module in script', script)
-}
-
-function injectRender (script, render, lang, options, modules) {
-    if (['js', 'babel'].indexOf(lang.toLowerCase()) > -1) {
-        const matches = /(export default[^{]*\{)/g.exec(script)
-        if (matches) {
-            let renderScript = 'module.exports={' +
-                  `render: ${wrapRenderFunction(render.render)},` +
-                  'staticRenderFns: [' +
-                  `${render.staticRenderFns.map(wrapRenderFunction).join(',')}],}`
-
-            if (options.stripWith !== false) {
-                renderScript = transpileVueTemplate(renderScript, options.vue)
-            }
-
-            return script.split(matches[1])
-                  .join(renderScript.replace('module.exports={', 'export default {').replace(/\}$/, ''))
-        }
-
-        debug(`No injection location found in: \n${script}\n`)
-    } else if (typeof (options.inject) === 'function') {
-        return options.inject(script, render, lang, options)
-    }
-    throw new Error('[rollup-plugin-vue] could not find place to inject template in script.')
-}
-
-/**
- * @param script
- * @param template
- * @param lang
- * @param options
- * @param modules
- * @returns {string}
- */
-function injectTemplate (script, template, lang, options, modules) {
-    if (template === undefined) return script
-
-    if (['js', 'babel'].indexOf(lang.toLowerCase()) > -1) {
-        const matches = /(export default[^{]*\{)/g.exec(script)
-        if (matches) {
-            return script.split(matches[1])
-                  .join(`${matches[1]} template: ${JSON.stringify(template)},`)
-        }
-
-        debug(`No injection location found in: \n${script}\n`)
-    } else if (typeof (options.inject) === 'function') {
-        return options.inject(script, template, lang, options)
-    }
-
-    throw new Error('[rollup-plugin-vue] could not find place to inject template in script.')
-}
-
 function validateTemplate (code, content, id) {
     const warnings = templateValidator(code, content)
-    if (warnings) {
+    if (Array.isArray(warnings)) {
         const relativePath = relative(process.cwd(), id)
         warnings.forEach((msg) => {
             console.warn(`\n Warning in ${relativePath}:\n ${msg}`)
@@ -149,16 +72,24 @@ async function processScript (source, id, content, options, nodes, modules) {
 
     const lang = source.attrs.lang || 'js'
 
+    if (['js', 'babel'].indexOf(lang) < 0) {
+        if (!(lang in options.script)) {
+            throw new Error(`[rollup-plugin-vue] ${lang} is not yet supported in .vue files.`)
+        }
+
+        source = await options.script[lang](source, id, content, options, nodes)
+    }
+
     const script = deIndent(padContent(content.slice(0, content.indexOf(source.code))) + source.code)
     const map = (new MagicString(script)).generateMap({ hires: true })
-    const scriptWithModules = injectModule(script, lang, options, modules)
+    const scriptWithModules = injectModule(script, modules, lang, id, options)
 
     if (template && options.compileTemplate) {
         const render = require('vue-template-compiler').compile(template)
 
-        return { map, code: injectRender(scriptWithModules, render, lang, options, modules) }
+        return { map, code: await injectRender(scriptWithModules, render, lang, id, options) }
     } else if (template) {
-        return { map, code: injectTemplate(scriptWithModules, template, lang, options, modules) }
+        return { map, code: await injectTemplate(scriptWithModules, template, lang, id, options) }
     } else {
         return { map, code: scriptWithModules }
     }
@@ -229,7 +160,7 @@ function parseTemplate (code) {
     return nodes
 }
 
-var getModules = function (styles) {
+const getModules = function (styles) {
     let all = {}
 
     for (let i = 0; i < styles.length; i += 1) {
