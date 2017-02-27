@@ -17,11 +17,15 @@ function compileModule (code, map, source, options) {
         })
     ]).process(code, { map: { inline: false, prev: map }, from: source.id, to: source.id })
           .then(
-                result => ({ code: result.css, map: result.map, module: style }),
+                result => ({ code: result.css, map: result.map.toString(), module: style }),
                 error => {
                     throw error
                 }
           )
+}
+
+function escapeRegExp (str) {
+    return str.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&')
 }
 
 export default async function (promise, options) {
@@ -43,10 +47,12 @@ export default async function (promise, options) {
                     // const original = style.code
 
                     style.code = classes.reduce(
-                          (result, name) => {
-                              cssModule[camelcase(name)] = compiled.module[name]
+                          (result, original) => {
+                              const transformed = compiled.module[original]
+                              cssModule[camelcase(original)] = transformed
+                              cssModule[original] = transformed
 
-                              return result.replace(`.${name}`, `.${compiled.module[name]}`)
+                              return result.replace(new RegExp(escapeRegExp(`.${original}`), 'g'), `.${transformed}`)
                           },
                           style.code
                     )
