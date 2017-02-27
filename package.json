@@ -3,7 +3,7 @@
   "version": "2.3.0-beta.2",
   "description": "Roll .vue files",
   "main": "dist/rollup-plugin-vue.common.js",
-  "jsnext": "dist/rollup-plugin-vue.js",
+  "module": "dist/rollup-plugin-vue.js",
   "scripts": {
     "test": "npm run lint && npm run build && npm run unit",
     "build": "node config/build.js",
@@ -81,5 +81,9 @@
     "uglify-js": "^2.7.5",
     "vue-hot-reload-api": "^2.0.8",
     "yargs": "^6.6.0"
+  },
+  "optionalDependencies": {
+    "coffee-script": "^1.12.4",
+    "coffeescript-compiler": "^0.1.1"
   }
 }
