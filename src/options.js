@@ -1,4 +1,5 @@
 import { templateJs, moduleJs, renderJs } from './injections'
+import { coffee } from './script/index'
 
 export default {
     // Style compilation choices.
@@ -75,5 +76,8 @@ export default {
     },
 
     // script languages.
-    script: {}
+    script: {
+        coffee,
+        coffeescript: coffee
+    }
 }

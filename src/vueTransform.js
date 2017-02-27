@@ -69,15 +69,14 @@ async function processScript (source, id, content, options, nodes, modules) {
     const template = await processTemplate(nodes.template[0], id, content, options, nodes, modules)
 
     debug(`Process script: ${id}`)
+    const lang = 'js'
 
-    const lang = source.attrs.lang || 'js'
-
-    if (['js', 'babel'].indexOf(lang) < 0) {
-        if (!(lang in options.script)) {
-            throw new Error(`[rollup-plugin-vue] ${lang} is not yet supported in .vue files.`)
+    if (source.attrs.lang && ['js', 'babel'].indexOf(source.attrs.lang) < 0) {
+        if (!(source.attrs.lang in options.script)) {
+            throw new Error(`[rollup-plugin-vue] ${source.attrs.lang} is not yet supported in .vue files.`)
         }
 
-        source = await options.script[lang](source, id, content, options, nodes)
+        source = await options.script[source.attrs.lang](source, id, content, options, nodes)
     }
 
     const script = deIndent(padContent(content.slice(0, content.indexOf(source.code))) + source.code)
