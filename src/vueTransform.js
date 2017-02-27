@@ -43,11 +43,12 @@ function wrapRenderFunction (code) {
 
 function injectModule (script, lang, options, modules) {
     if (Object.keys(modules).length === 0) return script
+    debug('Inject css modules', modules)
 
     if (['js', 'babel'].indexOf(lang.toLowerCase()) > -1) {
         const matches = /(export default[^{]*\{)/g.exec(script)
 
-        if (matches) {
+        if (matches && matches.length) {
             const moduleScript = `${matches[1]}cssModules: ${JSON.stringify(modules)},`
 
             return script.split(matches[1]).join(moduleScript)
@@ -56,7 +57,7 @@ function injectModule (script, lang, options, modules) {
         return options.injectModule(script, lang, options, modules)
     }
 
-    throw new Error('[rollup-plugin-vue] could not inject css module in script')
+    throw new Error('[rollup-plugin-vue] could not inject css module in script', script)
 }
 
 function injectRender (script, render, lang, options, modules) {
