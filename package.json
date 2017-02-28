@@ -13,10 +13,7 @@
     "lint:fix": "eslint --fix src/**",
     "coveralls": "NODE_ENV=production istanbul cover --default-excludes -x 'dist/**' -x 'config/**' ./node_modules/mocha/bin/_mocha --report lcovonly  --  --slow=5000 --timeout=10000 test/test.js && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
     "prepublish": "npm run build",
-    "docs": "php -S localhost:8080 -t .github/sereno/public",
-    "sereno": "gulp --gulpfile .github/sereno/gulpfile.js watch",
-    "sereno:build": "gulp --gulpfile .github/sereno/gulpfile.js --env default",
-    "sereno:deploy": "sereno deploy"
+    "docs": "php -S localhost:8080 -t .github/sereno/public"
   },
   "repository": {
     "type": "git",
@@ -38,18 +35,17 @@
   "homepage": "https://github.com/znck/rollup-plugin-vue#readme",
   "dependencies": {
     "babel-runtime": "^6.22.0",
+    "camelcase": "^4.0.0",
     "de-indent": "^1.0.2",
     "debug": "^2.6.0",
     "html-minifier": "^3.2.3",
-    "less": "^2.7.2",
     "magic-string": "^0.19.0",
-    "node-sass": "^4.5.0",
-    "parse5": "^3.0.1",
+    "merge-options": "0.0.64",
+    "parse5": "^2.1.0",
     "postcss": "^5.2.11",
     "postcss-modules": "^0.6.4",
     "posthtml": "^0.9.2",
     "posthtml-attrs-parser": "^0.1.1",
-    "pug": "^2.0.0-beta10",
     "rollup-pluginutils": "^2.0.1",
     "vue-template-compiler": "^2.1.10",
     "vue-template-es2015-compiler": "^1.5.0",
@@ -65,25 +61,26 @@
     "eslint": "^3.14.0",
     "eslint-config-standard": "^6.2.1",
     "eslint-plugin-html": "^1.7.0",
-    "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-promise": "^3.4.0",
     "eslint-plugin-standard": "^2.0.1",
-    "gulp": "^3.9.1",
     "istanbul": "^0.4.5",
-    "laravel-elixir": "^6.0.0-15",
-    "merge-options": "0.0.64",
     "mocha": "^3.2.0",
-    "mocha-lcov-reporter": "^1.2.0",
     "rollup": "^0.41.4",
     "rollup-plugin-babel": "^2.7.1",
+    "rollup-plugin-buble": "^0.15.0",
     "rollup-plugin-css-only": "^0.2.0",
     "rollup-plugin-replace": "^1.1.1",
-    "uglify-js": "^2.7.5",
-    "vue-hot-reload-api": "^2.0.8",
-    "yargs": "^6.6.0"
+    "uglify-js": "^2.7.5"
   },
   "optionalDependencies": {
     "coffee-script": "^1.12.4",
-    "coffeescript-compiler": "^0.1.1"
+    "coffeescript-compiler": "^0.1.1",
+    "less": "^2.7.2",
+    "node-sass": "^4.5.0",
+    "pug": "^2.0.0-beta11",
+    "stylus": "^0.54.5"
+  },
+  "peerDependencies": {
+    "vue": "^2.2.1"
   }
 }
