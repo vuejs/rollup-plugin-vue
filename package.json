@@ -81,6 +81,6 @@
     "stylus": "^0.54.5"
   },
   "peerDependencies": {
-    "vue": "^2.2.1"
+    "vue": "*"
   }
 }
