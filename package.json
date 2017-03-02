@@ -47,7 +47,7 @@
     "posthtml": "^0.9.2",
     "posthtml-attrs-parser": "^0.1.1",
     "rollup-pluginutils": "^2.0.1",
-    "vue-template-compiler": "^2.1.10",
+    "vue-template-compiler": "*",
     "vue-template-es2015-compiler": "^1.5.0",
     "vue-template-validator": "^1.1.5"
   },
