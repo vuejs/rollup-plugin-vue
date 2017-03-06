@@ -4,7 +4,7 @@ sidebar: false
 ---
 
 <div class="text-xs-center" align="center" style="margin: 20px">
-  <img src="/assets/images/logo.png">
+  <img src="./assets/images/logo.png">
 </div>
 
 <p align="center">
@@ -39,7 +39,7 @@ sidebar: false
 `rollup-plugin-vue` is a plugin for Rollup that can transform Vue components in following format into a plain Javascript module:
 
 <div class="text-xs-center" align="center" style="margin: 0 20px">
-  <img src="/assets/images/vue-component.png">
+  <img src="./assets/images/vue-component.png">
 </div>
 
 There are many cool features provided by `rollup-plugin-vue`:
