@@ -1,5 +1,5 @@
 <div class="text-xs-center" align="center" style="margin: 20px">
-  <img src="http://rollup-plugin-vue.znck.me/assets/images/logo.png">
+  <img src="docs/assets/images/logo.png">
 </div>
 
 ## Introduction
@@ -7,7 +7,7 @@ As vue-loader is for webpack and vueify is for browserify, similarly its for rol
 
 With rollup you can break your application into reusable modules.
 
->  See [docs](http://rollup-plugin-vue.znck.me/installation) for installing, using and contributing.
+>  See [docs](http://vuejs.github.io/rollup-plugin-vue) for installing, using and contributing.
 
 <p align="center">
   <a href="https://circleci.com/gh/vuejs/rollup-plugin-vue">
@@ -16,8 +16,8 @@ With rollup you can break your application into reusable modules.
   <a href="http://standardjs.com">
     <img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg" alt="Code Style" />
   </a>
-  <a href="https://coveralls.io/github/vuejs/rollup-plugin-vue?branch=master">
-    <img src="https://coveralls.io/repos/github/vuejs/rollup-plugin-vue/badge.svg?branch=master&style=flat-square" alt="Coverage Status" />
+  <a href="https://coveralls.io/github/znck/rollup-plugin-vue?branch=master">
+    <img src="https://coveralls.io/repos/github/znck/rollup-plugin-vue/badge.svg?branch=master&style=flat-square" alt="Coverage Status" />
   </a>
   <a href="https://www.codacy.com/app/vuejs/rollup-plugin-vue">
     <img src="https://api.codacy.com/project/badge/grade/e3402df0135240c29a1d25bab93932a0"/>
