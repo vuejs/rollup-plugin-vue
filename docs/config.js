@@ -1,3 +1,9 @@
+function plugin() {
+    return (ctx) => {
+        window.app = ctx
+    }
+}
+
 const languages = {
     title: 'Language',
     type: 'dropdown',
@@ -27,5 +33,7 @@ self.$config = {
         default: [home, languages, version_en],
 
         'en2.2': [home, { title: 'Examples', path: '/en/2.2/examples' }, languages, version_en]
-    }
+    },
+
+    plugins: [plugin()]
 }
