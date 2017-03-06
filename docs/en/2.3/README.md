@@ -1,3 +1,8 @@
+---
+nav: en2.3
+
+---
+
 ## Installation
 [Node][node] and [Rollup][rollup] are required to use rollup-plugin-vue. Use [NPM][NPM] or [yarn][yarn] to add `rollup-plugin-vue` as development dependency to your project.
 
@@ -105,6 +110,9 @@ export default {
     ...
 }
 ```
+
+#### CSS Modules
+
 
 ### Template
 
