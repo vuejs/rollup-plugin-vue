@@ -1,21 +1,51 @@
-# Configuration
+---
+nav: en2.2
+
+---
+
+## Installation
+[Node][node] and [Rollup][rollup] are required to use rollup-plugin-vue. Use [NPM][NPM] or [yarn][yarn] to add `rollup-plugin-vue` as development dependency to your project.
+
+### Using NPM
+```
+npm install --save-dev rollup-plugin-vue
+```
+
+### Using yarn
+```
+yarn add --dev rollup-plugin-vue
+```
+
+### Use plugin 
+Next add `rollup-plugin-vue` to `rollup` plugins.
+
+``` js
+// rollup.config.js
+import vue from 'rollup-plugin-vue';
+
+export default {
+  plugins: [
+    vue(),
+  ],
+};
+```
+## Configuration
 For most cases `rollup-plugin-vue` works out of the box. But, you can always configure it to your needs.
 
 Following configuration are available to be overridden.
 
  Option                             | Vue 0.11 | Vue 0.12 | Vue 1.0 | Vue 2.0
 :-----------------------------------|:--------:|:--------:|:-------:|:-------:
-[css](#css)                         | &check;  | &check;  | &check; | &check;
-[compileTemplate](#compileTemplate) | -        | -        | -       | &check;
-[styleToImports](#styleToImports)   | &check;  | &check;  | &check; | &check;
-[stripWith](#stripWith)             | -        | -        | -       | &check;
-[include](#exclude)                 | &check;  | &check;  | &check; | &check;
-[exclude](#exclude)                 | &check;  | &check;  | &check; | &check;
-[htmlMinifier](#htmlMinifier)       | &check;  | &check;  | &check; | &check;
-[inject](#vue)                      | &check;  | &check;  | &check; | &check;
+[css](#css-option)                         | &check;  | &check;  | &check; | &check;
+[compileTemplate](#compileTemplate-option) | -        | -        | -       | &check;
+[styleToImports](#styleToImports-option)   | &check;  | &check;  | &check; | &check;
+[stripWith](#stripWith-option)             | -        | -        | -       | &check;
+[include](#exclude-option)                 | &check;  | &check;  | &check; | &check;
+[exclude](#exclude-option)                 | &check;  | &check;  | &check; | &check;
+[htmlMinifier](#htmlMinifier-option)       | &check;  | &check;  | &check; | &check;
+[inject](#vue-option)                      | &check;  | &check;  | &check; | &check;
 
-{#css}
-### The `css` option
+### `css` option
 
 It accepts a filename, `false`, `null` or a `Function`.
 
@@ -103,8 +133,7 @@ It accepts a filename, `false`, `null` or a `Function`.
   };
   ```
 
-{#compileTemplate}
-### The `compileTemplate` option
+### `compileTemplate` option
 
 With Vue 2.0, you can have [two builds](https://vuejs.org/v2/guide/installation.html#Standalone-vs-Runtime-only-Build); Runtime-only and Standalone.
 Runtime-only build does not include template compiler. So, it is required compile `template` string to `render` function.
@@ -116,8 +145,7 @@ This option takes `boolean` value.
 
 **NOTE:** If `compileTemplate` is not set and Vue 2.0 is in project dependencies, then it would compile to `template` to `render` function.
 
-{#styleToImports}
-### The `styleToImports` option
+### `styleToImports` option
 Other than `css` option, the plugin allows you to convert your styles to javascript imports.
 
 Following script defers styles handling.
@@ -135,20 +163,16 @@ export default {
 };
 ```
 
-{#stripWith}
-### The `stripWith` option
+### `stripWith` option
 For Vue 2.0 builds, `with(this)` is stripped off by default. You can disable this by setting `{ stripWith: false }`.
 
-{#include}
-### The `include` option
+### `include` option
 A minimatch pattern or an array of minimatch patterns as required for [Rollup](https://github.com/rollup/rollup/wiki/Plugins#creating-plugins) transformer plugins.
 
-{#exclude}
-### The `exclude` option
+### `exclude` option
 A minimatch pattern or an array of minimatch patterns as required for [Rollup](https://github.com/rollup/rollup/wiki/Plugins#creating-plugins) transformer plugins.
 
-{#htmlMinifier}
-### The `htmlMinifier` option
+### `htmlMinifier` option
 The template string is minified using [htmlMinifier](https://github.com/kangax/html-minifier). The default configuration used with htmlMinifier is as follows:
 
 ``` js
@@ -177,8 +201,7 @@ export default {
 };
 ```
 
-{#inject}
-### The `inject` option
+### `inject` option
 A custom `inject` function to add `template` or `render` function to component. It would receive 3 parameters:
   - script (String) -- Contents of script tag.
   - template/render (String) -- Processed template or compiled render function.
@@ -186,10 +209,10 @@ A custom `inject` function to add `template` or `render` function to component. 
 
 The `inject` function should return processed script string.
 
-For reference, checkout [inject function](https://github.com/znck/rollup-plugin-vue/blob/master/src/vueTransform.js#L43-L61) for `lang=js` or `lang=babel`.
+For reference, checkout [inject function](https://github.com/znck/rollup-plugin-vue/blob/2.2/src/vueTransform.js#L43-L61) for `lang=js` or `lang=babel`.
 
-<br><br><br>
 
--------------------------------
-[Edit this page on Github]({{ $docs_edit_url }}/configuration.md)
-[Examples]({{ $docs_url }}/examples){.float-xs-right.pl-1}
+[node]: http://nodejs.org/
+[rollup]: http://rollupjs.org
+[NPM]: https://www.npmjs.com/#getting-started
+[yarn]: http://yarnpkg.com/

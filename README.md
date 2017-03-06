@@ -10,16 +10,16 @@ With rollup you can break your application into reusable modules.
 >  See [docs](http://rollup-plugin-vue.znck.me/installation) for installing, using and contributing.
 
 <p align="center">
-  <a href="https://circleci.com/gh/znck/rollup-plugin-vue">
-    <img src="https://circleci.com/gh/znck/rollup-plugin-vue.svg?style=svg" alt="Build Status" />
+  <a href="https://circleci.com/gh/vuejs/rollup-plugin-vue">
+    <img src="https://circleci.com/gh/vuejs/rollup-plugin-vue.svg?style=svg" alt="Build Status" />
   </a>
   <a href="http://standardjs.com">
     <img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg" alt="Code Style" />
   </a>
-  <a href="https://coveralls.io/github/znck/rollup-plugin-vue?branch=master">
-    <img src="https://coveralls.io/repos/github/znck/rollup-plugin-vue/badge.svg?branch=master&style=flat-square" alt="Coverage Status" />
+  <a href="https://coveralls.io/github/vuejs/rollup-plugin-vue?branch=master">
+    <img src="https://coveralls.io/repos/github/vuejs/rollup-plugin-vue/badge.svg?branch=master&style=flat-square" alt="Coverage Status" />
   </a>
-  <a href="https://www.codacy.com/app/znck/rollup-plugin-vue">
+  <a href="https://www.codacy.com/app/vuejs/rollup-plugin-vue">
     <img src="https://api.codacy.com/project/badge/grade/e3402df0135240c29a1d25bab93932a0"/>
   </a>
   <a href="LICENSE">
@@ -28,12 +28,12 @@ With rollup you can break your application into reusable modules.
   <a href="https://npmjs.org/package/rollup-plugin-vue">
     <img src="https://img.shields.io/npm/v/rollup-plugin-vue.svg?style=flat-square" alt="NPM" />
   </a>
-  <a href="https://github.com/znck/rollup-plugin-vue/releases">
-    <img src="https://img.shields.io/github/release/znck/rollup-plugin-vue.svg?style=flat-square" alt="Latest Version" />
+  <a href="https://github.com/vuejs/rollup-plugin-vue/releases">
+    <img src="https://img.shields.io/github/release/vuejs/rollup-plugin-vue.svg?style=flat-square" alt="Latest Version" />
   </a>
 
-  <a href="https://github.com/znck/rollup-plugin-vue/issues">
-    <img src="https://img.shields.io/github/issues/znck/rollup-plugin-vue.svg?style=flat-square" alt="Issues" />
+  <a href="https://github.com/vuejs/rollup-plugin-vue/issues">
+    <img src="https://img.shields.io/github/issues/vuejs/rollup-plugin-vue.svg?style=flat-square" alt="Issues" />
   </a>
 </p>
 
