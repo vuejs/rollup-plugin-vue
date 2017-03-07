@@ -6,17 +6,17 @@ nav: en2.3
 ## Installation
 [Node][node] and [Rollup][rollup] are required to use rollup-plugin-vue. Use [NPM][NPM] or [yarn][yarn] to add `rollup-plugin-vue` as development dependency to your project.
 
-### Using NPM
+##### Using NPM
 ```
 npm install --save-dev rollup-plugin-vue
 ```
 
-### Using yarn
+##### Using yarn
 ```
 yarn add --dev rollup-plugin-vue
 ```
 
-### Use plugin 
+##### Use plugin 
 Next add `rollup-plugin-vue` to `rollup` plugins.
 
 ``` js
@@ -25,7 +25,7 @@ import vue from 'rollup-plugin-vue';
 
 export default {
   plugins: [
-    vue(),
+    vue({ /* configuration options. */ }),
   ],
 };
 ```
@@ -84,10 +84,16 @@ List of supported style languages:
 The default style language.
  
 - ##### Sass/Scss
-It uses `node-sass@^4.5.0` to process `sass/scss` style elements. You can provide `node-sass` configuration options by ```scss: { /* node-sass options */}```.
+It uses `node-sass@^4.5.0` to process `sass/scss` style elements. You can provide `node-sass` configuration options by setting:
+``` js
+scss: { /* node-sass options */}
+```
 
 - ##### Less
-It uses `less@^2.7.2` to process `less` style elements. You can provide `less` configuration options by ```less: { /* node-sass options */}```.
+It uses `less@^2.7.2` to process `less` style elements. You can provide `less` configuration options by setting:
+``` js
+less: { /* node-sass options */}
+```
 
 <p class="tip" markdown="1">
 `node-sass` and `less` are optional dependencies. If you are using `scss/sass/less` you should require (`yarn add --dev node-sass less`) them.
@@ -112,29 +118,124 @@ export default {
 ```
 
 #### CSS Modules
+[CSS Modules](https://github.com/css-modules/css-modules) is a popular system for modularizing and composing CSS. `rollup-plugin-vue` provides first-class integration with CSS Modules as an alternative for simulated scoped CSS.
 
+``` vue
+<style module>
+.red {
+  color: red;
+}
+
+.bold {
+  font-weight: bold;
+}
+</style>
+
+<template>
+  <div>
+    <p :class="{ [$style.red]: isRed }">
+      Am I red?
+    </p>
+    
+    <p :class="[$style.red, $style.bold]">
+      Red and bold
+    </p>
+  </div>
+</template>
+
+<script>
+export default {
+  computed: {
+  
+    $style () {
+        return this.$options.cssModules
+    }
+  
+  }
+}
+</script>
+```
+
+<p class="tip">
+`rollup-plugin-vue@^2.3` cannot add `$style` computed property. You have to explcitly add it.
+</p>
+
+``` js
+$style () {
+    return this.$options.cssModules
+}
+```
+
+##### Custom Inject Name
+You can have more than one `<style>` tags in a single *.vue component. To avoid injected styles to overwrite each other, you can customize the name of the injected computed property by giving the module attribute a value:
+
+```
+<style module="a">
+  /* identifiers injected as a */
+</style>
+
+<style module="b">
+  /* identifiers injected as b */
+</style>
+```
+##### CSS Modules Configuration
+`rollup-plugin-vue` uses `postcss-modules` to handle CSS modules.
+
+You can provide `postcss-modules` configuration options by setting:
+``` js
+cssModules: { generateScopedName: '[name]__[local]', ... }
+``` 
 
 ### Template
+Templates are processed into `render` function by default. You can disable this by setting:
+``` js
+compileTemplate: false
+```
+
+#### Static Class Replacement
+When using CSS modules, class names are replaced in template at compile time. 
+
+For example: 
+```
+<div class="red">Foo</div>
+``` 
+would become 
+```
+<div class="_lkcjalei8942jksa_0">Foo</div>
+``` 
+before compiling to `render` function. This saves you from binding `class` attribute to `$style.red`.
+ 
+You can disable this behavior by setting:  
+``` js
+disableCssModuleStaticReplacement: true
+```
 
 #### Template Languages
 
 - ##### HTML
+Default template language.
 
 - ##### Pug/Jade
+It uses `pug@^2.0.0-beta11` to process `pug` template elements. You can provide `pug` configuration options by setting:  
+``` js
+pug: { /* pug options */}
+```
 
 ### Script
 
 #### Script Languages
-
-- ##### ES6/Babel
+ES6 is catching up but `coffee` script is still popular with some developers.
 
 - ##### Coffee
-
-### Custom template injection
+It uses `coffeescript-compiler@^0.1.1` to process `coffee` script elements. You can use `lang="coffee"` or `lang="coffeescript"`.
 
 ### Handle with(this) issue
+Vue uses `with(this)` in render function as scoping rules of `with` aligns with scoping rules of templates. Using `with` in strict mode is forbidden.
 
-### include/exclude
+`rollup-plugin-vue` strips away all `with(this)` statements by default. You can disable this by setting:  
+ ``` js
+ vue: { transforms: { stripWith: false } }
+ ```
 
 [node]: http://nodejs.org/
 [rollup]: http://rollupjs.org

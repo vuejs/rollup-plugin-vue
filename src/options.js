@@ -2,10 +2,13 @@ import { templateJs, moduleJs, renderJs } from './injections'
 import { coffee } from './script/index'
 
 export default {
-    // Style compilation choices.
+    // Style compilation options.
     styleToImports: false,
     autoStyles: true,
     disableCssModuleStaticReplacement: false,
+
+    // Template compilation options.
+    compileTemplate: true,
 
     // Config for html-minifier.
     htmlMinifier: {
