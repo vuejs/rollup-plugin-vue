@@ -46,5 +46,7 @@ self.$config = {
             indexName: 'rollup-plugin-vue',
             tags: ['en', 'v2.2', 'v2.3']
         })
-    ]
+    ],
+    
+    url: 'https://vuejs.github.io/rollup-plugin-vue'
 }
