@@ -42,9 +42,9 @@ self.$config = {
 
     plugins: [
         docsearch({
-            apiKey: 'You API Key',
-            indexName: 'rollup-plugin-vue-docs',
-            tags: ['en']
+            apiKey: '7792597613e997afeb0b75a206ca0c5a',
+            indexName: 'rollup-plugin-vue',
+            tags: ['en', 'v2.2', 'v2.3']
         })
     ]
 }
