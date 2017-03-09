@@ -84,7 +84,7 @@ async function processScript (source, id, content, options, nodes, modules) {
     const scriptWithModules = injectModule(script, modules, lang, id, options)
 
     if (template && options.compileTemplate) {
-        const render = require('vue-template-compiler').compile(template)
+        const render = require('vue-template-compiler').compile(template, options.compileOptions)
 
         return { map, code: await injectRender(scriptWithModules, render, lang, id, options) }
     } else if (template) {
