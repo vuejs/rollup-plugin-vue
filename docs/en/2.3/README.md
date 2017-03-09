@@ -192,6 +192,13 @@ Templates are processed into `render` function by default. You can disable this 
 compileTemplate: false
 ```
 
+Additionally, you can pass options to the [template compiler](https://www.npmjs.com/package/vue-template-compiler) by setting:
+``` js
+compileOptions: {
+  preserveWhitespace: false
+}
+```
+
 #### Static Class Replacement
 When using CSS modules, class names are replaced in template at compile time. 
 

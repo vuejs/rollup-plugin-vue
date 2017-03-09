@@ -10,6 +10,8 @@ export default {
     // Template compilation options.
     compileTemplate: true,
 
+    compileOptions: {},
+
     // Config for html-minifier.
     htmlMinifier: {
         customAttrSurround: [[/@/, new RegExp('')], [/:/, new RegExp('')]],
