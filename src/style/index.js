@@ -10,7 +10,7 @@ const compilers = {
     less: compileLESS
 }
 
-export async function compile(style, options) {
+export async function compile (style, options) {
     let output
 
     if (style.lang === 'css') {
@@ -22,7 +22,7 @@ export async function compile(style, options) {
     return output
 }
 
-function ensureDirectory(directory) {
+function ensureDirectory (directory) {
     if (!exists(directory)) {
         ensureDirectory(dirname(directory))
 
@@ -31,7 +31,7 @@ function ensureDirectory(directory) {
 }
 
 export default function (files, options) {
-    if (options.css === false) {
+    if (typeof (options.css) === 'boolean') {
         return
     }
 
@@ -66,7 +66,6 @@ export default function (files, options) {
     }
 
     dest = isAbsolute(dest) ? dest : resolvePath(process.cwd(), dest)
-    console.log('OUTPUT:', dest)
     // Emit styles to file
     ensureDirectory(dirname(dest))
     writeFile(dest, css, (err) => {

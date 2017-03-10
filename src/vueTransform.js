@@ -190,6 +190,26 @@ export default async function vueTransform (code, id, options) {
         const style = css.map((s, i) => 'import ' + JSON.stringify(`${id}.${i}.vue.component.${s.lang}`) + ';').join(' ')
 
         return { css, code: style + js.code, map: js.map }
+    } else if (options.css === true) {
+        const style = css.map(s => '$compiled' in s ? s.$compiled.code : s.code).join('\n').replace(/(\r?\n|[\s])+/g, ' ')
+        const styleCode = `
+        (function(){
+            if(document){
+                var head=document.head||document.getElementsByTagName('head')[0],
+                    style=document.create('style'),
+                    css=${JSON.stringify(style)};
+                 style.type='text/css';
+                 if (style.styleSheet){
+                   style.styleSheet.cssText = css;
+                 } else {
+                   style.appendChild(document.createTextNode(css));
+                 }
+                 head.appendChild(style);
+             }
+         })();
+         `.replace(/(\r?\n|[\s])+/g, ' ').trim()
+
+        return { css, code: styleCode + js.code, map: js.map }
     }
 
     return { css, code: js.code, map: js.map }

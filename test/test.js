@@ -29,21 +29,23 @@ function test(name) {
         return rollup.rollup({
             entry: entry,
             plugins: [vuePlugin({
-                css: cssHandler,
+                css: ['no-css-extract'].includes(name) ? true : cssHandler,
                 modules: {
                     generateScopedName: '[name]__[local]'
                 },
                 compileTemplate: ['compileTemplate', 'slot', 'table', 'table-n-slot'].indexOf(name) > -1
             })]
         }).then(function (bundle) {
-            var result = bundle.generate({format: 'es'})
+            var result = bundle.generate({ format: 'es' })
             var code = result.code
             assert.equal(code.trim(), expected.trim(), 'should compile code correctly')
 
             // Check css output
-            if (['style', 'css-modules', 'css-modules-static', 'scss', 'pug', 'less'].indexOf(name) > -1) {
+            if (['style', 'css-modules', 'css-modules-static', 'scss', 'pug', 'less'].includes(name)) {
                 var css = read('expects/' + name + '.css')
                 assert.equal(css.trim(), actualCss.trim(), 'should output style tag content')
+            } else if (['no-css-extract'].includes(name)) {
+                assert.equal(undefined, actualCss, 'should ignore css()')
             } else {
                 assert.equal('', actualCss.trim(), 'should always call css()')
             }
@@ -61,30 +63,30 @@ describe('rollup-plugin-vue', function () {
 })
 
 describe('styleToImports', function () {
- it('should convert style to import', function () {
-   var entry = './fixtures/style.vue'
-   var expectedCss = read('expects/style.css')
-   var actualCss
+    it('should convert style to import', function () {
+        var entry = './fixtures/style.vue'
+        var expectedCss = read('expects/style.css')
+        var actualCss
 
-   return rollup.rollup({
-       format: 'cjs',
-       entry: entry,
-       plugins: [
-         vuePlugin({
-           styleToImports: true,
-         }),
-         cssPlugin({
-           output: function (css) {
-             actualCss = css
-           },
-         }),
-       ],
-   }).then(function (bundle) {
-     bundle.generate({ format: 'es' })
+        return rollup.rollup({
+            format: 'cjs',
+            entry: entry,
+            plugins: [
+                vuePlugin({
+                    styleToImports: true,
+                }),
+                cssPlugin({
+                    output: function (css) {
+                        actualCss = css
+                    },
+                }),
+            ],
+        }).then(function (bundle) {
+            bundle.generate({ format: 'es' })
 
-     assert.equal(expectedCss.trim(), actualCss.trim(), 'should import style')
-   }).catch(function (error) {
-       throw error
-   })
- })
+            assert.equal(expectedCss.trim(), actualCss.trim(), 'should import style')
+        }).catch(function (error) {
+            throw error
+        })
+    })
 })
