@@ -1,4 +1,5 @@
-import { writeFile } from 'fs'
+import { writeFile, mkdirSync as mkdir, existsSync as exists } from 'fs'
+import { dirname, isAbsolute, resolve as resolvePath } from 'path'
 import compileCSS from './css'
 import compileSCSS from './scss'
 import compileLESS from './less'
@@ -9,7 +10,7 @@ const compilers = {
     less: compileLESS
 }
 
-export async function compile (style, options) {
+export async function compile(style, options) {
     let output
 
     if (style.lang === 'css') {
@@ -19,6 +20,14 @@ export async function compile (style, options) {
     }
 
     return output
+}
+
+function ensureDirectory(directory) {
+    if (!exists(directory)) {
+        ensureDirectory(dirname(directory))
+
+        mkdir(directory)
+    }
 }
 
 export default function (files, options) {
@@ -50,13 +59,16 @@ export default function (files, options) {
         return
     }
 
-    const dest = options.css
+    let dest = options.css
 
     if (typeof dest !== 'string') {
         return
     }
 
+    dest = isAbsolute(dest) ? dest : resolvePath(process.cwd(), dest)
+    console.log('OUTPUT:', dest)
     // Emit styles to file
+    ensureDirectory(dirname(dest))
     writeFile(dest, css, (err) => {
         if (err) throw err
     })
