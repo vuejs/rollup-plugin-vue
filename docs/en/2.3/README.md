@@ -39,7 +39,7 @@ This section lists config options for `<style>` elements.
 The `css` option accepts style handling options.
 - Set `css: null` to extract a consolidated style file in `dist/bundle.css`.
 - Set `css: false` to disable style at all.
-- Set `css: true` to dynamically inject as <style> tags via JavaScript.
+- Set `css: true` to dynamically inject as `<style>` tags via JavaScript.
 - Set `css: String` (eg: `css: 'dist/css/my-bundle.css`) to extract a consolidated style file in `dist/css/my-bundle.css`.
 - Set `css: Function` to provide a custom handler. Your handler would receive 3 parameters:
     - `style: String` - A string with all style elements' content concatenated.
