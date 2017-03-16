@@ -196,7 +196,7 @@ export default async function vueTransform (code, id, options) {
         (function(){
             if(document){
                 var head=document.head||document.getElementsByTagName('head')[0],
-                    style=document.create('style'),
+                    style=document.createElement('style'),
                     css=${JSON.stringify(style)};
                  style.type='text/css';
                  if (style.styleSheet){
