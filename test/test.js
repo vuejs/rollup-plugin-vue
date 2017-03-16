@@ -29,7 +29,7 @@ function test(name) {
         return rollup.rollup({
             entry: entry,
             plugins: [vuePlugin({
-                css: ['no-css-extract'].includes(name) ? true : cssHandler,
+                css: ['no-css-extract'].indexOf(name) > -1 ? true : cssHandler,
                 modules: {
                     generateScopedName: '[name]__[local]'
                 },
