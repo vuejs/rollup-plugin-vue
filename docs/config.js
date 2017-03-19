@@ -30,7 +30,7 @@ function lang_version(lang) {
     return version
 }
 
-self.$config = {
+docute.init({
     repo: 'vuejs/rollup-plugin-vue',
     'edit-link': 'https://github.com/vuejs/rollup-plugin-vue/edit/master/docs',
 
@@ -44,9 +44,9 @@ self.$config = {
         docsearch({
             apiKey: '7792597613e997afeb0b75a206ca0c5a',
             indexName: 'rollup-plugin-vue',
-            tags: ['en', 'v2.2', 'v2.3']
+            tags: ['en', 'v2.2', 'v2.3'],
+            url: 'https://vuejs.github.io/rollup-plugin-vue'
         })
-    ],
+    ]
     
-    url: 'https://vuejs.github.io/rollup-plugin-vue'
-}
+})
