@@ -43,6 +43,7 @@ rollup.rollup({
                         'posthtml-attrs-parser',
                         'pug',
                         'rollup-pluginutils',
+                        'stylus',
                         'vue-template-es2015-compiler',
                         'vue-template-validator',
                     ].indexOf(id) > -1

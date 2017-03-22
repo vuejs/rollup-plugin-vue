@@ -19,3 +19,10 @@ $red: red;
     color: blue
 }
 </style>
+
+<style lang="stylus">
+$green = green
+
+.baz
+  color $green
+</style>
