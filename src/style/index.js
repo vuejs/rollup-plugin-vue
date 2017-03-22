@@ -3,11 +3,13 @@ import { dirname, isAbsolute, resolve as resolvePath } from 'path'
 import compileCSS from './css'
 import compileSCSS from './scss'
 import compileLESS from './less'
+import compileSTYLUS from './stylus'
 
 const compilers = {
     scss: compileSCSS,
     sass: compileSCSS,
-    less: compileLESS
+    less: compileLESS,
+    stylus: compileSTYLUS
 }
 
 export async function compile (style, options) {

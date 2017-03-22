@@ -16,7 +16,7 @@ npm install --save-dev rollup-plugin-vue
 yarn add --dev rollup-plugin-vue
 ```
 
-##### Use plugin 
+##### Use plugin
 Next add `rollup-plugin-vue` to `rollup` plugins.
 
 ``` js
@@ -33,7 +33,7 @@ export default {
 For most cases `rollup-plugin-vue` works out of the box. But, you can always configure it to your needs.
 
 ### Style
-This section lists config options for `<style>` elements. 
+This section lists config options for `<style>` elements.
 
 #### Custom handler
 The `css` option accepts style handling options.
@@ -53,13 +53,13 @@ The `css` option accepts style handling options.
         - `$compiled: { code: String, ?map: Object }` - If [auto styles](#auto-styles) is enabled, `<style>` is transformed to `css`.
     - `compile: Function` - An async compiler that takes two parameters:
         - `style: { code: String, lang: String, ?map: Object }` - Style code and language.
-        - `options: { ?sass: Object, ?less: Object, ?cssModules: Object }` - Processing library configuration options.
-        
+        - `options: { ?sass: Object, ?less: Object, ?stylus: Object, ?cssModules: Object }` - Processing library configuration options.
+
     ``` js
     // rollup.config.js
     import fs from 'fs'
     import vue from 'rollup-plugin-vue'
-    
+
     export default {
         ...
         plugins: [
@@ -83,7 +83,7 @@ List of supported style languages:
 
 - ##### CSS
 The default style language.
- 
+
 - ##### Sass/Scss
 It uses `node-sass@^4.5.0` to process `sass/scss` style elements. You can provide `node-sass` configuration options by setting:
 ``` js
@@ -96,10 +96,16 @@ It uses `less@^2.7.2` to process `less` style elements. You can provide `less` c
 less: { /* node-sass options */}
 ```
 
+- ##### Stylus
+It uses `stylus@^0.54.5` to process `stylus` style elements. You can provide `stylus` configuration options by setting:
+``` js
+stylus: { /* stylus options */}
+```
+
 <p class="tip" markdown="1">
-`node-sass` and `less` are optional dependencies. If you are using `scss/sass/less` you should require (`yarn add --dev node-sass less`) them.
+`node-sass`, `less` and `stylus` are optional dependencies. If you are using `scss/sass/less/stylus` you should require (`yarn add --dev node-sass less stylus`) them.
 </p>
-  
+
 #### Use other plugins
 Set `autoStyles: false` and `styleToImport: true` to import style as a dependency and plugins like [rollup-plugin-scss](https://github.com/differui/rollup-plugin-sass) can be used.
 
@@ -137,7 +143,7 @@ export default {
     <p :class="{ [$style.red]: isRed }">
       Am I red?
     </p>
-    
+
     <p :class="[$style.red, $style.bold]">
       Red and bold
     </p>
@@ -147,11 +153,11 @@ export default {
 <script>
 export default {
   computed: {
-  
+
     $style () {
         return this.$options.cssModules
     }
-  
+
   }
 }
 </script>
@@ -185,7 +191,7 @@ You can have more than one `<style>` tags in a single *.vue component. To avoid 
 You can provide `postcss-modules` configuration options by setting:
 ``` js
 cssModules: { generateScopedName: '[name]__[local]', ... }
-``` 
+```
 
 ### Template
 Templates are processed into `render` function by default. You can disable this by setting:
@@ -201,19 +207,19 @@ compileOptions: {
 ```
 
 #### Static Class Replacement
-When using CSS modules, class names are replaced in template at compile time. 
+When using CSS modules, class names are replaced in template at compile time.
 
-For example: 
+For example:
 ```
 <div class="red">Foo</div>
-``` 
-would become 
+```
+would become
 ```
 <div class="_lkcjalei8942jksa_0">Foo</div>
-``` 
+```
 before compiling to `render` function. This saves you from binding `class` attribute to `$style.red`.
- 
-You can disable this behavior by setting:  
+
+You can disable this behavior by setting:
 ``` js
 disableCssModuleStaticReplacement: true
 ```
@@ -224,7 +230,7 @@ disableCssModuleStaticReplacement: true
 Default template language.
 
 - ##### Pug/Jade
-It uses `pug@^2.0.0-beta11` to process `pug` template elements. You can provide `pug` configuration options by setting:  
+It uses `pug@^2.0.0-beta11` to process `pug` template elements. You can provide `pug` configuration options by setting:
 ``` js
 pug: { /* pug options */}
 ```
@@ -240,7 +246,7 @@ It uses `coffeescript-compiler@^0.1.1` to process `coffee` script elements. You 
 ### Handle with(this) issue
 Vue uses `with(this)` in render function as scoping rules of `with` aligns with scoping rules of templates. Using `with` in strict mode is forbidden.
 
-`rollup-plugin-vue` strips away all `with(this)` statements by default. You can disable this by setting:  
+`rollup-plugin-vue` strips away all `with(this)` statements by default. You can disable this by setting:
  ``` js
  vue: { transforms: { stripWith: false } }
  ```

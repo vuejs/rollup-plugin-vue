@@ -59,6 +59,9 @@ export default {
     // Config for node-sass.
     scss: {},
 
+    // Config for stylus.
+    stylus: {},
+
     // Config for pug compiler.
     pug: {},
 
