@@ -1,6 +1,8 @@
 ---
 nav: en2.3
-
+search: 
+  - en
+  - v2.3
 ---
 
 ## Installation
