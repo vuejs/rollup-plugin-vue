@@ -33,7 +33,7 @@ function test(name) {
                 modules: {
                     generateScopedName: '[name]__[local]'
                 },
-                compileTemplate: ['compileTemplate', 'slot', 'table', 'table-n-slot'].indexOf(name) > -1
+              compileTemplate: ['compileTemplate', 'compileTemplateLocalComponent', 'slot', 'table', 'table-n-slot'].indexOf(name) > -1
             })]
         }).then(function (bundle) {
             var result = bundle.generate({ format: 'es' })
