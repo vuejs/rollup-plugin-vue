@@ -1,7 +1,7 @@
-import sass from 'node-sass'
 import debug from '../debug'
 
 export default function (style, options) {
+    const sass = require('node-sass')
     debug(`SASS: ${style.id}`)
     const { css, map } = sass.renderSync({
         file: style.id,
