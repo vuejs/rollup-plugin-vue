@@ -1,8 +1,33 @@
 import postcss from 'postcss'
 import modules from 'postcss-modules'
+import selectorParser from 'postcss-selector-parser'
 import camelcase from 'camelcase'
 // import MagicString from 'magic-string'
+import genScopeID from '../gen-scope-id'
 import debug from '../debug'
+
+const addScopeID = postcss.plugin('add-scope-id', options => {
+     const selectorTransformer = selectorParser(selectors => {
+        selectors.each(selector => {
+            let target = null
+            selector.each(n => {
+                if (n.type !== 'pseudo' && n.type !== 'combinator') {
+                    target = n
+                }
+            })
+
+            selector.insertAfter(target, selectorParser.attribute({
+                attribute: options.scopeID
+            }))
+        })
+    })
+
+    return root => {
+        root.walkRules(rule => {
+            rule.selector = selectorTransformer.process(rule.selector).result
+        })
+    }
+})
 
 function compileModule (code, map, source, options) {
     let style
@@ -22,6 +47,22 @@ function compileModule (code, map, source, options) {
                     throw error
                 }
           )
+}
+
+function compileScopedCSS (code, map, source, options) {
+    debug(`Scoped CSS: ${source.id}`)
+
+    return postcss([
+        addScopeID({
+            scopeID: genScopeID(source.id)
+        })
+    ]).process(code, { map: { inline: false, prev: map }, from: source.id, to: source.id })
+        .then(
+            result => ({ code: result.css, map: result.map.toString() }),
+            error => {
+                throw error
+            }
+        )
 }
 
 function escapeRegExp (str) {
@@ -68,6 +109,18 @@ export default async function (promise, options) {
 
             return style
         }).catch(error => debug(error))
+    }
+
+    if (style.scoped === true) {
+        return compileScopedCSS(code, map, style, options).then(compiled => {
+            if (style.$compiled) {
+                compiled.$prev = style.$compiled
+            }
+
+            style.$compiled = compiled
+
+            return style
+        })
     }
 
     const output = { code, map, lang: 'css' }
