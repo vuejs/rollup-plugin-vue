@@ -82,6 +82,15 @@ async function processScript (source, id, content, options, nodes, modules, scop
 
     let script = deIndent(padContent(content.slice(0, content.indexOf(source.code))) + source.code)
     const map = (new MagicString(script)).generateMap({ hires: true })
+
+    script = processScriptForStyle(script, modules, scoped, lang, id, options)
+
+    script = await processScriptForRender(script, template, lang, id, options)
+
+    return { map, code: script }
+}
+
+function processScriptForStyle (script, modules, scoped, lang, id, options) {
     script = injectModule(script, modules, lang, id, options)
 
     if (scoped) {
@@ -89,15 +98,21 @@ async function processScript (source, id, content, options, nodes, modules, scop
         script = injectScopeID(script, scopeID, lang, id, options)
     }
 
+    return script
+}
+
+async function processScriptForRender (script, template, lang, id, options) {
     if (template && options.compileTemplate) {
         const render = require('vue-template-compiler').compile(template, options.compileOptions)
 
-        return { map, code: await injectRender(script, render, lang, id, options) }
-    } else if (template) {
-        return { map, code: await injectTemplate(script, template, lang, id, options) }
-    } else {
-        return { map, code: script }
+        return await injectRender(script, render, lang, id, options)
     }
+
+    if (template) {
+        return await injectTemplate(script, template, lang, id, options)
+    }
+
+    return script
 }
 
 // eslint-disable-next-line complexity
