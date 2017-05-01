@@ -1,4 +1,4 @@
-import { templateJs, moduleJs, renderJs } from './injections'
+import { templateJs, moduleJs, scopeJs, renderJs } from './injections'
 import { coffee } from './script/index'
 
 export default {
@@ -80,6 +80,11 @@ export default {
         module: {
             js: moduleJs,
             babel: moduleJs
+        },
+
+        scoped: {
+            js: scopeJs,
+            babel: scopeJs
         }
     },
 

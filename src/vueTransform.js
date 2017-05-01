@@ -7,7 +7,8 @@ import templateProcessor from './template/index'
 import { relative } from 'path'
 import MagicString from 'magic-string'
 import debug from './debug'
-import { injectModule, injectTemplate, injectRender } from './injections'
+import { injectModule, injectScopeID, injectTemplate, injectRender } from './injections'
+import genScopeID from './gen-scope-id'
 
 function getNodeAttrs (node) {
     if (node.attrs) {
@@ -65,7 +66,7 @@ async function processTemplate (source, id, content, options, nodes, modules) {
     return htmlMinifier.minify(template, options.htmlMinifier)
 }
 
-async function processScript (source, id, content, options, nodes, modules) {
+async function processScript (source, id, content, options, nodes, modules, scoped) {
     const template = await processTemplate(nodes.template[0], id, content, options, nodes, modules)
 
     debug(`Process script: ${id}`)
@@ -79,18 +80,23 @@ async function processScript (source, id, content, options, nodes, modules) {
         source = await options.script[source.attrs.lang](source, id, content, options, nodes)
     }
 
-    const script = deIndent(padContent(content.slice(0, content.indexOf(source.code))) + source.code)
+    let script = deIndent(padContent(content.slice(0, content.indexOf(source.code))) + source.code)
     const map = (new MagicString(script)).generateMap({ hires: true })
-    const scriptWithModules = injectModule(script, modules, lang, id, options)
+    script = injectModule(script, modules, lang, id, options)
+
+    if (scoped) {
+        const scopeID = genScopeID(id)
+        script = injectScopeID(script, scopeID, lang, id, options)
+    }
 
     if (template && options.compileTemplate) {
         const render = require('vue-template-compiler').compile(template, options.compileOptions)
 
-        return { map, code: await injectRender(scriptWithModules, render, lang, id, options) }
+        return { map, code: await injectRender(script, render, lang, id, options) }
     } else if (template) {
-        return { map, code: await injectTemplate(scriptWithModules, template, lang, id, options) }
+        return { map, code: await injectTemplate(script, template, lang, id, options) }
     } else {
-        return { map, code: scriptWithModules }
+        return { map, code: script }
     }
 }
 
@@ -173,11 +179,18 @@ const getModules = function (styles) {
     return all
 }
 
+const hasScoped = function (styles) {
+    return styles.reduce((scoped, style) => {
+        return scoped || style.scoped
+    }, false)
+}
+
 export default async function vueTransform (code, id, options) {
     const nodes = parseTemplate(code)
     const css = await processStyle(nodes.style, id, code, options, nodes)
     const modules = getModules(css)
-    const js = await processScript(nodes.script[0], id, code, options, nodes, modules)
+    const scoped = hasScoped(css)
+    const js = await processScript(nodes.script[0], id, code, options, nodes, modules, scoped)
 
     const isProduction = process.env.NODE_ENV === 'production'
     const isWithStripped = options.stripWith !== false
