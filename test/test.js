@@ -41,7 +41,7 @@ function test(name) {
             assert.equal(code.trim(), expected.trim(), 'should compile code correctly')
 
             // Check css output
-            if (['style', 'css-modules', 'css-modules-static', 'scss', 'pug', 'less', 'stylus'].indexOf(name) > -1) {
+            if (['style', 'css-modules', 'css-modules-static', 'scoped-css', 'scss', 'pug', 'less', 'stylus'].indexOf(name) > -1) {
                 var css = read('expects/' + name + '.css')
                 assert.equal(css.trim(), actualCss.trim(), 'should output style tag content')
             } else if (['no-css-extract'].indexOf(name) > -1) {
