@@ -7,7 +7,7 @@ import genScopeID from '../gen-scope-id'
 import debug from '../debug'
 
 const addScopeID = postcss.plugin('add-scope-id', options => {
-     const selectorTransformer = selectorParser(selectors => {
+    const selectorTransformer = selectorParser(selectors => {
         selectors.each(selector => {
             let target = null
             selector.each(n => {
