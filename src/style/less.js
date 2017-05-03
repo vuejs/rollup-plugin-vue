@@ -1,6 +1,5 @@
-import less from 'less'
-
 export default async function (style, options) {
+    const less = require('less')
     const { css, map } = await less.render(style.code, {
         sourceMap: {
             sourceMapFullFilename: style.id,
