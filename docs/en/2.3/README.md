@@ -50,7 +50,7 @@ The `css` option accepts style handling options.
         - `id: String` - Path of the `.vue` file.
         - `lang: String` - Language defined on `<style>` element (defaults to `css`).
         - `module: Boolean` - Is `<style>` element a CSS module?
-        - `scoped: Boolean` - Should `<style>` element be scoped? <p class="warning">Scoped styles are not supported yet.</p>
+        - `scoped: Boolean` - Should `<style>` element be scoped? <p class="warning">Available in `rollup-plugin-vue@^2.4+`.</p>
         - `map: Object` - Source map object.
         - `$compiled: { code: String, ?map: Object }` - If [auto styles](#auto-styles) is enabled, `<style>` is transformed to `css`.
     - `compile: Function` - An async compiler that takes two parameters:
@@ -193,6 +193,39 @@ You can have more than one `<style>` tags in a single *.vue component. To avoid 
 You can provide `postcss-modules` configuration options by setting:
 ``` js
 cssModules: { generateScopedName: '[name]__[local]', ... }
+```
+
+#### Scoped CSS
+<p class="tip">
+Available in `rollup-plugin-vue@^2.4+`.
+</p>
+
+There is another option to modularize your component styles that called Scoped CSS. Scoped CSS will add a unique attribute to all HTML elements and CSS selectors instead of transform class names. To enable this, you need to add `scoped` attribute to `<style>` tag.
+
+For example, if you write following CSS in your component:
+
+``` vue
+<style scoped>
+.red {
+  color: red;
+}
+
+.container .text {
+  font-size: 1.8rem;
+}
+</style>
+```
+
+The output CSS will be like:
+
+``` css
+.red[data-v-07bdddea] {
+  color: red;
+}
+
+.container .text[data-v-07bdddea] {
+  font-size: 1.8rem;
+}
 ```
 
 ### Template

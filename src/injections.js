@@ -71,6 +71,19 @@ export function moduleJs (script, modules, lang, id, options) {
           `[rollup-plugin-vue] CSS modules are injected in the default export of .vue file (lang: ${lang}). In ${id}, it cannot find 'export defaults'.`
     )
 }
+export function scopeJs (script, scopeID, lang, id, options) {
+    const matches = findInjectionPosition(script)
+
+    if (matches && matches.length) {
+        const scopeScript = `${matches[1]}_scopeId: '${scopeID}',`
+
+        return script.split(matches[1]).join(scopeScript)
+    }
+
+    throw new Error(
+          `[rollup-plugin-vue] Scope ID is injected in the default export of .vue file (lang: ${lang}). In ${id}, it cannot find 'export defaults'.`
+    )
+}
 
 export function injectTemplate (script, template, lang, id, options) {
     if (lang in options.inject.template) {
@@ -98,5 +111,15 @@ export function injectModule (script, modules, lang, id, options) {
 
     throw new Error(
           `[rollup-plugin-vue] CSS modules are injected in the default export of .vue file. In ${id}, it cannot find 'export defaults'.`
+    )
+}
+
+export function injectScopeID (script, scopeID, lang, id, options) {
+    if (lang in options.inject.scoped) {
+        return options.inject.scoped[lang](script, scopeID, lang, id, options)
+    }
+
+    throw new Error(
+          `[rollup-plugin-vue] Scope ID is injected in the default export of .vue file. In ${id}, it cannot find 'export defaults'.`
     )
 }
