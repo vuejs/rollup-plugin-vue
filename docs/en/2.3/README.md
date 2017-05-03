@@ -195,6 +195,39 @@ You can provide `postcss-modules` configuration options by setting:
 cssModules: { generateScopedName: '[name]__[local]', ... }
 ```
 
+#### Scoped CSS
+<p class="tip">
+`rollup-plugin-vue@^2.3` does not support Scoped CSS yet.
+</p>
+
+There is another option to modularize your component styles that called Scoped CSS. Scoped CSS will add a unique attribute to all HTML elements and CSS selectors instead of transform class names. To enable this, you need to add `scoped` attribute to `<style>` tag.
+
+For example, if you write following CSS in your component:
+
+``` vue
+<style scoped>
+.red {
+  color: red;
+}
+
+.container .text {
+  font-size: 1.8rem;
+}
+</style>
+```
+
+The output CSS will be like:
+
+``` css
+.red[data-v-07bdddea] {
+  color: red;
+}
+
+.container .text[data-v-07bdddea] {
+  font-size: 1.8rem;
+}
+```
+
 ### Template
 Templates are processed into `render` function by default. You can disable this by setting:
 ``` js
