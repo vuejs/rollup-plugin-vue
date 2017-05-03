@@ -50,7 +50,7 @@ The `css` option accepts style handling options.
         - `id: String` - Path of the `.vue` file.
         - `lang: String` - Language defined on `<style>` element (defaults to `css`).
         - `module: Boolean` - Is `<style>` element a CSS module?
-        - `scoped: Boolean` - Should `<style>` element be scoped? <p class="warning">Scoped styles are not supported yet.</p>
+        - `scoped: Boolean` - Should `<style>` element be scoped? <p class="warning">Available in `rollup-plugin-vue@^2.4+`.</p>
         - `map: Object` - Source map object.
         - `$compiled: { code: String, ?map: Object }` - If [auto styles](#auto-styles) is enabled, `<style>` is transformed to `css`.
     - `compile: Function` - An async compiler that takes two parameters:
@@ -197,7 +197,7 @@ cssModules: { generateScopedName: '[name]__[local]', ... }
 
 #### Scoped CSS
 <p class="tip">
-`rollup-plugin-vue@^2.3` does not support Scoped CSS yet.
+Available in `rollup-plugin-vue@^2.4+`.
 </p>
 
 There is another option to modularize your component styles that called Scoped CSS. Scoped CSS will add a unique attribute to all HTML elements and CSS selectors instead of transform class names. To enable this, you need to add `scoped` attribute to `<style>` tag.
