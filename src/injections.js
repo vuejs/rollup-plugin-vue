@@ -75,7 +75,7 @@ export function scopeJs (script, scopeID, lang, id, options) {
     const matches = findInjectionPosition(script)
 
     if (matches && matches.length) {
-        const scopeScript = `${matches[1]}_scopeId: '${scopeID}'`
+        const scopeScript = `${matches[1]}_scopeId: '${scopeID}',`
 
         return script.split(matches[1]).join(scopeScript)
     }
