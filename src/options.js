@@ -14,6 +14,7 @@ export default {
 
     // Config for html-minifier.
     htmlMinifier: {
+        caseSensitive: true,
         customAttrSurround: [[/@/, new RegExp('')], [/:/, new RegExp('')]],
         collapseWhitespace: true,
         removeComments: true
