@@ -109,7 +109,7 @@ stylus: { /* stylus options */}
 </p>
 
 #### Use other plugins
-Set `autoStyles: false` and `styleToImport: true` to import style as a dependency and plugins like [rollup-plugin-scss](https://github.com/differui/rollup-plugin-sass) can be used.
+Set `autoStyles: false` and `styleToImports: true` to import style as a dependency and plugins like [rollup-plugin-scss](https://github.com/differui/rollup-plugin-sass) can be used.
 
 ``` js
 // rollup.config.js
@@ -119,7 +119,7 @@ import scss from 'rollup-plugin-scss'
 export default {
     ...
     plugins: [
-        vue({ autoStyles: false, styleToImport: true }),
+        vue({ autoStyles: false, styleToImports: true }),
         scss()
     ],
     ...
