@@ -1,5 +1,5 @@
 <template lang="pug">
-div(class=css.test class='keep-me') foo
+  div(class=css.test class='keep-me') foo
 </template>
 
 <script lang="babel">
