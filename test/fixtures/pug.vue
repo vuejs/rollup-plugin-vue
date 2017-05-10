@@ -1,5 +1,11 @@
 <template lang="pug">
-  div(class=css.test class='keep-me') foo
+
+
+  div(class=css.test class='keep-me') 
+    article
+      p foo
+
+      
 </template>
 
 <script lang="babel">
