@@ -1,11 +1,13 @@
 <template lang="pug">
 
 
-  div(class=css.test class='keep-me') 
+  div(class=css.test class='keep-me' v-if="true")
     article
       p foo
+  p(v-else)
+    | nothing
 
-      
+
 </template>
 
 <script lang="babel">
