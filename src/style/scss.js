@@ -5,7 +5,7 @@ export default function (style, options) {
     debug(`SASS: ${style.id}`)
     const { css, map } = sass.renderSync({
         file: style.id,
-        data: style.code,
+        data: 'data' in options.scss ? `${options.scss.data}\n${style.code}` : style.code,
         omitSourceMapUrl: true,
         sourceMap: true,
         outFile: style.id,
