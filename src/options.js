@@ -60,6 +60,9 @@ export default {
     // Config for node-sass.
     scss: {},
 
+    // Config for less.
+    less: {},
+
     // Config for stylus.
     stylus: {},
 
