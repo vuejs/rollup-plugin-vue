@@ -44,7 +44,6 @@ docute.init({
         docsearch({
             apiKey: '7792597613e997afeb0b75a206ca0c5a',
             indexName: 'rollup-plugin-vue',
-            tags: ['en', 'v2.2', 'v2.3'],
             url: 'https://vuejs.github.io/rollup-plugin-vue'
         })
     ]
