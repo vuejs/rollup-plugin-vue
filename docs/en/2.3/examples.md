@@ -1,6 +1,7 @@
 ---
 nav: en2.3
-
+search: 
+  - "version\:2.3"
 ---
 
 - #### Bootstrap like SASS export 
