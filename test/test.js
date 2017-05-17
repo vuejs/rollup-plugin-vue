@@ -49,14 +49,16 @@ function test(name) {
 
             // Check css output
             if ([
-                      'style',
                       'css-modules',
                       'css-modules-static',
+                      'import-scss',
+                      'import-less',
+                      'less',
+                      'pug',
                       'scoped-css',
                       'scoped-css-with-no-auto-style',
                       'scss',
-                      'pug',
-                      'less',
+                      'style',
                       'stylus'
                   ].indexOf(name) > -1) {
                 var css = read('expects/' + name + '.css')
@@ -75,7 +77,7 @@ function test(name) {
 describe('rollup-plugin-vue', function () {
     fs.readdirSync(path.resolve(__dirname, 'fixtures'))
           .forEach(function (file) {
-              test(file.substr(0, file.length - 4))
+              if (/\.vue$/.test(file)) test(file.substr(0, file.length - 4))
           })
 })
 
