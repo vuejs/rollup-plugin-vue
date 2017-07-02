@@ -73,7 +73,7 @@ export default {
     inject: {
         template: {
             js: templateJs,
-            babel: templateJs,
+            babel: templateJs
         },
 
         render: {
