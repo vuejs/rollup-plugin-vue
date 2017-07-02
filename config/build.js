@@ -48,6 +48,7 @@ rollup.rollup({
                         'stylus',
                         'vue-template-es2015-compiler',
                         'vue-template-validator',
+                        'typescript'
                     ].indexOf(id) > -1
           }
       })

@@ -1,5 +1,5 @@
 import { templateJs, moduleJs, scopeJs, renderJs } from './injections'
-import { coffee } from './script/index'
+import { coffee, typescript } from './script/index'
 
 export default {
     // Style compilation options.
@@ -73,28 +73,33 @@ export default {
     inject: {
         template: {
             js: templateJs,
-            babel: templateJs
+            babel: templateJs,
         },
 
         render: {
             js: renderJs,
-            babel: renderJs
+            babel: renderJs,
+            ts: renderJs
         },
 
         module: {
             js: moduleJs,
-            babel: moduleJs
+            babel: moduleJs,
+            ts: moduleJs
         },
 
         scoped: {
             js: scopeJs,
-            babel: scopeJs
+            babel: scopeJs,
+            ts: scopeJs
         }
     },
 
     // script languages.
     script: {
         coffee,
-        coffeescript: coffee
+        coffeescript: coffee,
+        typescript,
+        ts: typescript
     }
 }

@@ -29,9 +29,9 @@ function getNodeAttrs (node) {
  */
 function padContent (content) {
     return content
-          .split(/\r?\n/g)
-          .map(() => '')
-          .join('\n')
+        .split(/\r?\n/g)
+        .map(() => '')
+        .join('\n')
 }
 
 function validateTemplate (code, content, id) {
@@ -54,9 +54,9 @@ async function processTemplate (source, id, content, options, nodes, modules) {
     const extras = { modules, id, lang: source.attrs.lang }
     const code = deIndent(source.code)
     const template = await (
-          options.disableCssModuleStaticReplacement !== true
-                ? templateProcessor(code, extras, options)
-                : code
+        options.disableCssModuleStaticReplacement !== true
+            ? templateProcessor(code, extras, options)
+            : code
     )
 
     if (!options.compileTemplate) {
@@ -70,7 +70,7 @@ async function processScript (source, id, content, options, nodes, modules, scop
     const template = await processTemplate(nodes.template[0], id, content, options, nodes, modules)
 
     debug(`Process script: ${id}`)
-    const lang = 'js'
+    const lang = source.attrs.lang || 'js'
 
     if (source.attrs.lang && ['js', 'babel'].indexOf(source.attrs.lang) < 0) {
         if (!(source.attrs.lang in options.script)) {
@@ -123,7 +123,7 @@ async function processStyle (styles, id, content, options) {
         const style = styles[i]
 
         const code = deIndent(
-              padContent(content.slice(0, content.indexOf(style.code))) + style.code
+            padContent(content.slice(0, content.indexOf(style.code))) + style.code
         )
 
         const map = (new MagicString(code)).generateMap({ hires: true })
@@ -199,7 +199,6 @@ const hasScoped = function (styles) {
         return scoped || style.scoped
     }, false)
 }
-
 export default async function vueTransform (code, id, options) {
     const nodes = parseTemplate(code)
     const css = await processStyle(nodes.style, id, code, options, nodes)
