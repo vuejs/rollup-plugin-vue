@@ -75,7 +75,7 @@ function test(name) {
 describe('rollup-plugin-vue', function () {
     fs.readdirSync(path.resolve(__dirname, 'fixtures'))
           .forEach(function (file) {
-              test(file.substr(0, file.length - 4))
+              file.endsWith('.vue') && test(file.substr(0, file.length - 4))
           })
 })
 
