@@ -66,11 +66,28 @@ async function processTemplate (source, id, content, options, nodes, modules) {
     return htmlMinifier.minify(template, options.htmlMinifier)
 }
 
+/* eslint-disable complexity */
+function normalizeLang (any) {
+    switch (any) {
+    case 'coffee':
+    case 'coffeescript':
+    case 'coffee-script':
+        return 'coffee'
+    case 'ts':
+    case 'typescript':
+    case 'type-script':
+        return 'ts'
+    default:
+        return 'js'
+    }
+}
+/* eslint-enable complexity */
+
 async function processScript (source, id, content, options, nodes, modules, scoped) {
     const template = await processTemplate(nodes.template[0], id, content, options, nodes, modules)
 
     debug(`Process script: ${id}`)
-    const lang = source.attrs.lang || 'js'
+    const lang = normalizeLang(source.attrs.lang)
 
     if (source.attrs.lang && ['js', 'babel'].indexOf(source.attrs.lang) < 0) {
         if (!(source.attrs.lang in options.script)) {

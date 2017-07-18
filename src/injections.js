@@ -128,7 +128,7 @@ export function injectModule (script, modules, lang, id, options) {
     }
 
     throw new Error(
-        `[rollup-plugin-vue] CSS modules are injected in the default export of .vue file. In ${id}, it cannot find 'export defaults'.`
+        `[rollup-plugin-vue] CSS modules are injected in the default export of .vue file. In ${id}, it cannot find 'export defaults' in ${script}.`
     )
 }
 
