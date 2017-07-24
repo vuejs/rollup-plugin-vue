@@ -2,7 +2,7 @@ import { writeFile, mkdirSync as mkdir, existsSync as exists } from 'fs'
 import { dirname, isAbsolute, resolve as resolvePath } from 'path'
 import compileCSS from './css'
 import compileSCSS from './scss'
-import compileLESS from './less'
+import compileLESS from './less/index'
 import compileSTYLUS from './stylus'
 
 const compilers = {

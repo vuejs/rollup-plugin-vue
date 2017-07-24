@@ -49,15 +49,19 @@ function test(name) {
 
             // Check css output
             if ([
-                      'style',
                       'css-modules',
                       'css-modules-static',
+                      'import-scss',
+                      'import-less',
+                      'less',
+                      'pug',
                       'scoped-css',
                       'scoped-css-with-no-auto-style',
                       'scss',
                       'sass',
                       'pug',
                       'less',
+                      'style',
                       'stylus'
                   ].indexOf(name) > -1) {
                 var css = read('expects/' + name + '.css')
