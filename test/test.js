@@ -19,7 +19,7 @@ function test(name) {
         var expected = read('expects/' + name + '.js').replace(/\r/g, '')
         var actualCss
         var cssHandler = function (css, styles) {
-            if (['scss', 'pug'].indexOf(name) > -1) {
+            if (['scss', 'pug', 'sass'].indexOf(name) > -1) {
                 actualCss = styles[0].$compiled.code
             } else {
                 actualCss = css
@@ -55,6 +55,7 @@ function test(name) {
                       'scoped-css',
                       'scoped-css-with-no-auto-style',
                       'scss',
+                      'sass',
                       'pug',
                       'less',
                       'stylus'
