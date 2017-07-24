@@ -9,6 +9,7 @@ export default function (style, options) {
         omitSourceMapUrl: true,
         sourceMap: true,
         outFile: style.id,
+        indentedSyntax: style.lang === 'sass',
         ...options.scss
     })
 
