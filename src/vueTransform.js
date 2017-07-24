@@ -238,7 +238,7 @@ export default async function vueTransform (code, id, options) {
         const style = css.map(s => '$compiled' in s ? s.$compiled.code : s.code).join('\n').replace(/(\r?\n|[\s])+/g, ' ')
         const styleCode = `
         (function(){
-            if(document){
+            if(typeof document !== 'undefined'){
                 var head=document.head||document.getElementsByTagName('head')[0],
                     style=document.createElement('style'),
                     css=${JSON.stringify(style)};
