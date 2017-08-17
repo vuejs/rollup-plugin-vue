@@ -12,16 +12,13 @@ import debug from '../debug'
  * @returns {boolean}
  */
 function isInvalidTag (tag) {
-    let isValid = false
-
-    if (tag === 'from' ||
+    if (
+        tag === 'from' ||
         tag === 'to' ||
-        tag.match(/^\d/)
+        /^\d/.test(tag)
     ) {
-        isValid = true
+        return true
     }
-
-    return isValid
 }
 
 const addScopeID = postcss.plugin('add-scope-id', options => {
