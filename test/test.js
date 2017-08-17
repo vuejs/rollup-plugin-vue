@@ -57,6 +57,7 @@ function test(name) {
                       'pug',
                       'scoped-css',
                       'scoped-css-with-no-auto-style',
+                      'scoped-css-with-deep-tag',
                       'scss',
                       'sass',
                       'pug',

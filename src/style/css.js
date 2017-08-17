@@ -11,7 +11,7 @@ import debug from '../debug'
  * @param tag
  * @returns {boolean}
  */
-function isInvalidTag( tag ) {
+function isInvalidTag (tag) {
     let isValid = false
 
     if (tag === 'from' ||
@@ -37,7 +37,7 @@ const addScopeID = postcss.plugin('add-scope-id', options => {
 
                 if (n.type === 'tag') {
                     if (n.value === '/deep/') {
-                        let next = n.next()
+                        const next = n.next()
 
                         if (next.type === 'combinator' && next.value === ' ') {
                             next.remove()
@@ -45,7 +45,7 @@ const addScopeID = postcss.plugin('add-scope-id', options => {
 
                         n.remove()
                         return false
-                    } else if ( isInvalidTag( n.value ) ) {
+                    } else if (isInvalidTag(n.value)) {
                         return
                     }
                 }
