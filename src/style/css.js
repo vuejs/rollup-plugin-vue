@@ -6,17 +6,53 @@ import camelcase from 'camelcase'
 import genScopeID from '../gen-scope-id'
 import debug from '../debug'
 
+/**
+ * filter invalid tag, e.g. percentage, keyword(from, to)...
+ * @param tag
+ * @returns {boolean}
+ */
+function isInvalidTag (tag) {
+    if (
+        tag === 'from' ||
+        tag === 'to' ||
+        /^\d/.test(tag)
+    ) {
+        return true
+    }
+}
+
 const addScopeID = postcss.plugin('add-scope-id', options => {
     const selectorTransformer = selectorParser(selectors => {
         selectors.each(selector => {
             let target = null
             selector.each(n => {
+                if (n.type === 'combinator' && n.value === '>>>') {
+                    n.value = ' '
+                    n.spaces.before = n.spaces.after = ''
+                    return false
+                }
+
+                if (n.type === 'tag') {
+                    if (n.value === '/deep/') {
+                        const next = n.next()
+
+                        if (next.type === 'combinator' && next.value === ' ') {
+                            next.remove()
+                        }
+
+                        n.remove()
+                        return false
+                    } else if (isInvalidTag(n.value)) {
+                        return
+                    }
+                }
+
                 if (n.type !== 'pseudo' && n.type !== 'combinator') {
                     target = n
                 }
             })
 
-            selector.insertAfter(target, selectorParser.attribute({
+            target && selector.insertAfter(target, selectorParser.attribute({
                 attribute: options.scopeID
             }))
         })
