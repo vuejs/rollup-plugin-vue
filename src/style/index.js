@@ -32,6 +32,7 @@ function ensureDirectory (directory) {
     }
 }
 
+/* eslint-disable complexity */
 export default function (files, options) {
     if (typeof (options.css) === 'boolean') {
         return
@@ -74,3 +75,4 @@ export default function (files, options) {
         if (err) throw err
     })
 }
+/* eslint-enable complexity */

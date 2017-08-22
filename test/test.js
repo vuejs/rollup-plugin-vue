@@ -63,7 +63,8 @@ function test(name) {
                       'pug',
                       'less',
                       'style',
-                      'stylus'
+                      'stylus',
+                      'external-script'
                   ].indexOf(name) > -1) {
                 var css = read('expects/' + name + '.css')
                 assert.equal(css.trim(), actualCss.trim(), 'should output style tag content')
