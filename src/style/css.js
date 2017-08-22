@@ -25,6 +25,7 @@ const addScopeID = postcss.plugin('add-scope-id', options => {
     const selectorTransformer = selectorParser(selectors => {
         selectors.each(selector => {
             let target = null
+            /* eslint-disable complexity */
             selector.each(n => {
                 if (n.type === 'combinator' && n.value === '>>>') {
                     n.value = ' '
@@ -51,6 +52,7 @@ const addScopeID = postcss.plugin('add-scope-id', options => {
                     target = n
                 }
             })
+            /* eslint-enable complexity */
 
             target && selector.insertAfter(target, selectorParser.attribute({
                 attribute: options.scopeID
