@@ -164,7 +164,20 @@ async function processStyle (styles, id, content, options) {
     return outputs
 }
 
-function parseTemplate (code) {
+function checkIfTemplateContainsMoreElements(node) {
+    let count = 0
+
+    node.content.childNodes.forEach(( node ) => {
+        //filter text/comment node
+        if ( node.nodeName.indexOf('#') === -1 ) {
+            count++
+        }
+    })
+
+    return count > 1
+}
+
+function parseTemplate (id, code) {
     debug('Parsing template....')
     const fragment = parse5.parseFragment(code, { locationInfo: true })
 
@@ -178,6 +191,10 @@ function parseTemplate (code) {
         const name = fragment.childNodes[i].nodeName
         if (!(name in nodes)) {
             continue
+        }
+
+        if (name === 'template' && checkIfTemplateContainsMoreElements(fragment.childNodes[i])) {
+            throw new Error(`[rollup-plugin-vue] Error in ${id}:\n    <template> should only contain exactly one root element.`)
         }
 
         const start = fragment.childNodes[i].__location.startTag.endOffset
@@ -221,7 +238,7 @@ const hasScoped = function (styles) {
     }, false)
 }
 export default async function vueTransform (code, id, options) {
-    const nodes = parseTemplate(code)
+    const nodes = parseTemplate(id, code)
     const css = await processStyle(nodes.style, id, code, options, nodes)
     const modules = getModules(css)
     const scoped = hasScoped(css)
