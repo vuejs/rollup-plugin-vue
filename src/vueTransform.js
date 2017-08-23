@@ -164,12 +164,12 @@ async function processStyle (styles, id, content, options) {
     return outputs
 }
 
-function checkIfTemplateContainsMoreElements(node) {
+function checkIfTemplateContainsMoreElements (node) {
     let count = 0
 
-    node.content.childNodes.forEach(( node ) => {
-        //filter text/comment node
-        if ( node.nodeName.indexOf('#') === -1 ) {
+    node.content.childNodes.forEach((node) => {
+        // filter text/comment node
+        if (node.nodeName.indexOf('#') === -1) {
             count++
         }
     })
