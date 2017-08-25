@@ -4,6 +4,9 @@ All Notable changes to `rollup-plugin-vue` will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- `vue-template-compiler` is now a peer dependency instead of a direct dependency. This allows the user to pin `vue-template-compiler` to a specific version instead of relying on the implicit upgrades from a semver caret range.
+
 ## [Version 2.2.15][2.2.15] - 2017-01-10
 
 ### Added
