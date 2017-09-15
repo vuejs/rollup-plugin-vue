@@ -73,7 +73,7 @@
     "rollup-plugin-css-only": "^0.2.0",
     "rollup-plugin-replace": "^1.1.1",
     "uglify-js": "^2.7.5",
-    "vue-template-compiler": "^2.4.3"
+    "vue-template-compiler": "^2.4.4"
   },
   "optionalDependencies": {
     "coffee-script": "^1.12.4",
