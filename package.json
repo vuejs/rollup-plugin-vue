@@ -75,7 +75,7 @@
     "rollup-plugin-css-only": "^0.2.0",
     "rollup-plugin-replace": "^1.1.1",
     "uglify-js": "^2.7.5",
-    "vue-template-compiler": "^2.4.4"
+    "vue-template-compiler": ">=2.0"
   },
   "optionalDependencies": {
     "coffee-script": "^1.12.4",
@@ -86,7 +86,6 @@
     "stylus": "^0.54.5"
   },
   "peerDependencies": {
-    "vue": "*",
-    "vue-template-compiler": "^2.0.0"
+    "vue": "*"
   }
 }
