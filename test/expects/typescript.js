@@ -1,4 +1,4 @@
-var component = { template: "<h1 :id=\"id\" @click=\"hi\">hello</h1><input type=\"text\">",
+var component = { template: "<h1 :id=\"id\" @click=\"hi\"> hello</h1> <input type=\"text\">",
     data: function () { return ({
         hello: 'world!'
     }); },
