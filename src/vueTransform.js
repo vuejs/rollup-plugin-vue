@@ -52,7 +52,7 @@ async function processTemplate (source, id, content, options, nodes, modules) {
     debug(`Process template: ${id}`)
 
     const extras = { modules, id, lang: source.attrs.lang }
-    const code = deIndent(source.code)
+    const code = deIndent(source.code).trim()
     const template = await (
         options.disableCssModuleStaticReplacement !== true
             ? templateProcessor(code, extras, options)
