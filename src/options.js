@@ -17,6 +17,7 @@ export default {
         caseSensitive: true,
         customAttrSurround: [[/@/, new RegExp('')], [/:/, new RegExp('')]],
         collapseWhitespace: true,
+        conservativeCollapse: true,
         removeComments: true
     },
 
