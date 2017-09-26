@@ -5,6 +5,7 @@ var assert = require('assert')
 var fs = require('fs')
 var rollup = require('rollup')
 var path = require('path')
+var autoprefixer = require('autoprefixer')
 
 process.chdir(__dirname)
 
@@ -33,6 +34,7 @@ function test(name) {
                 modules: {
                     generateScopedName: '[name]__[local]'
                 },
+                postcss: [autoprefixer()],
                 compileTemplate: [
                     'compileTemplate',
                     'compileTemplateLocalComponent',
@@ -49,21 +51,24 @@ function test(name) {
 
             // Check css output
             if ([
-                      'css-modules',
-                      'css-modules-static',
-                      'import-scss',
-                      'import-less',
-                      'less',
-                      'pug',
-                      'scoped-css',
-                      'scoped-css-with-no-auto-style',
-                      'scss',
-                      'sass',
-                      'pug',
-                      'less',
-                      'style',
-                      'stylus'
-                  ].indexOf(name) > -1) {
+                'css-modules',
+                'css-modules-static',
+                'import-scss',
+                'import-less',
+                'less',
+                'pug',
+                'scoped-css',
+                'scoped-css-with-no-auto-style',
+                'scoped-css-with-deep-tag',
+                'scss',
+                'sass',
+                'pug',
+                'less',
+                'style',
+                'stylus',
+                'external-script',
+                'postcss'
+            ].indexOf(name) > -1) {
                 var css = read('expects/' + name + '.css')
                 assert.equal(css.trim(), actualCss.trim(), 'should output style tag content')
             } else if (['no-css-extract'].indexOf(name) > -1) {
@@ -112,4 +117,3 @@ describe('styleToImports', function () {
         })
     })
 })
-

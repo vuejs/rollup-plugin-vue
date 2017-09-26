@@ -89,6 +89,10 @@ async function processScript (source, id, content, options, nodes, modules, scop
     debug(`Process script: ${id}`)
     const lang = normalizeLang(source.attrs.lang)
 
+    if (source.attrs.src) {
+        source.code = `import __vue_module__ from '${source.attrs.src}'; export default __vue_module__;`
+    }
+
     if (source.attrs.lang && ['js', 'babel'].indexOf(source.attrs.lang) < 0) {
         if (!(source.attrs.lang in options.script)) {
             throw new Error(`[rollup-plugin-vue] ${source.attrs.lang} is not yet supported in .vue files.`)

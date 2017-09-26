@@ -67,6 +67,9 @@ export default {
     // Config for stylus.
     stylus: {},
 
+    // Config for postcss.
+    postcss: {},
+
     // Config for pug compiler.
     pug: {},
 
