@@ -34,7 +34,7 @@ function test(name) {
                 modules: {
                     generateScopedName: '[name]__[local]'
                 },
-                postcss: [autoprefixer()],
+                postcss: { plugins: [autoprefixer()] },
                 compileTemplate: [
                     'compileTemplate',
                     'compileTemplateLocalComponent',
