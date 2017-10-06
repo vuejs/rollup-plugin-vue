@@ -227,6 +227,72 @@ The output CSS will be like:
 }
 ```
 
+#### PostCSS
+
+<p class="tip">
+Available in `rollup-plugin-vue@^2.5+`.
+</p>
+
+`rollup-plugin-vue` use `PostCSS` to handle `Scoped CSS` and `CSS Module`, you can also add other `PostCSS` plugins, like [Autoprefixer](https://github.com/postcss/autoprefixer) or [cssnext](http://cssnext.io/).
+
+##### Configuration
+
+We use [postcss-load-config](https://github.com/michael-ciniawsky/postcss-load-config) to load config file, that means:
+- `postcss` field in your `package.json`
+- `.postcssrc` file in JSON or YAML format
+- `postcss.config.js` or `.postcssrc.js`
+
+##### Inline Options
+
+You can also use a `postcss` option, it accepts three types:
+- `Function`: return an array of plugins
+- `Array`: an array of plugins
+- `Object`: `postcss`'s configuration, has the most priority
+
+For example, if you want to use `Autoprefixer`, that means something like
+
+``` js
+import Autoprefixer from 'autoprefixer'
+
+export default {
+    ...
+    postcss: [Autoprefixer()],
+    ...
+}
+```
+
+or
+
+``` js
+import Autoprefixer from 'autoprefixer'
+
+export default {
+    ...
+    postcss() {
+      return [Autoprefixer()]
+    },
+    ...
+}
+```
+
+or this:
+
+``` js
+import Autoprefixer from 'autoprefixer'
+
+export default {
+    ...
+    postcss {
+      plugins: [Autoprefixer()],
+      options: {
+        // postcss's option goes here
+        ...
+      }
+    },
+    ...
+}
+```
+
 ### Template
 Templates are processed into `render` function by default. You can disable this by setting:
 ``` js

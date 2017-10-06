@@ -1,5 +1,6 @@
 import postcssrc from 'postcss-load-config'
 
+/* eslint-disable complexity */
 export default async function (postcssOpt) {
     let options = {}
     let plugins = []
@@ -7,9 +8,10 @@ export default async function (postcssOpt) {
     if (typeof postcssOpt === 'function') {
         plugins = postcssOpt.call(this)
     } else if (Array.isArray(postcssOpt)) {
-        plugins = plugins.concat(postcssOpt)
+        plugins = postcssOpt
     } else if (typeof postcssOpt === 'object') {
-        options = Object.assign({}, options, postcssOpt)
+        plugins = (typeof postcssOpt.plugins === 'function') ? postcssOpt.plugins.call(this) : postcssOpt.plugins || []
+        options = postcssOpt.options || {}
     }
 
     return postcssrc().then((config) => {

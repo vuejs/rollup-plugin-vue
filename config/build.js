@@ -39,6 +39,7 @@ rollup.rollup({
                         'parse5',
                         'path',
                         'postcss',
+                        'postcss-load-config',
                         'postcss-modules',
                         'postcss-selector-parser',
                         'posthtml',
