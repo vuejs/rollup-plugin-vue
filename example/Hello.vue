@@ -1,23 +1,16 @@
-<template>
-  <div class="hello">
-    <h1 class="hello__title">{{ msg }}</h1>
-  </div>
+<template functional>
+  <div class="hello">{{ props.message }}</div>
 </template>
 
 <script>
 export default {
-  data () {
-    return {
-      msg: 'Hello World!'
-    }
-  }
+  props: ['message']
 }
 </script>
 
-<style lang="stylus">
+
+<style scoped>
 .hello {
-  &__title {
-    color: #42b983;
-  }
+  color: red;
 }
 </style>

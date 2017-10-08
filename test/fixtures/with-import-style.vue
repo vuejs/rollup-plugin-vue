@@ -1,5 +1,5 @@
 <template>
-  <h1 id="test" style="color: red">Hello {{ name }}!</h1>
+  <h1 id="test" class="title">Hello {{ name }}!</h1>
 </template>
 
 <script>
@@ -9,3 +9,5 @@ export default {
   }
 }
 </script>
+
+<style src="./style.css"></style>
