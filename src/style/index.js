@@ -15,7 +15,7 @@ const compilers = {
 export async function compile (style, options) {
     let output
 
-    if (style.lang === 'css') {
+    if (style.lang === 'css' || style.lang === 'postcss') {
         output = await compileCSS(style, options)
     } else {
         output = await compileCSS(await compilers[style.lang].call(null, style, options), options)
