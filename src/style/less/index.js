@@ -19,8 +19,8 @@ export default async function (style, options) {
     )
 
     style.$compiled = {
-        code: css.toString(),
-        map: map.toString()
+        code: css && css.toString() || '',
+        map: map && map.toString() || ''
     }
 
     return style
