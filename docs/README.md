@@ -36,18 +36,18 @@ sidebar: false
 </p>
 
 ## Introduction
-`rollup-plugin-vue` is a plugin for Rollup that can transform Vue components in following format into a plain Javascript module:
+`rollup-plugin-vue` is a plugin for Rollup that can transform Vue components in the following format into a plain JavaScript module:
 
 <div class="text-xs-center" align="center" style="margin: 0 20px">
   <img src="./assets/images/vue-component.png">
 </div>
 
 There are many cool features provided by `rollup-plugin-vue`:
-- ES2015 enabled by default;
-- Builtin support for sass, less and stylus for `<style>`;
-- Builtin support for pug for `<template>`
+- ES2015 enabled by default
+- Built-in support for Sass, Less and Stylus for `<style>`
+- Built-in support for Pug for `<template>`
 
-In a nutshell, the combination of Rollup and rollup-plugin-vue gives you a modern, flexible and extremely powerful workflow authoring Vue.js components & plugins.
+In a nutshell, the combination of Rollup and `rollup-plugin-vue` gives you a modern, flexible, and extremely powerful workflow for authoring Vue.js components & plugins.
 
 <p class="tip">
 This plugin is best for authoring component modules and plugins. Use webpack and [vue-loader](http://vue-loader.vuejs.org) for authoring Vue.js applications.
