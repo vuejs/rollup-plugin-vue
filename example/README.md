@@ -1,7 +1,7 @@
 Simple example
 ===
 
-Example bundling an UMD package with one `vue` file and exporting stylus and CSS (both minified and unminified) to different files.
+Example bundling an UMD package with one `.vue` file and exporting Stylus and CSS (both minified and unminified) to different files.
 
 ## Building
 
@@ -13,7 +13,7 @@ node build.js
 ls dist
 ```
 
-### With rollup cli
+### With Rollup CLI
 
 ```
 cd example
