@@ -18,5 +18,5 @@ ls dist
 ```
 cd example
 npm i -g rollup
-rollup -c --input Hello.vue --output dist/bundle.js
+rollup -c --input Hello.vue
 ```

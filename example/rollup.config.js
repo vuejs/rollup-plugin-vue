@@ -2,6 +2,18 @@
 
 const vue = require('../dist/rollup-plugin-vue.common.js');
 const buble = require('rollup-plugin-buble');
+
 export default {
-    plugins: [ vue({compileTemplate: true}), buble() ],
+  name: 'helloRollupVue',
+  output: {
+    file: 'dist/bundle.js',
+    format: 'umd'
+  },
+  plugins: [
+    vue({
+      compileTemplate: true,
+      css: 'dist/bundle.css'
+    }),
+    buble()
+  ]
 };
