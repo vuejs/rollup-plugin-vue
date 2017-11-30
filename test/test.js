@@ -9,13 +9,12 @@ var autoprefixer = require('autoprefixer')
 
 process.chdir(__dirname)
 
-function read(file) {
+function read (file) {
     return fs.readFileSync(path.resolve(__dirname, file), 'utf-8')
 }
 
-function test(name) {
+function test (name) {
     it('should rollup ' + name + '.vue', function () {
-
         var entry = './fixtures/' + name + '.vue'
         var expected = read('expects/' + name + '.js').replace(/\r/g, '')
         var actualCss
@@ -28,7 +27,7 @@ function test(name) {
         }
 
         return rollup.rollup({
-            entry: entry,
+            input: entry,
             plugins: [vuePlugin({
                 css: ['no-css-extract'].indexOf(name) > -1 ? true : cssHandler,
                 modules: {
@@ -45,7 +44,8 @@ function test(name) {
                 autoStyles: ['scoped-css-with-no-auto-style'].indexOf(name) < 0
             })]
         }).then(function (bundle) {
-            var result = bundle.generate({ format: 'es' })
+            return bundle.generate({ format: 'es' })
+        }).then(function (result) {
             var code = result.code
             assert.equal(code.trim(), expected.trim(), 'should compile code correctly')
 
@@ -98,20 +98,20 @@ describe('styleToImports', function () {
 
         return rollup.rollup({
             format: 'cjs',
-            entry: entry,
+            input: entry,
             plugins: [
                 vuePlugin({
-                    styleToImports: true,
+                    styleToImports: true
                 }),
                 cssPlugin({
                     output: function (css) {
                         actualCss = css
-                    },
-                }),
-            ],
+                    }
+                })
+            ]
         }).then(function (bundle) {
-            bundle.generate({ format: 'es' })
-
+            return bundle.generate({ format: 'es' })
+        }).then(function () {
             assert.equal(expectedCss.trim(), actualCss.trim(), 'should import style')
         }).catch(function (error) {
             throw error
