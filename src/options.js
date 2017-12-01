@@ -18,6 +18,7 @@ export default {
         customAttrSurround: [[/@/, new RegExp('')], [/:/, new RegExp('')]],
         collapseWhitespace: true,
         conservativeCollapse: true,
+        keepClosingSlash: true,
         removeComments: true
     },
 
