@@ -52,8 +52,7 @@
     "rollup-pluginutils": "^2.0.1",
     "typescript": "^2.4.1",
     "vue-template-es2015-compiler": "^1.6.0",
-    "vue-template-validator": "^1.1.5",
-    "vue-template-compiler": ">=2.0"
+    "vue-template-validator": "^1.1.5"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
@@ -87,6 +86,7 @@
     "stylus": "^0.54.5"
   },
   "peerDependencies": {
-    "vue": "*"
+    "vue": "*",
+    "vue-template-compiler": "*"
   }
 }
