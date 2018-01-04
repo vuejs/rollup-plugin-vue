@@ -175,14 +175,23 @@ function parseTemplate (code) {
     }
 
     for (let i = fragment.childNodes.length - 1; i >= 0; i -= 1) {
-        const name = fragment.childNodes[i].nodeName
+        const childNode = fragment.childNodes[i]
+        const name = childNode.nodeName
         if (!(name in nodes)) {
             continue
         }
-
-        const start = fragment.childNodes[i].__location.startTag.endOffset
-        const end = fragment.childNodes[i].__location.endTag.startOffset
-
+        
+        // check for start and end tag before getting offsets
+        const startTag = childNode.__location.startTag
+        const endTag = childNode.__location.endTag
+        
+        if (!(startTag && endTag)) {
+            throw new Error('Unable to parse template')
+        }
+        
+        const start = startTag.endOffset
+        const end = endTag.startOffset
+        
         nodes[name].push({
             node: fragment.childNodes[i],
             code: code.substr(start, end - start),
