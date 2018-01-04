@@ -180,18 +180,18 @@ function parseTemplate (code) {
         if (!(name in nodes)) {
             continue
         }
-        
+
         // check for start and end tag before getting offsets
         const startTag = childNode.__location.startTag
         const endTag = childNode.__location.endTag
-        
+
         if (!(startTag && endTag)) {
             throw new Error('Unable to parse template')
         }
-        
+
         const start = startTag.endOffset
         const end = endTag.startOffset
-        
+
         nodes[name].push({
             node: fragment.childNodes[i],
             code: code.substr(start, end - start),
