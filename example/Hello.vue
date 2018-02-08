@@ -1,23 +1,13 @@
 <template>
-  <div class="hello">
-    <h1 class="hello__title">{{ msg }}</h1>
-  </div>
+  <div class="hello"></div>
 </template>
 
 <script>
 export default {
-  data () {
+  data() {
     return {
       msg: 'Hello World!'
     }
   }
 }
 </script>
-
-<style lang="stylus">
-.hello {
-  &__title {
-    color: #42b983;
-  }
-}
-</style>

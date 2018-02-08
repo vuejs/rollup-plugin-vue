@@ -1,9 +1,0 @@
-config/
-test/
-circle.yml
-.gitignore
-.eslintrc.json
-CONDUCT.md
-CONTRIBUTING.md
-cover.png
-.idea/
