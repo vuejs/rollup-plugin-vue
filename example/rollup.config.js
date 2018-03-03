@@ -5,6 +5,7 @@ const buble = require('rollup-plugin-buble');
 
 export default {
   name: 'helloRollupVue',
+  input: './index.js',
   output: {
     file: 'dist/bundle.js',
     format: 'umd'
