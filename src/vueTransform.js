@@ -149,7 +149,7 @@ async function processStyle (styles, id, content, options) {
 
         const map = (new MagicString(code)).generateMap({ hires: true })
 
-        const output = {
+        let output = {
             id,
             code: code,
             map: map,
@@ -158,7 +158,11 @@ async function processStyle (styles, id, content, options) {
             scoped: 'scoped' in style.attrs
         }
 
-        outputs.push(options.autoStyles || output.scoped || output.module ? await compile(output, options) : output)
+        if (options.autoStyles || output.scoped || output.module) {
+            output = await compile(output, options)
+        }
+
+        outputs.push(output)
     }
 
     return outputs
