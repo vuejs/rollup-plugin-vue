@@ -63,7 +63,9 @@ const addScopeID = postcss.plugin('add-scope-id', ({ scopeID }) => {
 
     return root => {
         root.walkRules(rule => {
-            rule.selector = selectorTransformer.process(rule.selector).result
+            selectorTransformer.processSync(rule, {
+                updateSelector: true
+            })
         })
     }
 })
@@ -100,7 +102,7 @@ export default async function (promise, options) {
     const hasModule = style.module === true
     const hasScope = style.scoped === true
     const postcssConfig = await postcssLoadConfig(options.postcss)
-    const plugins = postcssConfig.plugins || []
+    const plugins = [...postcssConfig.plugins] || []
     let processPromise = Promise.resolve()
 
     if (hasScope) {
