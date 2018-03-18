@@ -5,8 +5,6 @@ import logger from 'debug'
 
 const debug = logger('rollup-plugin-vue')
 
-const cache = {} // TODO: Replace with real cache.
-
 function s(any) {
   return JSON.stringify(any, null, 2)
 }
@@ -63,6 +61,7 @@ function makeId(id, type, lang, index) {
 export default function vue(opts = {}) {
   debug('Yo! rolling vue!')
   const filter = createFilter(opts.include, opts.exclude)
+  const cache = {}
 
   delete opts.include
   delete opts.exclude
@@ -111,22 +110,14 @@ export default function vue(opts = {}) {
 
       if (!descriptor) throw Error(`SFC (${q.id}) is not processed.`)
 
-      switch (q.type) {
-        case 'template':
-          const template = descriptor.template
-          if (template && template.src)
-            return path.resolve(path.dirname(q.id), template.src)
-          break
-        case 'script':
-          const style = descriptor.styles[q.index]
-          if (style && style.src)
-            return path.resolve(path.dirname(q.id), style.src)
-          break
-        case 'custom':
-          const custom = descriptor.customBlocks[q.index]
-          if (custom && custom.src)
-            return path.resolve(path.dirname(q.id), custom.src)
-          break
+      const part =
+        descriptor[q.type] ||
+        (q.type === 'style'
+          ? descriptor.styles[q.index]
+          : descriptor.customBlocks[q.index])
+
+      if (part && part.src) {
+        return part.src
       }
 
       return request
@@ -236,7 +227,7 @@ export default function vue(opts = {}) {
           { ...vueOptions, scopeId }
         )
 
-        if (output.map) output.map = { mappings: '' }
+        if (!output.map) output.map = { mappings: '' }
 
         return output
       }

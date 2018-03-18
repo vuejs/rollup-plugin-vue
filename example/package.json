@@ -1,4 +1,5 @@
 {
+  "private": true,
   "devDependencies": {
     "rollup-plugin-closure-compiler-js": "^1.0.5",
     "rollup-plugin-commonjs": "^8.2.1",

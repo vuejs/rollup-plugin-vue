@@ -5,10 +5,13 @@
   "main": "dist/rollup-plugin-vue.common.js",
   "module": "dist/rollup-plugin-vue.js",
   "scripts": {
-    "prebuild": "npm run lint",
+    "clean": "rm -rf test/target dist",
     "build": "node config/build.js",
     "lint": "prettier --no-semi --single-quote --write **/*.js **/*.vue !test/target/** !dist/**",
-    "prepublish": "npm run build"
+    "prebuild": "npm run lint",
+    "prepare": "npm run test",
+    "pretest": "npm run build",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -39,6 +42,7 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.39",
     "@babel/plugin-transform-runtime": "^7.0.0-beta.39",
     "@babel/preset-env": "^7.0.0-beta.39",
+    "jest": "^22.4.2",
     "prettier": "^1.10.2",
     "rollup": "^0.41.4",
     "rollup-plugin-babel": "^4.0.0-beta.0"

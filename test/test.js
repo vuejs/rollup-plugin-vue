@@ -1,140 +1,105 @@
 /* global describe, it */
-var vuePlugin = require('../')
-var cssPlugin = require('rollup-plugin-css-only')
-var assert = require('assert')
-var fs = require('fs')
-var rollup = require('rollup')
-var path = require('path')
-var autoprefixer = require('autoprefixer')
+const Plugin = require('../')
 
-process.chdir(__dirname)
-
-function read(file) {
-  return fs.readFileSync(path.resolve(__dirname, file), 'utf-8')
-}
-
-function test(name) {
-  it('should rollup ' + name + '.vue', function() {
-    var entry = './fixtures/' + name + '.vue'
-    var expected = read('expects/' + name + '.js').replace(/\r/g, '')
-    var actualCss
-    var cssHandler = function(css, styles) {
-      if (['scss', 'pug', 'sass'].indexOf(name) > -1) {
-        actualCss = styles[0].$compiled.code
-      } else {
-        actualCss = css
-      }
-    }
-
-    return rollup
-      .rollup({
-        entry: entry,
-        plugins: [
-          vuePlugin({
-            css: ['no-css-extract'].indexOf(name) > -1 ? true : cssHandler,
-            modules: {
-              generateScopedName: '[name]__[local]'
-            },
-            postcss: { plugins: [autoprefixer()] },
-            compileTemplate:
-              [
-                'compileTemplate',
-                'compileTemplateLocalComponent',
-                'slot',
-                'table',
-                'table-n-slot'
-              ].indexOf(name) > -1,
-            autoStyles: ['scoped-css-with-no-auto-style'].indexOf(name) < 0
-          })
-        ]
-      })
-      .then(function(bundle) {
-        var result = bundle.generate({ format: 'es' })
-        var code = result.code
-        assert.equal(
-          code.trim(),
-          expected.trim(),
-          'should compile code correctly'
-        )
-
-        // Check css output
-        if (
-          [
-            'css-modules',
-            'css-modules-static',
-            'import-scss',
-            'import-less',
-            'less',
-            'pug',
-            'scoped-css',
-            'scoped-css-with-no-auto-style',
-            'scoped-css-with-deep-tag',
-            'scss',
-            'sass',
-            'pug',
-            'less',
-            'style',
-            'stylus',
-            'external-script',
-            'postcss'
-          ].indexOf(name) > -1
-        ) {
-          var css = read('expects/' + name + '.css')
-          assert.equal(
-            css.trim(),
-            actualCss.trim(),
-            'should output style tag content'
-          )
-        } else if (['no-css-extract'].indexOf(name) > -1) {
-          assert.equal(undefined, actualCss, 'should ignore css()')
-        } else {
-          assert.equal('', actualCss.trim(), 'should always call css()')
-        }
-      })
-      .catch(function(error) {
-        throw error
-      })
+describe('Compile .vue files', () => {
+  let plugin
+  beforeEach(() => {
+    plugin = Plugin()
   })
-}
 
-describe('rollup-plugin-vue', function() {
-  fs.readdirSync(path.resolve(__dirname, 'fixtures')).forEach(function(file) {
-    file.endsWith('.vue') && test(file.substr(0, file.length - 4))
+  it('should transform', async () => {
+    const output = await plugin.transform(
+      `<template><span>Hello World!</span></template>`,
+      './foo.vue'
+    )
+
+    expect(output).toBeTruthy()
+    expect(typeof output.code).toBe('string')
   })
-})
 
-describe('styleToImports', function() {
-  it('should convert style to import', function() {
-    var entry = './fixtures/style.vue'
-    var expectedCss = read('expects/style.css')
-    var actualCss
+  it('should resolve component parts', async () => {
+    await plugin.transform(
+      `
+<template>
+  <span>Hello World!</span>
+</template>
 
-    return rollup
-      .rollup({
-        format: 'cjs',
-        entry: entry,
-        plugins: [
-          vuePlugin({
-            styleToImports: true
-          }),
-          cssPlugin({
-            output: function(css) {
-              actualCss = css
-            }
-          })
-        ]
-      })
-      .then(function(bundle) {
-        bundle.generate({ format: 'es' })
+<script>
+  export default {}
+</script>
 
-        assert.equal(
-          expectedCss.trim(),
-          actualCss.trim(),
-          'should import style'
-        )
-      })
-      .catch(function(error) {
-        throw error
-      })
+<style>
+  span { color: red }
+</style>
+
+<style scoped>
+  span { font-size: 1rem }
+</style>
+      `,
+      './foo.vue'
+    )
+
+    const template = await plugin.load('./foo.vue?{"type":"template"}#.html')
+    const script = await plugin.load('./foo.vue?{"type":"script"}#.js')
+    const style = await plugin.load('./foo.vue?{"type":"style","index":0}#.css')
+    const styleScoped = await plugin.load(
+      './foo.vue?{"type":"style","index":1}#.css'
+    )
+
+    expect(template.code).toEqual(
+      expect.stringContaining('<span>Hello World!</span>')
+    )
+    expect(script.code).toEqual(expect.stringContaining('export default {}'))
+    expect(style.code).toEqual(expect.stringContaining('span { color: red }'))
+    expect(styleScoped.code).toEqual(
+      expect.stringContaining('span { font-size: 1rem }')
+    )
+  })
+
+  it('should use lang as detected type', async () => {
+    await plugin.transform(
+      `
+<template lang="pug">
+span
+      | Hello World!
+</template>
+
+<script lang="ts">
+export default {}
+</script>
+
+<style lang="scss">
+span { color: red }
+</style>
+    `,
+      './foo.vue'
+    )
+
+    const template = await plugin.load('./foo.vue?{"type":"template"}#.pug')
+    const script = await plugin.load('./foo.vue?{"type":"script"}#.ts')
+    const style = await plugin.load('./foo.vue?{"type":"style","index":0}#.css')
+
+    expect(template.code).toEqual(expect.stringContaining('Hello World!'))
+    expect(script.code).toEqual(expect.stringContaining('export default {}'))
+    expect(style.code).toEqual(expect.stringContaining('span { color: red }'))
+  })
+
+  it('should resolve path from src', async () => {
+    await plugin.transform(
+      `
+      <template src="./foo.html"></template>
+      <script src="./foo.js"></script>
+      <style src="./foo.css"></style>
+      `,
+      './bar/foo.vue'
+    )
+
+    const template = plugin.resolveId('./bar/foo.vue?{"type":"template"}#.html')
+    const script = plugin.resolveId('./bar/foo.vue?{"type":"script"}#.js')
+    const style = plugin.resolveId('./bar/foo.vue?{"type":"style","index":0}#.css')
+
+    expect(template).toBe('./foo.html')
+    expect(script).toBe('./foo.js')
+    expect(style).toBe('./foo.css')
   })
 })

@@ -10,22 +10,22 @@ async function build (input, output) {
   console.log('Building: ' + path.basename(input))
   const bundle = await rollup.rollup({
     entry: input,
-    plugins: [ vue(), babel() ],
+    plugins: [ vue(), babel({ sourceMap: true }) ],
     external: ['vue-component-compiler/src/runtime/normalize-component']
   })
 
   console.log('Exporting: ' + path.basename(output))
   await bundle.write({
     dest: output,
-    format: 'es'
+    format: 'es',
+    sourceMap: true
   })
 }
 
 // -- Build all fixtures --
 
 const fixturesDirectory = path.resolve(__dirname, '..', 'fixtures')
-// const entries = fs.readdirSync(fixturesDirectory).filter(it => it.endsWith('.vue')).map(it => path.join(fixturesDirectory, it))
-const entries = [path.join(fixturesDirectory, 'scoped-css.vue')]
+const entries = fs.readdirSync(fixturesDirectory).filter(it => it.endsWith('.vue')).map(it => path.join(fixturesDirectory, it))
 
 ;(async () => {
   try {
