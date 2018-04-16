@@ -111,6 +111,14 @@ async function processScript (source, id, content, options, nodes, modules, scop
     return { map, code: script }
 }
 
+function ensureSemiColon (script) {
+    if (script.trim().slice(-1) !== ';') {
+        script = script.trim() + ';'
+    }
+
+    return script
+}
+
 function processScriptForStyle (script, modules, scoped, lang, id, options) {
     script = injectModule(script, modules, lang, id, options)
 
@@ -187,9 +195,14 @@ function parseTemplate (code) {
         const start = fragment.childNodes[i].__location.startTag.endOffset
         const end = fragment.childNodes[i].__location.endTag.startOffset
 
+        let nodeCode = code.substr(start, end - start)
+        if (name === 'script') {
+            nodeCode = ensureSemiColon(nodeCode)
+        }
+
         nodes[name].push({
             node: fragment.childNodes[i],
-            code: code.substr(start, end - start),
+            code: nodeCode,
             attrs: getNodeAttrs(fragment.childNodes[i])
         })
     }
