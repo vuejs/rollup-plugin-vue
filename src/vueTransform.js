@@ -102,7 +102,6 @@ async function processScript (source, id, content, options, nodes, modules, scop
     }
 
     let script = deIndent(padContent(content.slice(0, content.indexOf(source.code))) + source.code)
-    script = ensureSemiColon(script)
     const map = (new MagicString(script)).generateMap({ hires: true })
 
     script = processScriptForStyle(script, modules, scoped, lang, id, options)
@@ -113,8 +112,8 @@ async function processScript (source, id, content, options, nodes, modules, scop
 }
 
 function ensureSemiColon (script) {
-    if (script.slice(-1) !== ';') {
-        script = script + ';'
+    if (script.trim().slice(-1) !== ';') {
+        script = script.trim() + ';'
     }
 
     return script
@@ -196,9 +195,14 @@ function parseTemplate (code) {
         const start = fragment.childNodes[i].__location.startTag.endOffset
         const end = fragment.childNodes[i].__location.endTag.startOffset
 
+        let nodeCode = code.substr(start, end - start)
+        if (name === 'script') {
+            nodeCode = ensureSemiColon(nodeCode)
+        }
+
         nodes[name].push({
             node: fragment.childNodes[i],
-            code: code.substr(start, end - start),
+            code: nodeCode,
             attrs: getNodeAttrs(fragment.childNodes[i])
         })
     }
