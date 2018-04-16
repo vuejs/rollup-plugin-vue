@@ -102,6 +102,7 @@ async function processScript (source, id, content, options, nodes, modules, scop
     }
 
     let script = deIndent(padContent(content.slice(0, content.indexOf(source.code))) + source.code)
+    script = ensureSemiColon(script)
     const map = (new MagicString(script)).generateMap({ hires: true })
 
     script = processScriptForStyle(script, modules, scoped, lang, id, options)
@@ -109,6 +110,14 @@ async function processScript (source, id, content, options, nodes, modules, scop
     script = await processScriptForRender(script, template, lang, id, options)
 
     return { map, code: script }
+}
+
+function ensureSemiColon (script) {
+    if (script.slice(-1) !== ';') {
+        script = script + ';'
+    }
+
+    return script
 }
 
 function processScriptForStyle (script, modules, scoped, lang, id, options) {
