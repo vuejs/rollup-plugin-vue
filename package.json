@@ -8,10 +8,11 @@
     "clean": "rm -rf test/target dist",
     "build": "node config/build.js",
     "lint": "prettier --no-semi --single-quote --write **/*.js **/*.vue !test/target/** !dist/**",
-    "prebuild": "npm run lint",
-    "prepare": "npm run test",
-    "pretest": "npm run build",
-    "test": "jest"
+    "prepare": "npm run build",
+    "pretest": "npm run lint && npm run build",
+    "test": "jest",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 1",
+    "version": "npm run changelog && git add CHANGELOG.md"
   },
   "repository": {
     "type": "git",
