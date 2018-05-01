@@ -1,22 +1,19 @@
 version: 2
 jobs:
   build:
-    working_directory: ~/rollup-plugin-vue
+    working_directory: ~/project
     docker:
-      - image: circleci/node:8.5.0
+      - image: alekzonder/puppeteer # base image: node/8-slim
     steps:
       - checkout
-      - run: 
-          name: Install yarn
+      - run:
+          name: Install yarn if required
           command: curl -o- -s -L https://yarnpkg.com/install.sh | bash
       - restore_cache:
           key: dependency-cache-{{ checksum "package.json" }}
       - run:
           name: Install package dependencies
-          command: yarn --no-progress
-      - run:
-          name: Rebuild node-sass
-          command: npm rebuild node-sass
+          command: yarn --no-progress install --pure-lockfile
       - save_cache:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
