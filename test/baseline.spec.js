@@ -16,14 +16,10 @@ beforeAll(async () => {
 })
 afterAll(async () => browser && (await browser.close()))
 
-const testRunner = async (fixture, delegate) => {
+const testRunner = async fixture => {
   const filename = join(__dirname, 'fixtures', fixture + '.vue')
-  const code = await build(filename, delegate)
-  const page = await open(
-    fixture + (delegate ? '-delegated' : ''),
-    browser,
-    code
-  )
+  const code = await build(filename)
+  const page = await open(fixture, browser, code)
   expect(await page.$('#test')).toBeTruthy()
   expect(
     await page.evaluate(() => document.getElementById('test').textContent)
@@ -39,5 +35,4 @@ const testRunner = async (fixture, delegate) => {
 }
 fixtures.forEach(fixture => {
   test(fixture, () => testRunner(fixture, false))
-  // test(fixture + ' (delegated)', () => testRunner(fixture, true))
 })
