@@ -30,8 +30,8 @@ const babelIt = babel({
 
 const cache = {}
 
-async function build(filename, delegate = false) {
-  const cacheKey = filename + delegate
+async function build(filename) {
+  const cacheKey = filename
   if (cacheKey in cache) return cache[cacheKey]
   const input = filename + '__app.js'
 
@@ -40,7 +40,7 @@ async function build(filename, delegate = false) {
     input,
     plugins: [
       md(),
-      delegate ? vue.delegate(options) : vue(options),
+      vue(options),
       image(),
       nodeResolve(),
       inline(

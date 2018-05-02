@@ -565,9 +565,9 @@
     source-map "^0.5.6"
     vue-template-es2015-compiler "^1.6.0"
 
-"@vue/component-compiler@^3.1.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@vue/component-compiler/-/component-compiler-3.1.0.tgz#d80cf92d1049c346039de2954a7d655e559e35b6"
+"@vue/component-compiler@3.1.1":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@vue/component-compiler/-/component-compiler-3.1.1.tgz#8580b357e23cec391f113a1f51dbe6f1b71be66f"
   dependencies:
     "@vue/component-compiler-utils" "^1.2.1"
     clean-css "^4.1.11"
