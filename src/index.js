@@ -14,6 +14,7 @@ import { relative } from 'path'
 export default function vue(opts = {}) {
   const isVue = createVueFilter(opts.include, opts.exclude)
   const isProduction = process.env.NODE_ENV === 'production'
+
   createVuePartRequest.defaultLang = {
     ...createVuePartRequest.defaultLang,
     ...opts.defaultLang
@@ -55,6 +56,7 @@ export default function vue(opts = {}) {
       if (!isVuePartRequest(id)) return
 
       id = parseVuePartRequest(id)
+
       const element = resolveVuePart(descriptors, id)
 
       return element.code || element.content

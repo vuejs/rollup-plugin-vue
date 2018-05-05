@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/znck/rollup-plugin-vue#readme",
   "dependencies": {
-    "@babel/runtime": "^7.0.0-beta.39",
+    "@babel/runtime": "^7.0.0-beta.46",
     "@vue/component-compiler": "3.1.1",
     "@vue/component-compiler-utils": "^1.2.1",
     "debug": "^2.6.0",
@@ -49,6 +49,7 @@
     "conventional-changelog": "^1.1.24",
     "jest": "^22.4.2",
     "node-sass": "^4.9.0",
+    "prettier": "^1.12.1",
     "pug": "^2.0.3",
     "puppeteer": "^1.3.0",
     "rollup": "^0.58.2",

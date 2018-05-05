@@ -1,9 +1,15 @@
 {
   "presets": [
-    [ "es2015", { "modules": false }],
-    "stage-2"
+    [
+      "@babel/preset-env",
+      {
+        "target": "node"
+      }
+    ]
   ],
-  "plugins": ["transform-runtime"],
+  "plugins": [
+    "@babel/transform-runtime"
+  ],
   "retainLines": true,
   "comments": true
 }
