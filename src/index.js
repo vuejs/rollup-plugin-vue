@@ -9,7 +9,6 @@ import * as path from 'path'
 import { parse } from '@vue/component-compiler-utils'
 import { createDefaultCompiler, assemble } from '@vue/component-compiler'
 import hash from 'hash-sum'
-import { relative } from 'path'
 
 export default function vue(opts = {}) {
   const isVue = createVueFilter(opts.include, opts.exclude)
@@ -91,7 +90,7 @@ export default function vue(opts = {}) {
           if (input.template.errors && input.template.errors.length) {
             console.error(
               '> Errors: ' +
-                relative(process.cwd(), filename) +
+                path.relative(process.cwd(), filename) +
                 '\n' +
                 input.template.errors.map(it => '  - ' + it).join('\n')
             )
@@ -100,7 +99,7 @@ export default function vue(opts = {}) {
           if (input.template.tips && input.template.tips.length) {
             console.log(
               '> Tips: ' +
-                relative(process.cwd(), filename) +
+                path.relative(process.cwd(), filename) +
                 '\n' +
                 input.template.tips.map(it => '  - ' + it).join('\n')
             )
@@ -139,7 +138,7 @@ export default function vue(opts = {}) {
                   index
                 )}'`
 
-              if (style.module) {
+              if (style.module || descriptor.styles[index].scoped) {
                 return { ...style, code: '' }
               }
             })

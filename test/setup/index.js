@@ -1,6 +1,6 @@
 const { rollup } = require('rollup')
 const babel = require('rollup-plugin-babel')
-// const commonjs = require('rollup-plugin-commonjs')
+const css = require('rollup-plugin-css-only')
 const nodeResolve = require('rollup-plugin-node-resolve')
 const image = require('rollup-plugin-image')
 const { readFileSync } = require('fs')
@@ -30,16 +30,20 @@ const babelIt = babel({
 
 const cache = {}
 
-async function build(filename) {
-  const cacheKey = filename
+async function build(filename, extractCss = false) {
+  const cacheKey = JSON.stringify({filename, extractCss})
   if (cacheKey in cache) return cache[cacheKey]
   const input = filename + '__app.js'
 
-  const options = { defaultLang: { markdown: 'md' } }
+  const options = { defaultLang: { markdown: 'md' }, css: extractCss }
+  let style
   let bundle = await rollup({
     input,
     plugins: [
       md(),
+      css({ include: '**/*.css?*', output(s) {
+        style = s
+      } }),
       vue(options),
       image(),
       nodeResolve(),
@@ -66,7 +70,12 @@ async function build(filename) {
   cache[cacheKey] = (await bundle.generate({
     format: 'iife',
     name: 'App'
-  })).code
+  })).code + (style ? `;(function() { 
+    var s = document.createElement('style'); 
+    s.type = 'text/css'; 
+    document.head.appendChild(s);
+    s.appendChild(document.createTextNode(${JSON.stringify(style)}))
+  })()` : '')
 
   return cache[cacheKey]
 }
