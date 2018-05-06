@@ -2,7 +2,7 @@
 
 <script>
 export default {
-  data () {
+  data() {
     return { name: 'John Doe' }
   }
 }

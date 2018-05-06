@@ -27,20 +27,36 @@ h1 {
 }
 
 @keyframes color {
-  from { color: red; }
-  to { color: green; }
+  from {
+    color: red;
+  }
+  to {
+    color: green;
+  }
 }
 @-webkit-keyframes color {
-  from { color: red; }
-  to { color: green; }
+  from {
+    color: red;
+  }
+  to {
+    color: green;
+  }
 }
 @keyframes opacity {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @-webkit-keyframes opacity {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .foo p >>> .bar {
   color: red;

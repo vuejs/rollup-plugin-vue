@@ -1,12 +1,10 @@
 const puppeteer = require('puppeteer')
-const { readdirSync } = require('fs')
-const { join, resolve } = require('path')
-const { build, open } = require('./setup')
+import * as fs from 'fs'
+import * as path from 'path'
+
+import {build, open} from "./setup"
 
 let browser = null
-const fixtures = readdirSync(join(__dirname, 'fixtures'))
-  .filter(it => it.endsWith('.vue'))
-  .map(it => it.replace(/\.vue$/i, ''))
 
 beforeAll(async () => {
   browser = await puppeteer.launch({
@@ -14,10 +12,21 @@ beforeAll(async () => {
     headless: Boolean(process.env.CI)
   })
 })
+
+describe('baseline', () => {
+  fs.readdirSync(path.join(__dirname, 'fixtures'))
+    .filter((filename: string) => filename.endsWith('.vue'))
+    .map((filename: string) => filename.replace(/\.vue$/i, ''))
+    .forEach(fixture => {
+      test(fixture, () => testRunner(fixture, true))
+      test(fixture + ' (extract css)', () => testRunner(fixture, false))
+    })
+})
+
 afterAll(async () => browser && (await browser.close()))
 
-const testRunner = async (fixture, extractCss) => {
-  const filename = join(__dirname, 'fixtures', fixture + '.vue')
+async function testRunner(fixture: string, extractCss: boolean): Promise<void> {
+  const filename = path.join(__dirname, 'fixtures', fixture + '.vue')
   const code = await build(filename, extractCss)
   const page = await open(
     fixture + (extractCss ? '-extract' : ''),
@@ -35,9 +44,4 @@ const testRunner = async (fixture, extractCss) => {
   ).toEqual('rgb(255, 0, 0)')
 
   await page.close()
-  resolve()
 }
-fixtures.forEach(fixture => {
-  test(fixture, () => testRunner(fixture, false))
-  test(fixture + ' (extract css)', () => testRunner(fixture, true))
-})

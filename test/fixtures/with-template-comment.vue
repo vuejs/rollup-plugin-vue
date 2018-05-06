@@ -7,7 +7,7 @@
 <script>
 export default {
   comments: true,
-  data () {
+  data() {
     return {
       msg: 'Hello from Component A!'
     }

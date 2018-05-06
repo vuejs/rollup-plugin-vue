@@ -1,16 +1,39 @@
 import {
   createVueFilter,
-  isVuePartRequest,
   createVuePartRequest,
   parseVuePartRequest,
   resolveVuePart
 } from './utils'
+import {
+  createDefaultCompiler,
+  assemble,
+  AssembleOptions,
+  ScriptOptions,
+  StyleOptions,
+  TemplateOptions,
+  StyleCompileResult
+} from '@vue/component-compiler'
+import {Plugin} from 'rollup'
 import * as path from 'path'
-import { parse } from '@vue/component-compiler-utils'
-import { createDefaultCompiler, assemble } from '@vue/component-compiler'
-import hash from 'hash-sum'
+import {parse, SFCDescriptor} from '@vue/component-compiler-utils'
 
-export default function vue(opts = {}) {
+const hash = require('hash-sum')
+
+export type VuePluginOptions = AssembleOptions & {
+  include?: string
+  exclude?: string
+  defaultLang?: {
+    [key: string]: string
+  },
+  blackListCustomBlocks?: string[]
+  whiteListCustomBlocks?: string[]
+  css?: boolean
+  script?: ScriptOptions
+  style?: StyleOptions
+  template?: TemplateOptions
+}
+
+export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
   const isVue = createVueFilter(opts.include, opts.exclude)
   const isProduction = process.env.NODE_ENV === 'production'
 
@@ -20,60 +43,65 @@ export default function vue(opts = {}) {
   }
 
   const shouldExtractCss = opts.css === false
-  const blacklisted = new Set(opts.blacklistCustomBlocks || ['*'])
-  const whitelisted = new Set(opts.blacklistCustomBlocks || [])
+  const blacklisted = new Set(opts.blackListCustomBlocks || ['*'])
+  const whitelisted = new Set(opts.whiteListCustomBlocks || [])
 
-  const isAllowed = any =>
-    (!blacklisted.has('*') || !blacklisted.has(any)) &&
-    (whitelisted.has('*') || whitelisted.has(any))
+  const isAllowed = (customBlockType: string) =>
+    (!blacklisted.has('*') || !blacklisted.has(customBlockType)) &&
+    (whitelisted.has('*') || whitelisted.has(customBlockType))
 
   delete opts.css
-  delete opts.blacklistCustomBlocks
+  delete opts.blackListCustomBlocks
+  delete opts.whiteListCustomBlocks
   delete opts.defaultLang
   delete opts.include
   delete opts.exclude
 
   const compiler = createDefaultCompiler(opts)
-  const descriptors = new WeakMap()
+  const descriptors = new Map<string, SFCDescriptor>()
 
   return {
     name: 'vue.delegate',
 
     resolveId(id) {
-      if (isVuePartRequest(id)) {
-        const ref = parseVuePartRequest(id)
+      const ref = parseVuePartRequest(id)
+      if (ref) {
         const element = resolveVuePart(descriptors, ref)
-
-        if (element.src && ref.meta.type !== 'styles')
-          return path.resolve(path.dirname(ref.filename), element.src)
+        if ('src' in element && ref.meta.type !== 'styles') {
+          return path.resolve(path.dirname(ref.filename), (element as any).src as string)
+        }
 
         return id
       }
     },
 
-    load(id) {
-      if (!isVuePartRequest(id)) return
+    load(id: string) {
+      const request = parseVuePartRequest(id)
 
-      id = parseVuePartRequest(id)
+      if (!request) return
 
-      const element = resolveVuePart(descriptors, id)
+      const element = resolveVuePart(descriptors, request)
 
-      return element.code || element.content
+      return 'code' in element
+        ? (element as any).code as string // .code is set when extract styles is used. { css: false }
+        : element.content
     },
 
-    async transform(source, filename) {
+    async transform(source: string, filename: string) {
       if (isVue(filename)) {
-        const descriptor = (descriptors[filename] = parse({
+        const descriptor = parse({
           filename,
           source,
           needMap: true
-        }))
+        })
+
         const scopeId =
           'data-v-' +
           (isProduction
             ? hash(path.basename(filename) + source)
             : hash(filename + source))
-        const input = {
+        descriptors.set(filename, descriptor)
+        const input: any = {
           scopeId,
           styles: descriptor.styles.map(style =>
             compiler.compileStyle(filename, scopeId, style)
@@ -90,44 +118,44 @@ export default function vue(opts = {}) {
           if (input.template.errors && input.template.errors.length) {
             console.error(
               '> Errors: ' +
-                path.relative(process.cwd(), filename) +
-                '\n' +
-                input.template.errors.map(it => '  - ' + it).join('\n')
+              path.relative(process.cwd(), filename) +
+              '\n' +
+              input.template.errors.map((error: string) => '  - ' + error).join('\n')
             )
           }
 
           if (input.template.tips && input.template.tips.length) {
             console.log(
               '> Tips: ' +
-                path.relative(process.cwd(), filename) +
-                '\n' +
-                input.template.tips.map(it => '  - ' + it).join('\n')
+              path.relative(process.cwd(), filename) +
+              '\n' +
+              input.template.tips.map((tip: string) => '  - ' + tip).join('\n')
             )
           }
         }
 
         input.script = descriptor.script
           ? {
-              code: `
+            code: `
             export * from '${createVuePartRequest(
               filename,
-              descriptor.script.lang,
+              descriptor.script.lang || 'js',
               'script'
             )}'
             import script from '${createVuePartRequest(
               filename,
-              descriptor.script.lang,
+              descriptor.script.lang || 'js',
               'script'
             )}'
             export default script
             `
-            }
-          : { code: '' }
+          }
+          : {code: ''}
 
         if (shouldExtractCss) {
           input.styles = input.styles
-            .map((style, index) => {
-              descriptor.styles[index].code = style.code
+            .map((style: StyleCompileResult, index: number) => {
+              (descriptor.styles[index] as any).code = style.code
 
               input.script.code +=
                 '\n' +
@@ -139,7 +167,7 @@ export default function vue(opts = {}) {
                 )}'`
 
               if (style.module || descriptor.styles[index].scoped) {
-                return { ...style, code: '' }
+                return {...style, code: ''}
               }
             })
             .filter(Boolean)
@@ -154,8 +182,8 @@ export default function vue(opts = {}) {
             `export * from '${createVuePartRequest(
               filename,
               block.attrs.lang ||
-                createVuePartRequest.defaultLang[block.type] ||
-                block.type,
+              createVuePartRequest.defaultLang[block.type] ||
+              block.type,
               'customBlocks',
               index
             )}'`

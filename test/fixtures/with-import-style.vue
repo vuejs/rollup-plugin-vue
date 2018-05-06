@@ -4,10 +4,11 @@
 
 <script>
 export default {
-  data () {
+  data() {
     return { name: 'John Doe' }
   }
 }
 </script>
 
-<style src="./style.css"></style>
+<style src="./style.css">
+</style>
