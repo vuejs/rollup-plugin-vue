@@ -1,3 +1,18 @@
+<a name="4.0.2"></a>
+## [4.0.2](https://github.com/znck/rollup-plugin-vue/compare/v4.0.1...v4.0.2) (2018-05-06)
+
+
+### Bug Fixes
+
+* When using extract CSS add scopeId to component for scoped CSS ([#188](https://github.com/znck/rollup-plugin-vue/issues/188)) ([3a64402](https://github.com/znck/rollup-plugin-vue/commit/3a64402)), closes [#186](https://github.com/znck/rollup-plugin-vue/issues/186)
+
+
+### Features
+
+* Improve compatibility with other plugins that uses query parameters ([#185](https://github.com/znck/rollup-plugin-vue/issues/185)) ([4110dbb](https://github.com/znck/rollup-plugin-vue/commit/4110dbb))
+
+
+
 <a name="4.0.1"></a>
 ## [4.0.1](https://github.com/znck/rollup-plugin-vue/compare/v2.5.2...v4.0.1) (2018-05-02)
 
