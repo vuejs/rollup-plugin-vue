@@ -16,10 +16,14 @@ beforeAll(async () => {
 })
 afterAll(async () => browser && (await browser.close()))
 
-const testRunner = async fixture => {
+const testRunner = async (fixture, extractCss) => {
   const filename = join(__dirname, 'fixtures', fixture + '.vue')
-  const code = await build(filename)
-  const page = await open(fixture, browser, code)
+  const code = await build(filename, extractCss)
+  const page = await open(
+    fixture + (extractCss ? '-extract' : ''),
+    browser,
+    code
+  )
   expect(await page.$('#test')).toBeTruthy()
   expect(
     await page.evaluate(() => document.getElementById('test').textContent)
@@ -35,4 +39,5 @@ const testRunner = async fixture => {
 }
 fixtures.forEach(fixture => {
   test(fixture, () => testRunner(fixture, false))
+  test(fixture + ' (extract css)', () => testRunner(fixture, true))
 })
