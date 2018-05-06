@@ -12,7 +12,8 @@
     "pretest": "npm run lint && npm run build",
     "test": "jest",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 1",
-    "version": "npm run changelog && git add CHANGELOG.md"
+    "version": "npm run changelog && git add CHANGELOG.md",
+    "postversion": "npm publish && git push && git push --tags"
   },
   "repository": {
     "type": "git",
