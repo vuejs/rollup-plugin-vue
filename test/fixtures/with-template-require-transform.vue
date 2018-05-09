@@ -21,5 +21,7 @@
 </template>
 
 <style>
-html { background-image: url(./logo.png); }
+html {
+  background-image: url(./logo.png);
+}
 </style>

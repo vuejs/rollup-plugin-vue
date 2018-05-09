@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/project
     docker:
-      - image: alekzonder/puppeteer # base image: node/8-slim
+      - image: alekzonder/puppeteer # base pluginImage: node/8-slim
     steps:
       - checkout
       - run:
