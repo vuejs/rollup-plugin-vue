@@ -1,5 +1,5 @@
 <div class="text-xs-center" align="center" style="margin: 20px">
-  <img src="logo.png">
+  <img src="https://raw.githubusercontent.com/vuejs/rollup-plugin-vue/master/logo.png">
 </div>
 
 ## Introduction
@@ -19,12 +19,14 @@ With rollup you can break your application into reusable modules.
 
 ## Usage
 
+> This document applies to v4.0+. If you are looking for older versions, docs are [here](https://github.com/vuejs/rollup-plugin-vue/tree/2.2/docs)
+
 ```js
-import vue from 'rollup-plugin-vue'
+import VuePlugin from 'rollup-plugin-vue'
 
 export default {
   entry: 'main.js',
-  plugins: [vue(/* options */)]
+  plugins: [VuePlugin(/* VuePluginOptions */)]
 }
 ```
 

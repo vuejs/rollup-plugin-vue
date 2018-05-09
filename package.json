@@ -2,36 +2,37 @@
   "name": "rollup-plugin-vue",
   "version": "4.0.2",
   "description": "Roll .vue files",
-  "main": "dist/rollup-plugin-vue.common.js",
-  "module": "dist/rollup-plugin-vue.js",
-  "scripts": {
-    "prebuild": "npm run lint",
-    "build": "tsc",
-    "lint": "prettier --no-semi --single-quote --write **/*.js **/*.vue !test/target/** !dist/**",
-    "test": "jest",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 1",
-    "preversion": "npm run build",
-    "version": "npm run changelog && git add CHANGELOG.md",
-    "postversion": "npm publish && git push && git push --tags"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/znck/rollup-plugin-vue.git"
-  },
-  "keywords": [
-    "rollup-plugin",
-    "vue"
-  ],
-  "files": [
-    "dist/",
-    "src/"
-  ],
   "author": "Rahul Kadyan <hi@znck.me>",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/znck/rollup-plugin-vue/issues"
   },
   "homepage": "https://github.com/znck/rollup-plugin-vue#readme",
+  "keywords": [
+    "rollup-plugin",
+    "vue"
+  ],
+  "license": "MIT",
+  "main": "dist/rollup-plugin-vue.common.js",
+  "module": "dist/rollup-plugin-vue.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/znck/rollup-plugin-vue.git"
+  },
+  "scripts": {
+    "prebuild": "npm run lint",
+    "build": "tsc",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 1",
+    "docs": "typedoc typings src/index.ts",
+    "lint": "prettier --no-semi --single-quote --write **/*.js **/*.vue !test/target/** !dist/**",
+    "preversion": "npm run build",
+    "version": "yarn changelog && yarn build && git add docs/ CHANGELOG.md",
+    "postversion": "npm publish && git push && git push --tags",
+    "test": "jest"
+  },
+  "files": [
+    "dist/",
+    "src/"
+  ],
   "dependencies": {
     "@babel/runtime": "^7.0.0-beta.46",
     "@vue/component-compiler": "^3.3.1",
