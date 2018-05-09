@@ -1,3 +1,22 @@
+# Change Log
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+<a name="4.1.0"></a>
+# [4.1.0](https://github.com/znck/rollup-plugin-vue/compare/v4.0.2...v4.1.0) (2018-05-09)
+
+
+### Bug Fixes
+
+* Use file basename in vue block imports ([#192](https://github.com/znck/rollup-plugin-vue/issues/192)) ([05176a8](https://github.com/znck/rollup-plugin-vue/commit/05176a8)), closes [#181](https://github.com/znck/rollup-plugin-vue/issues/181) [#187](https://github.com/znck/rollup-plugin-vue/issues/187)
+
+
+### Features
+
+* Migrate codebase to typescript ([#191](https://github.com/znck/rollup-plugin-vue/issues/191)) ([758e330](https://github.com/znck/rollup-plugin-vue/commit/758e330))
+
+
+
 <a name="4.0.2"></a>
 ## [4.0.2](https://github.com/znck/rollup-plugin-vue/compare/v4.0.1...v4.0.2) (2018-05-06)
 
@@ -40,6 +59,3 @@
 ### Features
 
 * use [@vue](https://github.com/vue)/component-compiler ([e110aa0](https://github.com/znck/rollup-plugin-vue/commit/e110aa0))
-
-
-
