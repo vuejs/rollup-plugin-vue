@@ -2,7 +2,8 @@ import {
   createVueFilter,
   createVuePartRequest,
   parseVuePartRequest,
-  resolveVuePart
+  resolveVuePart,
+  isVuePartRequest
 } from './utils'
 import {
   createDefaultCompiler,
@@ -63,7 +64,9 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
   return {
     name: 'vue.delegate',
 
-    resolveId(id) {
+    resolveId(id, importer) {
+      if (!isVuePartRequest(id)) return
+      id = path.resolve(path.dirname(importer), id)
       const ref = parseVuePartRequest(id)
       if (ref) {
         const element = resolveVuePart(descriptors, ref)
@@ -116,21 +119,11 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
           )
 
           if (input.template.errors && input.template.errors.length) {
-            console.error(
-              '> Errors: ' +
-              path.relative(process.cwd(), filename) +
-              '\n' +
-              input.template.errors.map((error: string) => '  - ' + error).join('\n')
-            )
+            input.template.errors.map((error: Error) => this.error(error))
           }
 
           if (input.template.tips && input.template.tips.length) {
-            console.log(
-              '> Tips: ' +
-              path.relative(process.cwd(), filename) +
-              '\n' +
-              input.template.tips.map((tip: string) => '  - ' + tip).join('\n')
-            )
+            input.template.tips.map((message: string) => this.warn({ message }))
           }
         }
 
