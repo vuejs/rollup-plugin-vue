@@ -18,15 +18,18 @@
     "type": "git",
     "url": "git+https://github.com/znck/rollup-plugin-vue.git"
   },
+  "standard-version": {
+    "scripts": {
+      "precommit": "yarn test && yarn docs && git add docs/"
+    }
+  },
   "scripts": {
-    "prebuild": "npm run lint",
+    "prebuild": "yarn lint && yarn test",
     "build": "tsc",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 1",
     "docs": "typedoc typings src/index.ts",
     "lint": "prettier --no-semi --single-quote --write **/*.js **/*.vue !test/target/** !dist/**",
-    "preversion": "npm run build",
-    "version": "yarn changelog && yarn build && git add docs/ CHANGELOG.md",
-    "postversion": "npm publish && git push && git push --tags",
+    "release": "standard-version -a",
     "test": "jest"
   },
   "files": [
