@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.1.1"></a>
+## [4.1.1](https://github.com/znck/rollup-plugin-vue/compare/v4.1.0...v4.1.1) (2018-05-12)
+
+
+### Bug Fixes
+
+* Change main file in package.json ([73f944c](https://github.com/znck/rollup-plugin-vue/commit/73f944c))
+
+
+
 <a name="4.1.0"></a>
 # [4.1.0](https://github.com/znck/rollup-plugin-vue/compare/v4.0.2...v4.1.0) (2018-05-09)
 
