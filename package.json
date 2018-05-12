@@ -19,7 +19,7 @@
   },
   "standard-version": {
     "scripts": {
-      "precommit": "yarn test && yarn docs && git add docs/"
+      "postchangelog": "yarn test && yarn docs && git add docs/"
     }
   },
   "scripts": {
