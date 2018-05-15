@@ -4,7 +4,7 @@ import {
   SFCCustomBlock
 } from '@vue/component-compiler-utils'
 import { createFilter } from 'rollup-pluginutils'
-import queryString from 'querystring'
+import * as queryString from 'querystring'
 import * as path from 'path'
 
 const GET_QUERY = /\.vue(\.[a-z]+?)?\?(.+)$/i
