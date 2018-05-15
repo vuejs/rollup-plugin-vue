@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.1.4"></a>
+## [4.1.4](https://github.com/znck/rollup-plugin-vue/compare/v4.1.3...v4.1.4) (2018-05-15)
+
+
+### Bug Fixes
+
+* Use named import querystring module ([#199](https://github.com/znck/rollup-plugin-vue/issues/199)) ([b3d63f0](https://github.com/znck/rollup-plugin-vue/commit/b3d63f0)), closes [#198](https://github.com/znck/rollup-plugin-vue/issues/198)
+
+
+
 <a name="4.1.3"></a>
 ## [4.1.3](https://github.com/znck/rollup-plugin-vue/compare/v4.1.2...v4.1.3) (2018-05-12)
 
