@@ -1,5 +1,6 @@
 const pluginBabel = require('rollup-plugin-babel')
 const pluginNodeResolve = require('rollup-plugin-node-resolve')
+const pluginCommonJS = require('rollup-plugin-commonjs')
 const pluginImage = require('rollup-plugin-image')
 const pluginMarkdown = require('rollup-plugin-md')
 
@@ -7,6 +8,7 @@ export const plugins = [
   pluginImage(),
   pluginMarkdown(),
   pluginNodeResolve(),
+  pluginCommonJS(),
   pluginBabel({
     presets: [
       [require.resolve('@babel/preset-env'), {

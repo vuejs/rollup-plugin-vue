@@ -125,7 +125,7 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
   const descriptors = new Map<string, SFCDescriptor>()
 
   return {
-    name: 'vue.delegate',
+    name: 'VuePlugin',
 
     resolveId(id, importer) {
       if (!isVuePartRequest(id)) return

@@ -5,7 +5,7 @@ import {rollup} from 'rollup'
 import promised from '@znck/promised'
 
 import {pluginCreateVueApp, plugins} from "./plugins"
-import pluginVue from '../../src'
+import pluginVue from '../..'
 
 const pluginCSS = require('rollup-plugin-css-only')
 
