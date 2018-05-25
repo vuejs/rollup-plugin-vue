@@ -80,7 +80,7 @@ export const createVuePartRequest: VuePartRequestCreator = ((
     .filter(it => it !== undefined)
     .join('.')
 
-  return `${path.basename(filename)}.${lang}?${queryString.stringify(query)}`
+  return `${path.basename(filename)}?${queryString.stringify(query)}`
 }) as VuePartRequestCreator
 
 createVuePartRequest.defaultLang = {
