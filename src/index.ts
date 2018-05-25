@@ -15,7 +15,7 @@ import {
 } from '@vue/component-compiler'
 import {Plugin} from 'rollup'
 import * as path from 'path'
-import {parse, SFCDescriptor} from '@vue/component-compiler-utils'
+import {parse, SFCDescriptor, SFCBlock} from '@vue/component-compiler-utils'
 
 const hash = require('hash-sum')
 
@@ -133,8 +133,13 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
       const ref = parseVuePartRequest(id)
       if (ref) {
         const element = resolveVuePart(descriptors, ref)
-        if ('src' in element && ref.meta.type !== 'styles') {
-          return path.resolve(path.dirname(ref.filename), (element as any).src as string)
+        const src = (element as SFCBlock).src
+        if (ref.meta.type !== 'styles' && typeof src === 'string') {
+          if (src.startsWith('.')) {
+            return path.resolve(path.dirname(ref.filename), src as string)
+          } else {
+            return require.resolve(src, { paths: [path.dirname(ref.filename)] })
+          }
         }
 
         return id
