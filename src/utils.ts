@@ -30,10 +30,10 @@ export interface VuePartRequestCreator {
 }
 
 export function createVueFilter(
-  include: string | undefined,
-  exclude: string | undefined
+  include: string | string[] = ['*.vue', '**/*.vue'],
+  exclude: string | string[] = []
 ): (file: string) => boolean {
-  const filter = createFilter(include || '**/*.vue', exclude)
+  const filter = createFilter(include, exclude)
 
   return id => filter(id)
 }
