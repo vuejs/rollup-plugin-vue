@@ -24,7 +24,6 @@ export async function build(filename, css = false): Promise<string> {
     plugins: [
       pluginCreateVueApp(input, filename),
       pluginCSS({
-        include: '**/*.css?*',
         output: (s: string) => {
           style = s
         }
@@ -32,12 +31,16 @@ export async function build(filename, css = false): Promise<string> {
       pluginVue(options),
       ...plugins
     ],
+    external: ['vue']
   })
 
   cache[cacheKey] = (await bundle.generate({
     format: 'iife',
-    name: 'App'
-  })).code + (style ? `;(function() { 
+    name: 'App',
+    globals: {
+      vue: 'Vue'
+    }
+  })).code + (style ? `\n;(function() { 
     var s = document.createElement('style'); 
     s.type = 'text/css'; 
     document.head.appendChild(s);
@@ -62,8 +65,12 @@ export async function open(name: string, browser: Browser, code: string, id: str
     </head>
     <body>
       <div id="app"></div>
-      <script>${await VUE_SOURCE}</script>
-      <script>${await code}</script>
+      <script>
+      ${await VUE_SOURCE}
+      </script>
+      <script>
+      ${await code}
+      </script>
     </body>
   </html>`
 
