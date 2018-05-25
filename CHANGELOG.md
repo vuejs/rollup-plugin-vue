@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.1.5"></a>
+## [4.1.5](https://github.com/znck/rollup-plugin-vue/compare/v4.1.4...v4.1.5) (2018-05-25)
+
+
+### Bug Fixes
+
+* Handle Vue.extend constructor export from .vue file ([#206](https://github.com/znck/rollup-plugin-vue/issues/206)) ([fa7661e](https://github.com/znck/rollup-plugin-vue/commit/fa7661e))
+* Resolve src attr value with require.resolve ([#205](https://github.com/znck/rollup-plugin-vue/issues/205)) ([ecb2d87](https://github.com/znck/rollup-plugin-vue/commit/ecb2d87))
+
+
+
 <a name="4.1.4"></a>
 ## [4.1.4](https://github.com/znck/rollup-plugin-vue/compare/v4.1.3...v4.1.4) (2018-05-15)
 
