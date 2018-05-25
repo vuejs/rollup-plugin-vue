@@ -3,20 +3,29 @@ const pluginNodeResolve = require('rollup-plugin-node-resolve')
 const pluginCommonJS = require('rollup-plugin-commonjs')
 const pluginImage = require('rollup-plugin-image')
 const pluginMarkdown = require('rollup-plugin-md')
+const pluginTypescript = require('rollup-plugin-typescript')
+const path = require('path')
 
 export const plugins = [
   pluginImage(),
   pluginMarkdown(),
   pluginNodeResolve(),
   pluginCommonJS(),
+  pluginTypescript({
+    tsconfig: false,
+    module: 'es2015'
+  }),
   pluginBabel({
     presets: [
-      [require.resolve('@babel/preset-env'), {
-        modules: false,
-        targets: {
-          browsers: ['last 2 versions']
+      [
+        require.resolve('@babel/preset-env'),
+        {
+          modules: false,
+          targets: {
+            browsers: ['last 2 versions']
+          }
         }
-      }]
+      ]
     ],
     babelrc: false,
     runtimeHelpers: true
@@ -30,7 +39,8 @@ export function pluginCreateVueApp(filename: string, component: string): any {
       if (id === filename) return filename
     },
     load(id) {
-      if (id === filename) return `
+      if (id === filename)
+        return `
     import Component from '${component}'
 
     Vue.config.productionTip = false
