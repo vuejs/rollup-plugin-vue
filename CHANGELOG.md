@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.2.0"></a>
+# [4.2.0](https://github.com/znck/rollup-plugin-vue/compare/v4.1.5...v4.2.0) (2018-05-25)
+
+
+### Features
+
+* Use regex to filter .vue files ([1c77e2a](https://github.com/znck/rollup-plugin-vue/commit/1c77e2a))
+
+
+
 <a name="4.1.5"></a>
 ## [4.1.5](https://github.com/znck/rollup-plugin-vue/compare/v4.1.4...v4.1.5) (2018-05-25)
 
