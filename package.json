@@ -27,7 +27,7 @@
     "prebuild": "yarn lint",
     "build": "tsc",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 1",
-    "docs": "typedoc typings src/index.ts",
+    "docs": "typedoc typings src/index.ts && touch docs/.nojekyll",
     "lint": "prettier --no-semi --single-quote --write **/*.js **/*.vue !test/target/** !dist/**",
     "release": "standard-version -a",
     "pretest": "yarn build",
