@@ -30,8 +30,8 @@ export interface VuePartRequestCreator {
 }
 
 export function createVueFilter(
-  include: string | string[] = ['*.vue', '**/*.vue'],
-  exclude: string | string[] = []
+  include: Array<string|RegExp> | string | RegExp = [/\.vue$/i],
+  exclude: Array<string|RegExp> | string | RegExp = []
 ): (file: string) => boolean {
   const filter = createFilter(include, exclude)
 

@@ -24,12 +24,12 @@ export interface VuePluginOptions {
    * Include files or directories.
    * @default `'.vue'`
    */
-  include?: string
+  include?: Array<string|RegExp> | string | RegExp
   /**
    * Exclude files or directories.
    * @default `undefined`
    */
-  exclude?: string
+  exclude?: Array<string|RegExp> | string | RegExp
   /**
    * Default language for blocks.
    * 
