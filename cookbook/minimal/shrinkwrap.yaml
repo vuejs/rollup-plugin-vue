@@ -1,0 +1,25 @@
+devDependencies:
+  rollup: 0.59.4
+  rollup-plugin-vue: 'link:../..'
+packages:
+  /@types/estree/0.0.39:
+    dev: true
+    resolution:
+      integrity: sha512-EYNwp3bU+98cpU4lAWYYL7Zz+2gryWH1qbdDTidVd6hkiR6weksdbMadyXKXNPEkQFhXM+hVO9ZygomHXp+AIw==
+  /@types/node/10.3.0:
+    dev: true
+    resolution:
+      integrity: sha512-hWzNviaVFIr1TqcRA8ou49JaSHp+Rfabmnqg2kNvusKqLhPU0rIsGPUj5WJJ7ld4Bb7qdgLmIhLfCD1qS08IVA==
+  /rollup/0.59.4:
+    dependencies:
+      '@types/estree': 0.0.39
+      '@types/node': 10.3.0
+    dev: true
+    resolution:
+      integrity: sha512-ISiMqq/aJa+57QxX2MRcvLESHdJ7wSavmr6U1euMr+6UgFe6KM+3QANrYy8LQofwhTC1I7BcAdlLnDiaODs1BA==
+registry: 'https://registry.npmjs.org/'
+shrinkwrapMinorVersion: 7
+shrinkwrapVersion: 3
+specifiers:
+  rollup: ^0.59.4
+  rollup-plugin-vue: 'link:../..'
