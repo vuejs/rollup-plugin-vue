@@ -37,7 +37,8 @@ module.exports = {
           '/',
           '/guide/',
           '/options',
-          '/cookbook/'
+          '/cookbook/',
+          '/changelog'
         ]
       }
     }
