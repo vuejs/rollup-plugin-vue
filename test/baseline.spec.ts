@@ -1,10 +1,15 @@
 const puppeteer = require('puppeteer')
 import * as fs from 'fs'
 import * as path from 'path'
+import * as assertions from './assertions'
 
 import {build, open} from "./setup"
 
 let browser = null
+
+function toCamelCase(name: string) : string {
+  return name.replace(/-(.)/g, (_, char) => char.toUpperCase())
+}
 
 beforeAll(async () => {
   browser = await puppeteer.launch({
@@ -18,14 +23,15 @@ describe('baseline', () => {
     .filter((filename: string) => filename.endsWith('.vue'))
     .map((filename: string) => filename.replace(/\.vue$/i, ''))
     .forEach(fixture => {
-      test(fixture, () => testRunner(fixture, true))
-      test(fixture + ' (extract css)', () => testRunner(fixture, false))
+      const name = toCamelCase(fixture)
+      test(fixture, () => testRunner(fixture, true, assertions[name]))
+      test(fixture + ' (extract css)', () => testRunner(fixture, false, assertions[name]))
     })
 })
 
 afterAll(async () => browser && (await browser.close()))
 
-async function testRunner(fixture: string, extractCss: boolean): Promise<void> {
+async function testRunner(fixture: string, extractCss: boolean, moreAssertions?: Function): Promise<void> {
   const filename = path.join(__dirname, 'fixtures', fixture + '.vue')
   const code = await build(filename, extractCss)
   const page = await open(
@@ -42,6 +48,8 @@ async function testRunner(fixture: string, extractCss: boolean): Promise<void> {
       () => window.getComputedStyle(document.getElementById('test')).color
     )
   ).toEqual('rgb(255, 0, 0)')
+
+  moreAssertions && moreAssertions(page)
 
   await page.close()
 }

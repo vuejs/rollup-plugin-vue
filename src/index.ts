@@ -3,7 +3,8 @@ import {
   createVuePartRequest,
   parseVuePartRequest,
   resolveVuePart,
-  isVuePartRequest
+  isVuePartRequest,
+  transformRequireToImport
 } from './utils'
 import {
   createDefaultCompiler,
@@ -13,26 +14,29 @@ import {
   TemplateOptions,
   StyleCompileResult
 } from '@vue/component-compiler'
-import {Plugin} from 'rollup'
+import { Plugin } from 'rollup'
 import * as path from 'path'
-import {parse, SFCDescriptor, SFCBlock} from '@vue/component-compiler-utils'
+import { parse, SFCDescriptor, SFCBlock } from '@vue/component-compiler-utils'
+import debug from 'debug'
 
 const hash = require('hash-sum')
+const d = debug('rollup-plugin-vue')
+const { version } = require('../package.json')
 
 export interface VuePluginOptions {
   /**
    * Include files or directories.
    * @default `'.vue'`
    */
-  include?: Array<string|RegExp> | string | RegExp
+  include?: Array<string | RegExp> | string | RegExp
   /**
    * Exclude files or directories.
    * @default `undefined`
    */
-  exclude?: Array<string|RegExp> | string | RegExp
+  exclude?: Array<string | RegExp> | string | RegExp
   /**
    * Default language for blocks.
-   * 
+   *
    * @default `{}`
    * @example
    * ```js
@@ -41,7 +45,7 @@ export interface VuePluginOptions {
    */
   defaultLang?: {
     [key: string]: string
-  },
+  }
   /**
    * Exclude customBlocks for final build.
    * @default `['*']`
@@ -99,7 +103,12 @@ export interface VuePluginOptions {
  */
 export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
   const isVue = createVueFilter(opts.include, opts.exclude)
-  const isProduction = process.env.NODE_ENV === 'production'
+  const isProduction =
+    process.env.NODE_ENV === 'production' || process.env.BUILD === 'production'
+
+  d('Version ' + version)
+  d(`Build environment: ${isProduction ? 'production' : 'development'}`)
+  d(`Build target: ${process.env.VUE_ENV || 'browser'}`)
 
   createVuePartRequest.defaultLang = {
     ...createVuePartRequest.defaultLang,
@@ -121,8 +130,22 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
   delete opts.include
   delete opts.exclude
 
+  opts.template = {
+    transformAssetUrls: {
+      video: ['src', 'poster'],
+      source: 'src',
+      img: 'src',
+      image: 'xlink:href'
+    },
+    ...opts.template
+  } as any
+  if (opts.template && typeof opts.template.isProduction === 'undefined') {
+    opts.template.isProduction = isProduction
+  }
   const compiler = createDefaultCompiler(opts)
   const descriptors = new Map<string, SFCDescriptor>()
+
+  if (opts.css === false) d('Running in CSS extract mode')
 
   return {
     name: 'VuePlugin',
@@ -154,7 +177,7 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
       const element = resolveVuePart(descriptors, request)
 
       return 'code' in element
-        ? (element as any).code as string // .code is set when extract styles is used. { css: false }
+        ? ((element as any).code as string) // .code is set when extract styles is used. { css: false }
         : element.content
     },
 
@@ -186,6 +209,10 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
             descriptor.template
           )
 
+          input.template.code = transformRequireToImport(
+            input.template.code
+          )
+
           if (input.template.errors && input.template.errors.length) {
             input.template.errors.map((error: Error) => this.error(error))
           }
@@ -197,7 +224,7 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
 
         input.script = descriptor.script
           ? {
-            code: `
+              code: `
             export * from '${createVuePartRequest(
               filename,
               descriptor.script.lang || 'js',
@@ -210,13 +237,13 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
             )}'
             export default script
             `
-          }
-          : {code: ''}
+            }
+          : { code: '' }
 
         if (shouldExtractCss) {
           input.styles = input.styles
             .map((style: StyleCompileResult, index: number) => {
-              (descriptor.styles[index] as any).code = style.code
+              ;(descriptor.styles[index] as any).code = style.code
 
               input.script.code +=
                 '\n' +
@@ -228,7 +255,7 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
                 )}'`
 
               if (style.module || descriptor.styles[index].scoped) {
-                return {...style, code: ''}
+                return { ...style, code: '' }
               }
             })
             .filter(Boolean)
@@ -243,8 +270,8 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
             `export * from '${createVuePartRequest(
               filename,
               block.attrs.lang ||
-              createVuePartRequest.defaultLang[block.type] ||
-              block.type,
+                createVuePartRequest.defaultLang[block.type] ||
+                block.type,
               'customBlocks',
               index
             )}'`

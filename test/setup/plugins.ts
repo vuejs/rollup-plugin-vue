@@ -1,9 +1,10 @@
 const pluginBabel = require('rollup-plugin-babel')
 const pluginNodeResolve = require('rollup-plugin-node-resolve')
 const pluginCommonJS = require('rollup-plugin-commonjs')
-const pluginImage = require('rollup-plugin-image')
+const pluginImage = require('rollup-plugin-url')
 const pluginMarkdown = require('rollup-plugin-md')
 const pluginTypescript = require('rollup-plugin-typescript')
+const pluginReplace = require('rollup-plugin-replace')
 const path = require('path')
 
 export const plugins = [
@@ -11,8 +12,10 @@ export const plugins = [
   pluginMarkdown(),
   pluginNodeResolve(),
   pluginCommonJS(),
+  pluginReplace({ 'process.env.NODE_ENV': '"production"' }),
   pluginTypescript({
     tsconfig: false,
+    experimentalDecorators: true,
     module: 'es2015'
   }),
   pluginBabel({

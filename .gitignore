@@ -7,6 +7,7 @@ output/
 logs/
 *.log
 npm-debug.log*
+docs/changelog.md
 
 # Runtime data
 pids
