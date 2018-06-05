@@ -1,0 +1,76 @@
+devDependencies:
+  rollup: 0.59.4
+  rollup-plugin-css-only: 0.4.0
+  rollup-plugin-vue: 'link:../..'
+packages:
+  /@types/estree/0.0.39:
+    dev: true
+    resolution:
+      integrity: sha512-EYNwp3bU+98cpU4lAWYYL7Zz+2gryWH1qbdDTidVd6hkiR6weksdbMadyXKXNPEkQFhXM+hVO9ZygomHXp+AIw==
+  /@types/node/10.3.1:
+    dev: true
+    resolution:
+      integrity: sha512-IsX9aDHDzJohkm3VCDB8tkzl5RQ34E/PFA29TQk6uDGb7Oc869ZBtmdKVDBzY3+h9GnXB8ssrRXEPVZrlIOPOw==
+  /balanced-match/1.0.0:
+    dev: true
+    resolution:
+      integrity: sha1-ibTRmasr7kneFk6gK4nORi1xt2c=
+  /brace-expansion/1.1.11:
+    dependencies:
+      balanced-match: 1.0.0
+      concat-map: 0.0.1
+    dev: true
+    resolution:
+      integrity: sha512-iCuPHDFgrHX7H2vEI/5xpz07zSHB00TpugqhmYtVmMO6518mCuRMoOYFldEBl0g187ufozdaHgWKcYFb61qGiA==
+  /concat-map/0.0.1:
+    dev: true
+    resolution:
+      integrity: sha1-2Klr13/Wjfd5OnMDajug1UBdR3s=
+  /estree-walker/0.2.1:
+    dev: true
+    resolution:
+      integrity: sha1-va/oCVOD2EFNXcLs9MkXO225QS4=
+  /minimatch/3.0.4:
+    dependencies:
+      brace-expansion: 1.1.11
+    dev: true
+    resolution:
+      integrity: sha512-yJHVQEhyqPLUTgt9B83PXu6W3rx4MvvHvSUvToogpwoGDOUQ+yDrR0HRot+yOCdCO7u4hX3pWft6kWBBcqh0UA==
+  /minimist/0.0.8:
+    dev: true
+    resolution:
+      integrity: sha1-hX/Kv8M5fSYluCKCYuhqp6ARsF0=
+  /mkdirp/0.5.1:
+    dependencies:
+      minimist: 0.0.8
+    dev: true
+    resolution:
+      integrity: sha1-MAV0OOrGz3+MR2fzhkjWaX11yQM=
+  /rollup-plugin-css-only/0.4.0:
+    dependencies:
+      mkdirp: 0.5.1
+      rollup-pluginutils: 1.5.2
+    dev: true
+    resolution:
+      integrity: sha512-a9hhQnwajgrVEyyp+QPvOyV5QC9AN6PILO4Teg2+MCKTZgYAQkZy4B1pYjAuMOH9qgyFiJY8hAu6CEVIDU5Zjw==
+  /rollup-pluginutils/1.5.2:
+    dependencies:
+      estree-walker: 0.2.1
+      minimatch: 3.0.4
+    dev: true
+    resolution:
+      integrity: sha1-HhVud4+UtyVb+hs9AXi+j1xVJAg=
+  /rollup/0.59.4:
+    dependencies:
+      '@types/estree': 0.0.39
+      '@types/node': 10.3.1
+    dev: true
+    resolution:
+      integrity: sha512-ISiMqq/aJa+57QxX2MRcvLESHdJ7wSavmr6U1euMr+6UgFe6KM+3QANrYy8LQofwhTC1I7BcAdlLnDiaODs1BA==
+registry: 'https://registry.npmjs.org/'
+shrinkwrapMinorVersion: 7
+shrinkwrapVersion: 3
+specifiers:
+  rollup: ^0.59.4
+  rollup-plugin-css-only: ^0.4.0
+  rollup-plugin-vue: 'link:../..'

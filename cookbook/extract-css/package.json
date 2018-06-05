@@ -4,8 +4,10 @@
     "build": "rollup -c --environment BUILD:production"
   },
   "main": "./dist/MyComponent.js",
+  "style": "./dist/MyComponent.css",
   "devDependencies": {
     "rollup": "^0.59.4",
+    "rollup-plugin-css-only": "^0.4.0",
     "rollup-plugin-vue": "link:../.."
   }
 }

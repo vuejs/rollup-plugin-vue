@@ -6,6 +6,7 @@
   "main": "./dist/MyComponent.js",
   "devDependencies": {
     "rollup": "^0.59.4",
+    "rollup-plugin-typescript": "^0.8.1",
     "rollup-plugin-vue": "link:../.."
   }
 }

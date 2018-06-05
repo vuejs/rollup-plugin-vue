@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "rollup -c --environment BUILD:production"
+  },
+  "main": "./dist/MyComponent.ssr.js",
+  "module": "./dist/MyComponent.esm.js",
+  "browser": "./dist/MyComponent.js",
+  "unpkg": "./dist/MyComponent.js",
+  "devDependencies": {
+    "rollup": "^0.59.4",
+    "rollup-plugin-css-only": "^0.4.0",
+    "rollup-plugin-vue": "link:../.."
+  }
+}

@@ -13,6 +13,8 @@ sidebar: auto
 - type: `Array<string|RegExp> | string | RegExp`
 - default: `[]`
 
+A minimatch pattern or a regular expression or an array of minimatch patterns or regular expressions.
+
 ## defaultLang
 
 - type: `{ [key: string]: string }`
@@ -47,26 +49,26 @@ Include custom block in final bundle.
 
 Inject CSS in JavaScript. Setting `css: false` would extract styles in a `.css` file.
 
-## script
-
 ## style
 
-### postcssOptions
+`@vue/component-compiler` options to process `<style>` blocks in SFCs.
+
+### style.postcssOptions
 
 - type: `any`
 - default: `undefined`
 
-### postcssPlugins
+### style.postcssPlugins
 
 - type: `any[]`
 - default: `undefined`
 
-### postcssCleanOptions
+### style.postcssCleanOptions
 
 - type: `object`
 - default: `{}`
 
-### postcssModulesOptions
+### style.postcssModulesOptions
 
 - type: `object`
 - default:
@@ -77,26 +79,28 @@ Inject CSS in JavaScript. Setting `css: false` would extract styles in a `.css` 
   }
   ```
 
-### preprocessOptions
+### style.preprocessOptions
 
 - type: `{ [lang: string]: object }`
 - default: `{}`
 
-### trim
+### style.trim
 
 - type: `boolean`
 - default: `true`
 
 ## template
 
-### compiler
+`@vue/component-compiler` options to process `<template>` blocks in SFCs.
+
+### template.compiler
 
 - type: `VueTemplateCompiler`
 - default: `require('vue-template-compiler')`
 
 Override the default compiler used to compile `<template>` blocks in single file components.
 
-### compilerOptions
+### template.compilerOptions
 
 - type: `Object`
 - default: `{}`
@@ -105,7 +109,7 @@ Options for the template compiler. When using the default vue-template-compiler,
 
 See [`vue-template-compiler` options reference](https://github.com/vuejs/vue/tree/dev/packages/vue-template-compiler#options).
 
-### transformAssetUrls
+### template.transformAssetUrls
 
 - type: `{ [tag: string]: string | Array<string> }`
 - default:
@@ -121,21 +125,21 @@ See [`vue-template-compiler` options reference](https://github.com/vuejs/vue/tre
 
 During template compilation, the compiler can transform certain attributes, such as `src` URLs, into `require` calls, so that the target asset can be handled by webpack. For example, `<img src="./foo.png">` will attempt to locate the file `./foo.png` on your file system and include it as a dependency of your bundle.
 
-### isProduction
+### template.isProduction
 
 - type: `boolean`
 - default: `process.env.NODE_ENV === 'production' || process.env.BUILD === 'production'`
 
 Force production mode, which prohibits the plugin from emitting code that is development-only.
 
-### optimizeSSR
+### template.optimizeSSR
 
 - type: `boolean`
 - default: `process.env.VUE_ENV === 'server'`
 
 Enable Vue 2.4 SSR compilation optimization that compiles part of the vdom trees returned by render functions into plain strings, which improves SSR performance. In some cases you might want to explicitly turn it off because the resulting render functions can only be used for SSR and cannot be used for client-side rendering or testing.
 
-### transpileOptions
+### template.transpileOptions
 
 - type: `Object`
 - default: `{}`
@@ -155,11 +159,6 @@ The template render functions compilation supports a special transform `stripWit
 - default: `undefined`
 
 ## styleInjectorSSR
-
-- type: `string`
-- default: `undefined`
-
-## styleInjectorShadow
 
 - type: `string`
 - default: `undefined`

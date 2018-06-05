@@ -7,6 +7,6 @@ export default {
     file: 'dist/MyComponent.js'
   },
   plugins: [
-    vue()
+    vue({ template: { optimizeSSR: true } })
   ]
 }

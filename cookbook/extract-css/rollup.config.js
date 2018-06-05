@@ -1,4 +1,5 @@
 import vue from 'rollup-plugin-vue'
+import css from 'rollup-plugin-css-only'
 
 export default {
   input: 'src/MyComponent.vue',
@@ -7,6 +8,7 @@ export default {
     file: 'dist/MyComponent.js'
   },
   plugins: [
-    vue()
+    css(),
+    vue({ css: false })
   ]
 }
