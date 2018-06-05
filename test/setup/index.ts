@@ -8,6 +8,7 @@ import {pluginCreateVueApp, plugins} from "./plugins"
 import pluginVue from '../..'
 
 const pluginCSS = require('rollup-plugin-css-only')
+const assets = require('postcss-assets')
 
 // -- rollup plugin inline file
 
@@ -18,7 +19,9 @@ export async function build(filename, css = false): Promise<string> {
   if (cacheKey in cache) return cache[cacheKey]
   let style: string | undefined
   const input = filename + '__app.js'
-  const options = {defaultLang: {markdown: 'pluginMarkdown'}, css: css}
+  const options = {defaultLang: {markdown: 'pluginMarkdown'}, css: css, style: {
+    postcssPlugins: [assets({ basePath: '/' })]
+  }}
   const bundle = await rollup({
     input,
     plugins: [

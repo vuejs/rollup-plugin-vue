@@ -123,3 +123,19 @@ export function resolveVuePart(
 
   return block
 }
+
+export function transformRequireToImport(code: string): string {
+  const imports: { [key: string]: string } = {}
+  let strImports = ''
+
+  code = code.replace(/require\(("(?:[^"\\]|\\.)+"|'(?:[^'\\]|\\.)+')\)/g, (_, name): any => {
+    if (!(name in imports)) {
+      imports[name] = `__$_require_${name.replace(/[^a-z0-9]/g, '_').replace(/_{2,}/g, '_').replace(/^_|_$/g, '')}__`
+      strImports += 'import ' + imports[name] + ' from ' + name + '\n'
+    }
+    
+    return imports[name]
+  })
+
+  return strImports + code
+}
