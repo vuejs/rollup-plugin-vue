@@ -1,7 +1,7 @@
 module.exports = {
   title: 'Rollup Plugin Vue',
   description: 'Bundle .vue files using Rollup',
-  base: '/rollup-plugin-vue/',
+  ga: 'UA-38503997-4',
   markdown: {
     config(md) {
       md.use(require('./markdown-it-code-frame'))
