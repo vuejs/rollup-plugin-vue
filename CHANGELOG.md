@@ -32,17 +32,6 @@ All notable changes to this project will be documented in this file. See [standa
 * Use named import querystring module ([#199](https://github.com/znck/rollup-plugin-vue/issues/199)) ([b3d63f0](https://github.com/znck/rollup-plugin-vue/commit/b3d63f0)), closes [#198](https://github.com/znck/rollup-plugin-vue/issues/198)
 
 
-
-<a name="4.1.3"></a>
-## [4.1.3](https://github.com/znck/rollup-plugin-vue/compare/v4.1.2...v4.1.3) (2018-05-12)
-
-
-
-<a name="4.1.2"></a>
-## [4.1.2](https://github.com/znck/rollup-plugin-vue/compare/v4.1.1...v4.1.2) (2018-05-12)
-
-
-
 <a name="4.1.1"></a>
 ## [4.1.1](https://github.com/znck/rollup-plugin-vue/compare/v4.1.0...v4.1.1) (2018-05-12)
 
