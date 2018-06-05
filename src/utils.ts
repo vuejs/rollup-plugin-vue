@@ -46,7 +46,7 @@ export function getVueMetaFromQuery(id: string): VuePartRequestMeta | null {
 
     if (PARAM_NAME in query) {
       const data: string = (Array.isArray(query[PARAM_NAME])
-        ? query[PARAM_NAME][0]
+        ? (query[PARAM_NAME] as any)[0]
         : query[PARAM_NAME]) as string
 
       const [type, index, lang] = data.split('.')
