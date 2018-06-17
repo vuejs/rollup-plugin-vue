@@ -4,9 +4,9 @@
   "description": "Roll .vue files",
   "author": "Rahul Kadyan <hi@znck.me>",
   "bugs": {
-    "url": "https://github.com/znck/rollup-plugin-vue/issues"
+    "url": "https://github.com/vuejs/rollup-plugin-vue/issues"
   },
-  "homepage": "https://github.com/znck/rollup-plugin-vue#readme",
+  "homepage": "https://github.com/vuejs/rollup-plugin-vue#readme",
   "keywords": [
     "rollup-plugin",
     "vue"
@@ -15,7 +15,7 @@
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/znck/rollup-plugin-vue.git"
+    "url": "git+https://github.com/vuejs/rollup-plugin-vue.git"
   },
   "standard-version": {
     "scripts": {
