@@ -6,7 +6,18 @@
 // @ts-ignore
 import Vue, { VueConstructor } from 'vue'
 
-export default Vue.extend<{ name: string }, {/* methods */}, {/* computed */}, {/* props */}>({
+export default Vue.extend<
+  { name: string },
+  {
+    /* methods */
+  },
+  {
+    /* computed */
+  },
+  {
+    /* props */
+  }
+>({
   data() {
     return { name: 'Jane Doe' }
   }

@@ -37,25 +37,40 @@ export async function build(filename, css = false): Promise<string> {
     external: ['vue']
   })
 
-  cache[cacheKey] = (await bundle.generate({
+  const output = await bundle.generate({
     format: 'iife',
     name: 'App',
+    sourcemap: true,
     globals: {
       vue: 'Vue'
     }
-  })).code + (style ? `\n;(function() { 
-    var s = document.createElement('style'); 
-    s.type = 'text/css'; 
-    document.head.appendChild(s);
-    s.appendChild(document.createTextNode(${JSON.stringify(style)}))
-  })()` : '')
+  })
 
-  return cache[cacheKey]
+  let outputCode = output.code
+
+  if (style) {
+    outputCode += `\n;(function() { 
+      var s = document.createElement('style'); 
+      s.type = 'text/css'; 
+      document.head.appendChild(s);
+      s.appendChild(document.createTextNode(${JSON.stringify(style)}))
+    })()` 
+  }
+
+  outputCode += `\n\n//# sourceMappingURL=data:application/json;base64,${new Buffer(JSON.stringify(output.map)).toString('base64')}\n`
+
+  cache[cacheKey] = outputCode
+
+  return outputCode
 }
 
 const VUE_SOURCE = promised(fs).readFile(
   path.resolve(__dirname, '../../node_modules/vue/dist/vue.min.js')
 )
+
+function encode(any: any) {
+  return any.toString().replace(/<\//g, '&lt;\/')
+}
 
 export async function open(name: string, browser: Browser, code: string, id: string = '#test'): Promise<Page> {
   const page = await browser.newPage()
@@ -69,10 +84,10 @@ export async function open(name: string, browser: Browser, code: string, id: str
     <body>
       <div id="app"></div>
       <script>
-      ${await VUE_SOURCE}
+      ${encode(await VUE_SOURCE)}
       </script>
       <script>
-      ${await code}
+      ${encode(await code)}
       </script>
     </body>
   </html>`
