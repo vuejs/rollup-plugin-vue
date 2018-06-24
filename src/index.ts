@@ -175,10 +175,12 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
       if (!request) return
 
       const element = resolveVuePart(descriptors, request)
-
-      return 'code' in element
+      const code = 'code' in element
         ? ((element as any).code as string) // .code is set when extract styles is used. { css: false }
         : element.content
+      const map = element.map as any
+
+      return { code, map }
     },
 
     async transform(source: string, filename: string) {
