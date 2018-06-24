@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.3.0"></a>
+# [4.3.0](https://github.com/vuejs/rollup-plugin-vue/compare/v4.2.0...v4.3.0) (2018-06-24)
+
+
+### Bug Fixes
+
+* Transform `require` in render function compiled from `<template>` ([#212](https://github.com/vuejs/rollup-plugin-vue/issues/212)) ([89839f2](https://github.com/vuejs/rollup-plugin-vue/commit/89839f2))
+
+
+### Features
+
+* Provide sourcemap for blocks in .vue file ([#215](https://github.com/vuejs/rollup-plugin-vue/issues/215)) ([a5928ad](https://github.com/vuejs/rollup-plugin-vue/commit/a5928ad))
+
+
+
 <a name="4.2.0"></a>
 # [4.2.0](https://github.com/znck/rollup-plugin-vue/compare/v4.1.5...v4.2.0) (2018-05-25)
 
