@@ -45,7 +45,7 @@
   "dependencies": {
     "@babel/runtime": "^7.0.0-beta.46",
     "@vue/component-compiler": "^3.3.2",
-    "@vue/component-compiler-utils": "^1.2.1",
+    "@vue/component-compiler-utils": "^2.1.0",
     "debug": "^2.6.0",
     "hash-sum": "^1.0.2",
     "querystring": "^0.2.0",
