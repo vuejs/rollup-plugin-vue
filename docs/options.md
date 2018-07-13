@@ -49,6 +49,23 @@ Include custom block in final bundle.
 
 Inject CSS in JavaScript. Setting `css: false` would extract styles in a `.css` file.
 
+## compiler
+
+- type: [VueTemplateCompiler](https://github.com/vuejs/component-compiler-utils#parseparseoptions-sfcdescriptor)
+- default: `require('vue-template-compiler')`
+
+Override template parser.
+
+## compilerParseOptions
+
+- type: [VueTemplateCompilerParseOptions](https://github.com/vuejs/component-compiler-utils#parseparseoptions-sfcdescriptor)
+- default: `undefined`
+
+## sourceRoot
+
+- type: string
+- default: `process.cwd()`
+
 ## style
 
 `@vue/component-compiler` options to process `<style>` blocks in SFCs.

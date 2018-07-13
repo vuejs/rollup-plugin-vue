@@ -18,7 +18,9 @@ import { Plugin } from 'rollup'
 import * as path from 'path'
 import { parse, SFCDescriptor, SFCBlock } from '@vue/component-compiler-utils'
 import debug from 'debug'
+import { VueTemplateCompiler, VueTemplateCompilerParseOptions } from '@vue/component-compiler-utils/dist/types'
 
+const templateCompiler = require('vue-template-compiler')
 const hash = require('hash-sum')
 const d = debug('rollup-plugin-vue')
 const { version } = require('../package.json')
@@ -73,6 +75,9 @@ export interface VuePluginOptions {
    * ```
    */
   css?: boolean
+  compiler?: VueTemplateCompiler
+  compilerParseOptions?: VueTemplateCompilerParseOptions
+  sourceRoot?: string
   /**
    * @@vue/component-compiler [#](https://github.com/vuejs/vue-component-compiler#api) script processing options.
    */
@@ -188,6 +193,9 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
         const descriptor = parse({
           filename,
           source,
+          compiler: opts.compiler || templateCompiler,
+          compilerParseOptions: opts.compilerParseOptions,
+          sourceRoot: opts.sourceRoot,
           needMap: true
         })
 
