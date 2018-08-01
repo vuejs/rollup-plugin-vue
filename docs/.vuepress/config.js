@@ -20,15 +20,7 @@ module.exports = {
         nav: [
           {
             text: 'Getting Started',
-            link: '/getting-started/'
-          },
-          {
-            text: 'Examples',
-            link: '/examples/'
-          },
-          {
-            text: 'Options',
-            link: '/options'
+            link: '/getting-started'
           },
           {
             text: 'Migrating from v2',
