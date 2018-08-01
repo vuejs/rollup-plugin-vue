@@ -4,20 +4,20 @@
 This is the documentation for Rollup Plugin Vue v4 and above. If you are upgrading from v2 or an earlier version, check out the [Migration Guide](./migrating.md). If you are using an older version, the old docs are [here](https://github.com/vuejs/rollup-plugin-vue/tree/2.2/docs).
 :::
 
-## What is Rollup Plugin Vue?
+## What does Rollup Plugin Vue do?
 
-`rollup-plugin-vue` is a plugin for [rollup](https://rollupjs.org/) that allows you to author Vue components in a format called [Single-File Components (SFCs)](https://vue-loader.vuejs.org/spec.html):
+This is a plugin for [rollup](https://rollupjs.org/) that allows you to author Vue components in a format called [Single-File Components (SFCs)](https://vue-loader.vuejs.org/spec.html). They look like this:
 
 ``` vue
 <template>
-  <div class="example">{{ msg }}</div>
+  <div class="example">{{ message }}</div>
 </template>
 
 <script>
 export default {
   data () {
     return {
-      msg: 'Hello world!'
+      message: 'Hello world!'
     }
   }
 }
@@ -30,11 +30,14 @@ export default {
 </style>
 ```
 
-There are many cool features provided by `rollup-plugin-vue`:
+This plugin also enables:
 
-- Feature parity with [vue-loader](https://vue-loader.vuejs.org)
-- Allows custom blocks in a `.vue` file;
-- Treat static assets referenced in `<style>` and `<template>` as module dependencies;
-- Simulate scoped CSS for each component.
+- scoped CSS
+- custom blocks
+- static assets references within `<style>` and `<template>`
 
-Rollup is a module bundler which makes `rollup-plugin-vue` ideal for packaging Vue plugins and UI component libraries.
+And many other other features, maintaining parity with [Vue Loader](https://vue-loader.vuejs.org).
+
+## Why should I use Rollup over Webpack?
+
+Rollup offers optimizations like tree shaking that make it ideal for building shared libraries. This plugin also prioritizes defaults that are ideal for most Vue plugins and UI component libraries.
