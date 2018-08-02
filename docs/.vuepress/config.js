@@ -17,28 +17,22 @@ module.exports = {
         label: 'English',
         selectText: 'Languages',
         editLinkText: 'Edit this page on GitHub',
-        nav: [{
-            text: 'Guide',
-            link: '/guide/'
-          },
+        nav: [
           {
-            text: 'Options Reference',
-            link: '/options'
+            text: 'Getting Started',
+            link: '/getting-started'
           },
           {
             text: 'Migrating from v2',
             link: '/migrating'
-          },
-          {
-            text: 'Cookbook',
-            link: '/cookbook/'
           }
         ],
         sidebar: [
-          '/',
-          '/guide/',
+          {
+            title: 'Guide',
+            children: ['/', '/getting-started', '/examples']
+          },
           '/options',
-          '/cookbook/',
           '/changelog'
         ]
       }

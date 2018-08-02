@@ -1,6 +1,6 @@
-# Cookbook
+# Examples
 
-The Cookbook gives developers examples to work off of that both cover common or interesting use cases, and also progressively explain more complex detail. Our goal is to move beyond a simple introductory example, and demonstrate concepts that are more widely applicable, as well as some caveats to the approach.
+These examples cover most common or interesting use cases, and also progressively explain more complex detail. Our goal is to move beyond a simple introductory example, and demonstrate concepts that are more widely applicable, as well as some caveats to the approach.
 
 ## Minimal
 
@@ -26,7 +26,7 @@ Source: [cookbook/typescript-simple](https://github.com/vuejs/rollup-plugin-vue/
 
 ## SSR
 
-<<< @/cookbook/ssr/rollup.config.js{2,12-16}
+<<< @/cookbook/ssr/rollup.config.js{10}
 
 Source: [cookbook/ssr](https://github.com/vuejs/rollup-plugin-vue/tree/master/cookbook/ssr)
 
