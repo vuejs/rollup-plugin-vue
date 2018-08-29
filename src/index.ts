@@ -115,6 +115,10 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
   d(`Build environment: ${isProduction ? 'production' : 'development'}`)
   d(`Build target: ${process.env.VUE_ENV || 'browser'}`)
 
+  if (!opts.normalizer) opts.normalizer = '~vue-runtime-helpers/normalize-component.js'
+  if (!opts.styleInjector) opts.styleInjector = '~vue-runtime-helpers/inject-style/browser.js'
+  if (!opts.styleInjectorSSR) opts.styleInjectorSSR = '~vue-runtime-helpers/inject-style/server.js'
+
   createVuePartRequest.defaultLang = {
     ...createVuePartRequest.defaultLang,
     ...opts.defaultLang
@@ -207,8 +211,10 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
         descriptors.set(filename, descriptor)
         const input: any = {
           scopeId,
-          styles: descriptor.styles.map(style =>
-            compiler.compileStyle(filename, scopeId, style)
+          styles: await Promise.all(
+            descriptor.styles.map(style =>
+              compiler.compileStyleAsync(filename, scopeId, style)
+            )
           ),
           customBlocks: []
         }

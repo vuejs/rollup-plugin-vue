@@ -17,7 +17,7 @@ const cache = {}
 export async function build(filename, css = false): Promise<string> {
   const cacheKey = JSON.stringify({filename, css})
   if (cacheKey in cache) return cache[cacheKey]
-  let style: string | undefined
+  let style: string = ''
   const input = filename + '__app.js'
   const options = {defaultLang: {markdown: 'pluginMarkdown'}, css: css, style: {
     postcssPlugins: [assets({ basePath: '/' })]
