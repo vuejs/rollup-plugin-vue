@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.4.0-alpha.0"></a>
+# [4.4.0-alpha.0](https://github.com/vuejs/rollup-plugin-vue/compare/v4.3.2...v4.4.0-alpha.0) (2018-08-29)
+
+
+### Features
+
+* Use runtime helper package instead of inline generated code ([3285740](https://github.com/vuejs/rollup-plugin-vue/commit/3285740))
+
+
+
 <a name="4.3.2"></a>
 ## [4.3.2](https://github.com/vuejs/rollup-plugin-vue/compare/v4.3.1...v4.3.2) (2018-07-31)
 
