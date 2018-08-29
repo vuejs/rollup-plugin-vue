@@ -1269,9 +1269,9 @@
     source-map "^0.5.6"
     vue-template-es2015-compiler "^1.6.0"
 
-"@vue/component-compiler@^3.4.4":
-  version "3.4.4"
-  resolved "https://registry.yarnpkg.com/@vue/component-compiler/-/component-compiler-3.4.4.tgz#4bec11116116c292f1f865afc2d88421953fc393"
+"@vue/component-compiler@^3.6":
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@vue/component-compiler/-/component-compiler-3.6.0.tgz#8db313e50eaa2903cef5aac68c37a09364dba79d"
   dependencies:
     "@vue/component-compiler-utils" "^2.1.0"
     clean-css "^4.1.11"
@@ -8901,6 +8901,10 @@ vue-loader@^15.2.4:
 vue-router@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-3.0.1.tgz#d9b05ad9c7420ba0f626d6500d693e60092cc1e9"
+
+vue-runtime-helpers@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/vue-runtime-helpers/-/vue-runtime-helpers-0.2.0.tgz#8f8aa9e5ed40be2f3716c3ef8ee5e319290bedde"
 
 vue-server-renderer@^2.5.16:
   version "2.5.16"
