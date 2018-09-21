@@ -209,13 +209,18 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
             ? hash(path.basename(filename) + source)
             : hash(filename + source))
         descriptors.set(filename, descriptor)
+
+        let styles = await Promise.all(
+          descriptor.styles.map(async style => {
+            let compiled = await compiler.compileStyleAsync(filename, scopeId, style)
+            if (compiled.errors.length > 0) throw Error(compiled.errors[0])
+            return compiled
+          })
+        )
+
         const input: any = {
           scopeId,
-          styles: await Promise.all(
-            descriptor.styles.map(style =>
-              compiler.compileStyleAsync(filename, scopeId, style)
-            )
-          ),
+          styles,
           customBlocks: []
         }
 
