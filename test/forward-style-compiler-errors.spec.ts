@@ -12,6 +12,5 @@ describe("forward-style-compiler-errors", () => {
         `, 'virtual-file.vue'
       )
     ).rejects.toBeInstanceOf(Error)
-    // expect(() => { throw Error()}).toThrow()
   })
 })
