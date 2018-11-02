@@ -173,6 +173,9 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
             return require.resolve(src, { paths: [path.dirname(ref.filename)] })
           }
         }
+        else if(ref.meta.type === 'styles') {
+            return id.replace('.vue', '.vue.css');
+        }
 
         return id
       }
