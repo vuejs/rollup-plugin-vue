@@ -1,4 +1,5 @@
-dist/
+# Removed dist from gitignore so package could be installed from repo
+# dist/
 /.github/sereno/public
 /_cache
 test/style.css
