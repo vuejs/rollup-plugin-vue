@@ -215,6 +215,9 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
 
         const styles = await Promise.all(
           descriptor.styles.map(async style => {
+            if(!(typeof style.map.mappings === 'string')) {
+              style.map.mappings = '';
+            }
             const compiled = await compiler.compileStyleAsync(filename, scopeId, style)
             if (compiled.errors.length > 0) throw Error(compiled.errors[0])
             return compiled
