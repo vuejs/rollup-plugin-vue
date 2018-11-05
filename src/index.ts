@@ -194,14 +194,14 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
 
     async transform(source: string, filename: string) {
       if (isVue(filename)) {
-        const descriptor = parse({
+        const descriptor: SFCDescriptor = JSON.parse(JSON.stringify(parse({
           filename,
           source,
           compiler: opts.compiler || templateCompiler,
           compilerParseOptions: opts.compilerParseOptions,
           sourceRoot: opts.sourceRoot,
           needMap: true
-        })
+        })))
 
         const scopeId =
           'data-v-' +
