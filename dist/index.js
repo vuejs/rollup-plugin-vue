@@ -95,23 +95,20 @@ function VuePlugin(opts = {}) {
         transform(source, filename) {
             return __awaiter(this, void 0, void 0, function* () {
                 if (isVue(filename)) {
-                    const descriptor = component_compiler_utils_1.parse({
+                    const descriptor = JSON.parse(JSON.stringify(component_compiler_utils_1.parse({
                         filename,
                         source,
                         compiler: opts.compiler || templateCompiler,
                         compilerParseOptions: opts.compilerParseOptions,
                         sourceRoot: opts.sourceRoot,
                         needMap: true
-                    });
+                    })));
                     const scopeId = 'data-v-' +
                         (isProduction
                             ? hash(path.basename(filename) + source)
                             : hash(filename + source));
                     descriptors.set(filename, descriptor);
                     const styles = yield Promise.all(descriptor.styles.map((style) => __awaiter(this, void 0, void 0, function* () {
-                        if (!(typeof style.map.mappings === 'string')) {
-                            style.map.mappings = '';
-                        }
                         const compiled = yield compiler.compileStyleAsync(filename, scopeId, style);
                         if (compiled.errors.length > 0)
                             throw Error(compiled.errors[0]);

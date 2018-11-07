@@ -174,7 +174,7 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
           }
         }
         else if(ref.meta.type === 'styles') {
-            return id.replace('.vue', '.vue.css');
+          return id.replace('.vue', '.vue.css');
         }
 
         return id
@@ -197,14 +197,14 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
 
     async transform(source: string, filename: string) {
       if (isVue(filename)) {
-        const descriptor = parse({
+        const descriptor: SFCDescriptor = JSON.parse(JSON.stringify(parse({
           filename,
           source,
           compiler: opts.compiler || templateCompiler,
           compilerParseOptions: opts.compilerParseOptions,
           sourceRoot: opts.sourceRoot,
           needMap: true
-        })
+        })))
 
         const scopeId =
           'data-v-' +
@@ -215,9 +215,6 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
 
         const styles = await Promise.all(
           descriptor.styles.map(async style => {
-            if(!(typeof style.map.mappings === 'string')) {
-              style.map.mappings = '';
-            }
             const compiled = await compiler.compileStyleAsync(filename, scopeId, style)
             if (compiled.errors.length > 0) throw Error(compiled.errors[0])
             return compiled
