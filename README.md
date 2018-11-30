@@ -1,5 +1,5 @@
 <div class="text-xs-center" align="center" style="margin: 20px">
-  <img src="https://raw.githubusercontent.com/vuejs/rollup-plugin-vue/master/logo.png">
+  <img src="https://raw.githubusercontent.com/vuejs/rollup-plugin-vue/master/docs/.vuepress/public/logo.png">
 </div>
 
 ## Introduction
