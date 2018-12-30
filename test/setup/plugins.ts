@@ -44,7 +44,7 @@ export function pluginCreateVueApp(filename: string, component: string): any {
     load(id) {
       if (id === filename)
         return `
-    import Component from '${component}'
+    import Component from ${JSON.stringify(component)}
 
     Vue.config.productionTip = false
     Vue.config.devtools = false
