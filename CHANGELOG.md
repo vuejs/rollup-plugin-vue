@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.4.0"></a>
+# 4.4.0 (2019-01-10)
+
+
+### Bug Fixes
+
+* **README:** logo URL ([#246](https://github.com/vuejs/rollup-plugin-vue/issues/246)) ([27bc6f8](https://github.com/vuejs/rollup-plugin-vue/commit/27bc6f8))
+* Copy SFCDescriptor before further passing it to processors ([#243](https://github.com/vuejs/rollup-plugin-vue/issues/243)) ([3c1113b](https://github.com/vuejs/rollup-plugin-vue/commit/3c1113b))
+* Throw style compilation errors ([#235](https://github.com/vuejs/rollup-plugin-vue/issues/235)) ([5d8aa49](https://github.com/vuejs/rollup-plugin-vue/commit/5d8aa49))
+
+
+
 <a name="4.4.0-alpha.0"></a>
 # [4.4.0-alpha.0](https://github.com/vuejs/rollup-plugin-vue/compare/v4.3.2...v4.4.0-alpha.0) (2018-08-29)
 
