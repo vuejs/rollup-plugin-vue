@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.5.0"></a>
+# [4.5.0](https://github.com/vuejs/rollup-plugin-vue/compare/v4.4.0...v4.5.0) (2019-01-14)
+
+
+### Bug Fixes
+
+* Use rollup's resolveId instead of require.resolve to resolve internal modules ([3fbc8eb](https://github.com/vuejs/rollup-plugin-vue/commit/3fbc8eb))
+
+
+### Features
+
+* Add beforeAssemble hook ([2ae1bbf](https://github.com/vuejs/rollup-plugin-vue/commit/2ae1bbf)), closes [#237](https://github.com/vuejs/rollup-plugin-vue/issues/237)
+
+
+
 <a name="4.4.0"></a>
 # 4.4.0 (2019-01-10)
 
