@@ -283,6 +283,8 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
               'script'
             )}'
             export default script
+            // For security concerns, we use only base name in production mode. See https://github.com/vuejs/rollup-plugin-vue/issues/258
+            script.__file = ${isProduction ? JSON.stringify(path.basename(filename)) : JSON.stringify(filename)}
             `,
               map: { mappings: '' },
             }
