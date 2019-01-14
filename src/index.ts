@@ -4,7 +4,7 @@ import {
   parseVuePartRequest,
   resolveVuePart,
   isVuePartRequest,
-  transformRequireToImport
+  transformRequireToImport,
 } from './utils'
 import {
   createDefaultCompiler,
@@ -12,18 +12,25 @@ import {
   ScriptOptions,
   StyleOptions,
   TemplateOptions,
-  StyleCompileResult
+  StyleCompileResult,
 } from '@vue/component-compiler'
 import { Plugin } from 'rollup'
 import * as path from 'path'
 import { parse, SFCDescriptor, SFCBlock } from '@vue/component-compiler-utils'
 import debug from 'debug'
-import { VueTemplateCompiler, VueTemplateCompilerParseOptions } from '@vue/component-compiler-utils/dist/types'
+import {
+  VueTemplateCompiler,
+  VueTemplateCompilerParseOptions,
+} from '@vue/component-compiler-utils/dist/types'
 
 const templateCompiler = require('vue-template-compiler')
 const hash = require('hash-sum')
-const d = debug('rollup-plugin-vue')
 const { version } = require('../package.json')
+
+const d = debug('rollup-plugin-vue')
+const dR = debug('rollup-plugin-vue:resolve')
+const dL = debug('rollup-plugin-vue:load')
+const dT = debug('rollup-plugin-vue:transform')
 
 export interface VuePluginOptions {
   /**
@@ -115,13 +122,16 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
   d(`Build environment: ${isProduction ? 'production' : 'development'}`)
   d(`Build target: ${process.env.VUE_ENV || 'browser'}`)
 
-  if (!opts.normalizer) opts.normalizer = '~' + require.resolve('vue-runtime-helpers/normalize-component.js')
-  if (!opts.styleInjector) opts.styleInjector = '~' + require.resolve('vue-runtime-helpers/inject-style/browser.js')
-  if (!opts.styleInjectorSSR) opts.styleInjectorSSR = '~' + require.resolve('vue-runtime-helpers/inject-style/server.js')
+  if (!opts.normalizer)
+    opts.normalizer = '~' + 'vue-runtime-helpers/normalize-component.js'
+  if (!opts.styleInjector)
+    opts.styleInjector = '~' + 'vue-runtime-helpers/inject-style/browser.js'
+  if (!opts.styleInjectorSSR)
+    opts.styleInjectorSSR = '~' + 'vue-runtime-helpers/inject-style/server.js'
 
   createVuePartRequest.defaultLang = {
     ...createVuePartRequest.defaultLang,
-    ...opts.defaultLang
+    ...opts.defaultLang,
   }
 
   const shouldExtractCss = opts.css === false
@@ -144,9 +154,9 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
       video: ['src', 'poster'],
       source: 'src',
       img: 'src',
-      image: 'xlink:href'
+      image: 'xlink:href',
     },
-    ...opts.template
+    ...opts.template,
   } as any
   if (opts.template && typeof opts.template.isProduction === 'undefined') {
     opts.template.isProduction = isProduction
@@ -160,6 +170,12 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
     name: 'VuePlugin',
 
     resolveId(id, importer) {
+      const request = id
+      if (id.startsWith('vue-runtime-helpers/')) {
+        id = require.resolve(id)
+        dR(`form: ${request} \nto: ${id}\n`)
+        return id
+      }
       if (!isVuePartRequest(id)) return
       id = path.resolve(path.dirname(importer), id)
       const ref = parseVuePartRequest(id)
@@ -174,6 +190,7 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
           }
         }
 
+        dR(`from: ${request} \nto: ${id}\n`)
         return id
       }
     },
@@ -184,24 +201,31 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
       if (!request) return
 
       const element = resolveVuePart(descriptors, request)
-      const code = 'code' in element
-        ? ((element as any).code as string) // .code is set when extract styles is used. { css: false }
-        : element.content
+      const code =
+        'code' in element
+          ? ((element as any).code as string) // .code is set when extract styles is used. { css: false }
+          : element.content
       const map = element.map as any
+
+      dL(`id: ${id}\ncode: \n${code}\nmap: ${JSON.stringify(map, null, 2)}\n\n`)
 
       return { code, map }
     },
 
     async transform(source: string, filename: string) {
       if (isVue(filename)) {
-        const descriptor: SFCDescriptor = JSON.parse(JSON.stringify(parse({
-          filename,
-          source,
-          compiler: opts.compiler || templateCompiler,
-          compilerParseOptions: opts.compilerParseOptions,
-          sourceRoot: opts.sourceRoot,
-          needMap: true
-        })))
+        const descriptor: SFCDescriptor = JSON.parse(
+          JSON.stringify(
+            parse({
+              filename,
+              source,
+              compiler: opts.compiler || templateCompiler,
+              compilerParseOptions: opts.compilerParseOptions,
+              sourceRoot: opts.sourceRoot,
+              needMap: true,
+            })
+          )
+        )
 
         const scopeId =
           'data-v-' +
@@ -212,7 +236,11 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
 
         const styles = await Promise.all(
           descriptor.styles.map(async style => {
-            const compiled = await compiler.compileStyleAsync(filename, scopeId, style)
+            const compiled = await compiler.compileStyleAsync(
+              filename,
+              scopeId,
+              style
+            )
             if (compiled.errors.length > 0) throw Error(compiled.errors[0])
             return compiled
           })
@@ -221,7 +249,7 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
         const input: any = {
           scopeId,
           styles,
-          customBlocks: []
+          customBlocks: [],
         }
 
         if (descriptor.template) {
@@ -230,9 +258,7 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
             descriptor.template
           )
 
-          input.template.code = transformRequireToImport(
-            input.template.code
-          )
+          input.template.code = transformRequireToImport(input.template.code)
 
           if (input.template.errors && input.template.errors.length) {
             input.template.errors.map((error: Error) => this.error(error))
@@ -257,9 +283,10 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
               'script'
             )}'
             export default script
-            `
+            `,
+              map: { mappings: '' },
             }
-          : { code: '' }
+          : { code: '', map: { mappings: '' } }
 
         if (shouldExtractCss) {
           input.styles = input.styles
@@ -276,11 +303,13 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
                 )}'`
 
               if (style.module || descriptor.styles[index].scoped) {
-                return { ...style, code: '' }
+                return { ...style, code: '', map: { mappings: '' } }
               }
             })
             .filter(Boolean)
         }
+
+        input.script.code = input.script.code.replace(/^\s+/mg, '')
 
         const result = assemble(compiler, filename, input, opts)
 
@@ -298,8 +327,10 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
             )}'`
         })
 
+        dT(`id: ${filename}\ncode:\n${result.code}\n\nmap:\n${JSON.stringify(result.map, null, 2)}\n`)
+
         return result
       }
-    }
+    },
   }
 }
