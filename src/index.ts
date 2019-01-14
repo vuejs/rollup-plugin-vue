@@ -285,10 +285,9 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
             export default script
             // For security concerns, we use only base name in production mode. See https://github.com/vuejs/rollup-plugin-vue/issues/258
             script.__file = ${isProduction ? JSON.stringify(path.basename(filename)) : JSON.stringify(filename)}
-            `,
-              map: { mappings: '' },
+            `
             }
-          : { code: '', map: { mappings: '' } }
+          : { code: '' }
 
         if (shouldExtractCss) {
           input.styles = input.styles
@@ -305,7 +304,7 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
                 )}'`
 
               if (style.module || descriptor.styles[index].scoped) {
-                return { ...style, code: '', map: { mappings: '' } }
+                return { ...style, code: '', map: undefined }
               }
             })
             .filter(Boolean)
@@ -330,6 +329,8 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
         })
 
         dT(`id: ${filename}\ncode:\n${result.code}\n\nmap:\n${JSON.stringify(result.map, null, 2)}\n`)
+
+        result.map = result.map || { mappings: '' }
 
         return result
       }
