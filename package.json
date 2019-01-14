@@ -25,7 +25,7 @@
     }
   },
   "scripts": {
-    "prepublishOnly": "yarn build",
+    "prepublishOnly": "rm -rf dist/ && yarn build",
     "build": "yarn :build",
     "docs": "yarn :docs",
     "pre:build": "yarn lint",
