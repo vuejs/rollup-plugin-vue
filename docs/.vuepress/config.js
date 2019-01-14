@@ -25,6 +25,10 @@ module.exports = {
           {
             text: 'Migrating from v2',
             link: '/migrating'
+          },
+          {
+            text: 'FAQs',
+            link: '/faqs'
           }
         ],
         sidebar: [
