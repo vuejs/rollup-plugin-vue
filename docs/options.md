@@ -86,6 +86,10 @@ Override template parser.
 - type: `object`
 - default: `{}`
 
+::: tip
+To disable clean css, set `style.postcssCleanOptions` to `{ disabled: true }`
+:::
+
 ### `style.postcssModulesOptions`
 
 - type: `object`
