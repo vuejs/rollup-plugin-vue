@@ -3,10 +3,10 @@ import vue from 'rollup-plugin-vue'
 export default [
   // ESM build to be used with webpack/rollup.
   {
-    input: 'src/MyComponent.vue',
+    input: 'src/index.js',
     output: {
       format: 'esm',
-      file: 'dist/MyComponent.esm.js'
+      file: 'dist/library.esm.js'
     },
     plugins: [
       vue()
@@ -14,10 +14,10 @@ export default [
   },
   // SSR build.
   {
-    input: 'src/MyComponent.vue',
+    input: 'src/index.js',
     output: {
       format: 'cjs',
-      file: 'dist/MyComponent.ssr.js'
+      file: 'dist/library.ssr.js'
     },
     plugins: [
       vue({ template: { optimizeSSR: true } })
@@ -28,7 +28,7 @@ export default [
     input: 'src/wrapper.js',
     output: {
       format: 'iife',
-      file: 'dist/MyComponent.js'
+      file: 'dist/library.js'
     },
     plugins: [
       vue()

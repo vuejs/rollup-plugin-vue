@@ -1,5 +1,7 @@
-import MyComponent from './MyComponent.vue'
+import * as components from './index'
 
 if (typeof Vue !== 'undefined') {
-  Vue.component('MyComponent', MyComponent)
+  for (const name in components) {
+    Vue.component(name, components[name])
+  }
 }

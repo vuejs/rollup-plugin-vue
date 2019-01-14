@@ -3,10 +3,10 @@
   "scripts": {
     "build": "rollup -c --environment BUILD:production"
   },
-  "main": "./dist/MyComponent.ssr.js",
-  "module": "./dist/MyComponent.esm.js",
-  "browser": "./dist/MyComponent.js",
-  "unpkg": "./dist/MyComponent.js",
+  "main": "./dist/library.ssr.js",
+  "module": "./dist/library.esm.js",
+  "browser": "./dist/library.js",
+  "unpkg": "./dist/library.js",
   "devDependencies": {
     "rollup": "^0.59.4",
     "rollup-plugin-css-only": "^0.4.0",
