@@ -15,7 +15,7 @@ import {
   StyleCompileResult,
   DescriptorCompileResult,
 } from '@vue/component-compiler'
-import { Plugin } from 'rollup'
+import { Plugin, RawSourceMap } from 'rollup'
 import * as path from 'path'
 import { parse, SFCDescriptor, SFCBlock } from '@vue/component-compiler-utils'
 import debug from 'debug'
@@ -116,7 +116,7 @@ export interface VuePluginOptions {
 /**
  * Rollup plugin for handling .vue files.
  */
-export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
+export default function vue(opts: VuePluginOptions = {}): Plugin {
   const isVue = createVueFilter(opts.include, opts.exclude)
   const isProduction =
     process.env.NODE_ENV === 'production' || process.env.BUILD === 'production'
@@ -145,7 +145,9 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
     (!blacklisted.has('*') || !blacklisted.has(customBlockType)) &&
     (whitelisted.has('*') || whitelisted.has(customBlockType))
 
-  const beforeAssemble = opts.beforeAssemble || ((d: DescriptorCompileResult): DescriptorCompileResult => d)
+  const beforeAssemble =
+    opts.beforeAssemble ||
+    ((d: DescriptorCompileResult): DescriptorCompileResult => d)
 
   delete opts.beforeAssemble
   delete opts.css
@@ -204,14 +206,14 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
     load(id: string) {
       const request = parseVuePartRequest(id)
 
-      if (!request) return
+      if (!request) return null
 
       const element = resolveVuePart(descriptors, request)
       const code =
         'code' in element
           ? ((element as any).code as string) // .code is set when extract styles is used. { css: false }
           : element.content
-      const map = element.map as any
+      const map = element.map as RawSourceMap
 
       dL(`id: ${id}\ncode: \n${code}\nmap: ${JSON.stringify(map, null, 2)}\n\n`)
 
@@ -330,7 +332,7 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
             '\n' +
             `export * from '${createVuePartRequest(
               filename,
-              block.attrs.lang ||
+              (typeof block.attrs.lang === 'string' && block.attrs.lang) ||
                 createVuePartRequest.defaultLang[block.type] ||
                 block.type,
               'customBlocks',

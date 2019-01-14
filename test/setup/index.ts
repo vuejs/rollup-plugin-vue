@@ -1,27 +1,35 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import {Browser, Page} from 'puppeteer'
-import {rollup} from 'rollup'
+import { Browser, Page } from 'puppeteer'
+import { rollup, OutputChunk } from 'rollup'
 import promised from '@znck/promised'
 
-import {pluginCreateVueApp, plugins} from "./plugins"
-import pluginVue from '../..'
+import { pluginCreateVueApp, plugins } from './plugins'
+import pluginVue from '../../src'
 
 const pluginCSS = require('rollup-plugin-css-only')
 const assets = require('postcss-assets')
 
 // -- rollup plugin inline file
 
-const cache = {}
+const cache: { [key: string]: string | Promise<string> } = {}
 
-export async function build(filename, css = false): Promise<string> {
-  const cacheKey = JSON.stringify({filename, css})
+function encodeBase64(input: string): string {
+  return new Buffer(input).toString('base64')
+}
+
+export async function build(filename: string, css = false): Promise<string> {
+  const cacheKey = JSON.stringify({ filename, css })
   if (cacheKey in cache) return cache[cacheKey]
   let style: string = ''
   const input = filename + '__app.js'
-  const options = {defaultLang: {markdown: 'pluginMarkdown'}, css: css, style: {
-    postcssPlugins: [assets({ basePath: '/' })]
-  }}
+  const options = {
+    defaultLang: { markdown: 'pluginMarkdown' },
+    css: css,
+    style: {
+      postcssPlugins: [assets({ basePath: '/' })],
+    },
+  }
   const bundle = await rollup({
     input,
     plugins: [
@@ -29,24 +37,27 @@ export async function build(filename, css = false): Promise<string> {
       pluginCSS({
         output: (s: string) => {
           style = s
-        }
+        },
       }),
       pluginVue(options),
-      ...plugins
+      ...plugins,
     ],
-    external: ['vue']
+    external: ['vue'],
   })
 
-  const output = await bundle.generate({
+  const { output } = await bundle.generate({
     format: 'iife',
     name: 'App',
     sourcemap: true,
     globals: {
-      vue: 'Vue'
-    }
+      vue: 'Vue',
+    },
   })
 
-  let outputCode = output.code
+  const result: OutputChunk = output.find(item => !('isAsset' in item)) as any
+  
+  let outputCode = result.code
+  const outputMap = JSON.stringify(result.map)
 
   if (style) {
     outputCode += `\n;(function() { 
@@ -54,10 +65,12 @@ export async function build(filename, css = false): Promise<string> {
       s.type = 'text/css'; 
       document.head.appendChild(s);
       s.appendChild(document.createTextNode(${JSON.stringify(style)}))
-    })()` 
+    })()`
   }
 
-  outputCode += `\n\n//# sourceMappingURL=data:application/json;base64,${new Buffer(JSON.stringify(output.map)).toString('base64')}\n`
+  outputCode += `\n\n//# sourceMappingURL=data:application/json;base64,${encodeBase64(
+    outputMap
+  )}\n`
 
   cache[cacheKey] = outputCode
 
@@ -69,10 +82,15 @@ const VUE_SOURCE = promised(fs).readFile(
 )
 
 function encode(any: any) {
-  return any.toString().replace(/<\//g, '&lt;\/')
+  return any.toString().replace(/<\//g, '&lt;/')
 }
 
-export async function open(name: string, browser: Browser, code: string, id: string = '#test'): Promise<Page> {
+export async function open(
+  name: string,
+  browser: Browser,
+  code: string,
+  id: string = '#test'
+): Promise<Page> {
   const page = await browser.newPage()
 
   const content = `
@@ -80,12 +98,10 @@ export async function open(name: string, browser: Browser, code: string, id: str
   <html>
     <head>
       <title>${name}</title>
+      <script>\n${encode(await VUE_SOURCE)}</script>
     </head>
     <body>
       <div id="app"></div>
-      <script>
-      ${encode(await VUE_SOURCE)}
-      </script>
       <script>
       ${encode(await code)}
       </script>
@@ -96,7 +112,7 @@ export async function open(name: string, browser: Browser, code: string, id: str
   if (!Boolean(process.env.CI)) {
     const dir = path.join(__dirname, '../output')
 
-    if (!await promised(fs).exists(dir)) await promised(fs).mkdir(dir)
+    if (!(await promised(fs).exists(dir))) await promised(fs).mkdir(dir)
     await promised(fs).writeFile(path.join(dir, name + '.html'), content)
   }
 

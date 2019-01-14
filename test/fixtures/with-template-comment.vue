@@ -1,6 +1,7 @@
 <template comments>
   <div>
-    <h2 class="red" id="test">{{msg}}</h2><!-- comment here -->
+    <h2 class="red" id="test">{{ msg }}</h2>
+    <!-- comment here -->
   </div>
 </template>
 

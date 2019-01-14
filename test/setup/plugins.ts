@@ -5,10 +5,9 @@ const pluginImage = require('rollup-plugin-url')
 const pluginMarkdown = require('rollup-plugin-md')
 const pluginTypescript = require('rollup-plugin-typescript')
 const pluginReplace = require('rollup-plugin-replace')
-const path = require('path')
 
 export const plugins = [
-  pluginImage(),
+  pluginImage({ emitFiles: false }),
   pluginMarkdown(),
   pluginNodeResolve(),
   pluginCommonJS(),
@@ -38,10 +37,10 @@ export const plugins = [
 export function pluginCreateVueApp(filename: string, component: string): any {
   return {
     name: 'Inline',
-    resolveId(id) {
+    resolveId(id: string): string | undefined {
       if (id === filename) return filename
     },
-    load(id) {
+    load(id: string): string | undefined {
       if (id === filename)
         return `
     import Component from ${JSON.stringify(component)}

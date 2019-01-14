@@ -3,9 +3,10 @@
     "baseUrl": ".",
     "outDir": "dist",
     "sourceMap": false,
-    "target": "es6",
-    "module": "commonjs",
+    "target": "esnext",
+    "module": "es6",
     "moduleResolution": "node",
+    "resolveJsonModule": true,
     "declaration": true,
     "allowJs": false,
     "allowSyntheticDefaultImports": true,
@@ -13,7 +14,7 @@
     "strictNullChecks": true,
     "noImplicitAny": true,
     "removeComments": false,
-    "lib": ["es2015", "es6", "es7"]
+    "lib": ["es2015", "es6", "es7", "dom"]
   },
   "include": ["src", "typings"],
   "exclude": ["node_modules"]

@@ -1,4 +1,5 @@
-import pluginVue from '..'
+import pluginVue from '../src'
+
 describe("forward-style-compiler-errors", () => {
   it("throws", async () => {
     let plugin = pluginVue()
