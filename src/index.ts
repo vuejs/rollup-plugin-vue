@@ -13,6 +13,7 @@ import {
   StyleOptions,
   TemplateOptions,
   StyleCompileResult,
+  DescriptorCompileResult,
 } from '@vue/component-compiler'
 import { Plugin } from 'rollup'
 import * as path from 'path'
@@ -109,6 +110,8 @@ export interface VuePluginOptions {
    * @@vue/component-compiler [#](https://github.com/vuejs/vue-component-compiler#api) module name or global function for custom style injector factory for SSR environment.
    */
   styleInjectorSSR?: string
+
+  beforeAssemble?(descriptor: DescriptorCompileResult): DescriptorCompileResult
 }
 /**
  * Rollup plugin for handling .vue files.
@@ -142,6 +145,9 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
     (!blacklisted.has('*') || !blacklisted.has(customBlockType)) &&
     (whitelisted.has('*') || whitelisted.has(customBlockType))
 
+  const beforeAssemble = opts.beforeAssemble || ((d: DescriptorCompileResult): DescriptorCompileResult => d)
+
+  delete opts.beforeAssemble
   delete opts.css
   delete opts.blackListCustomBlocks
   delete opts.whiteListCustomBlocks
@@ -284,8 +290,12 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
             )}'
             export default script
             // For security concerns, we use only base name in production mode. See https://github.com/vuejs/rollup-plugin-vue/issues/258
-            script.__file = ${isProduction ? JSON.stringify(path.basename(filename)) : JSON.stringify(filename)}
-            `
+            script.__file = ${
+              isProduction
+                ? JSON.stringify(path.basename(filename))
+                : JSON.stringify(filename)
+            }
+            `,
             }
           : { code: '' }
 
@@ -310,9 +320,9 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
             .filter(Boolean)
         }
 
-        input.script.code = input.script.code.replace(/^\s+/mg, '')
+        input.script.code = input.script.code.replace(/^\s+/gm, '')
 
-        const result = assemble(compiler, filename, input, opts)
+        const result = assemble(compiler, filename, beforeAssemble(input), opts)
 
         descriptor.customBlocks.forEach((block, index) => {
           if (!isAllowed(block.type)) return
@@ -328,7 +338,13 @@ export default function VuePlugin(opts: VuePluginOptions = {}): Plugin {
             )}'`
         })
 
-        dT(`id: ${filename}\ncode:\n${result.code}\n\nmap:\n${JSON.stringify(result.map, null, 2)}\n`)
+        dT(
+          `id: ${filename}\ncode:\n${result.code}\n\nmap:\n${JSON.stringify(
+            result.map,
+            null,
+            2
+          )}\n`
+        )
 
         result.map = result.map || { mappings: '' }
 

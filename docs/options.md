@@ -180,3 +180,10 @@ The template render functions compilation supports a special transform `stripWit
 
 - type: `string`
 - default: `undefined`
+
+## `beforeAssemble` __(dangerous)__
+
+- type: `(descriptor: DescriptorCompileResult) => DescriptorCompileResult`
+- default: `undefined`
+
+A hook before blocks of SFC are assembled together.
