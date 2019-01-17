@@ -126,11 +126,11 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
   d(`Build target: ${process.env.VUE_ENV || 'browser'}`)
 
   if (!opts.normalizer)
-    opts.normalizer = '~' + 'vue-runtime-helpers/normalize-component.js'
+    opts.normalizer = '~' + 'vue-runtime-helpers/dist/normalize-component.js'
   if (!opts.styleInjector)
-    opts.styleInjector = '~' + 'vue-runtime-helpers/inject-style/browser.js'
+    opts.styleInjector = '~' + 'vue-runtime-helpers/dist/inject-style/browser.js'
   if (!opts.styleInjectorSSR)
-    opts.styleInjectorSSR = '~' + 'vue-runtime-helpers/inject-style/server.js'
+    opts.styleInjectorSSR = '~' + 'vue-runtime-helpers/dist/inject-style/server.js'
 
   createVuePartRequest.defaultLang = {
     ...createVuePartRequest.defaultLang,
