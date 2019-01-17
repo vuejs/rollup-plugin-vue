@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-vue",
-  "version": "4.6.1",
+  "version": "4.6.2",
   "description": "Roll .vue files",
   "author": "Rahul Kadyan <hi@znck.me>",
   "bugs": {
