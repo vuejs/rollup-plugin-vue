@@ -22,11 +22,15 @@ With rollup you can break your application into reusable modules.
 > This document applies to v4.0+. If you are looking for older versions, docs are [here](https://github.com/vuejs/rollup-plugin-vue/tree/2.2/docs)
 
 ```js
+import commonjs from 'rollup-plugin-commonjs' 
 import VuePlugin from 'rollup-plugin-vue'
 
 export default {
   entry: 'main.js',
-  plugins: [VuePlugin(/* VuePluginOptions */)]
+  plugins: [
+    commonjs(),
+    VuePlugin(/* VuePluginOptions */)
+  ]
 }
 ```
 
