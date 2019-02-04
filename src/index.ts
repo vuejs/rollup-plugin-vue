@@ -118,7 +118,7 @@ export interface VuePluginOptions {
  */
 export default function vue(opts: VuePluginOptions = {}): Plugin {
   const isVue = createVueFilter(opts.include, opts.exclude)
-  const isProduction =
+  const isProduction = (opts.template && opts.template.isProduction) ||
     process.env.NODE_ENV === 'production' || process.env.BUILD === 'production'
 
   d('Version ' + version)
