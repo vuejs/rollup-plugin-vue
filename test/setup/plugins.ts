@@ -1,3 +1,5 @@
+import { Plugin } from 'rollup'
+
 const pluginBabel = require('rollup-plugin-babel')
 const pluginNodeResolve = require('rollup-plugin-node-resolve')
 const pluginCommonJS = require('rollup-plugin-commonjs')
@@ -5,6 +7,22 @@ const pluginImage = require('rollup-plugin-url')
 const pluginMarkdown = require('rollup-plugin-md')
 const pluginTypescript = require('rollup-plugin-typescript')
 const pluginReplace = require('rollup-plugin-replace')
+
+export function pluginInline(filename: string, code: string): Plugin {
+  return {
+    name: 'inline',
+    resolveId(id: string) {
+      if (id === filename) return filename
+
+      return null
+    },
+    load(id: string) {
+      if (id === filename) return code
+
+      return null
+    }
+  }
+}
 
 export const plugins = [
   pluginImage({ emitFiles: false }),

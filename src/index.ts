@@ -58,13 +58,13 @@ export interface VuePluginOptions {
   }
   /**
    * Exclude/Include customBlocks for final build.
-   * @default `['!*']`
+   * @default `() => false`
    * @example
    * ```js
    * VuePlugin({ customBlocks: ['markdown', '!test'] })
    * ```
    */
-  customBlocks?: string[] | (() => boolean)
+  customBlocks?: string[] | ((tag: string) => boolean)
   /**
    * Inject CSS in JavaScript.
    * @default `true`
@@ -244,12 +244,13 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
           )
         )
 
+        descriptors.set(filename, descriptor)
+
         const scopeId =
           'data-v-' +
           (isProduction
             ? hash(path.basename(filename) + source)
             : hash(filename + source))
-        descriptors.set(filename, descriptor)
 
         const styles = await Promise.all(
           descriptor.styles.map(async style => {

@@ -2,8 +2,8 @@ module.exports = {
   collectCoverageFrom: ['src/**'],
   moduleFileExtensions: ['js', 'ts', 'json'],
   transform: {
-    '^.+\\.ts$': '<rootDir>/node_modules/ts-jest/preprocessor.js',
+    '^.+\\.ts$': 'ts-jest',
   },
-  testMatch: ['**/?(*.)spec.ts'],
+  testMatch: ['**/*.spec.ts'],
   testEnvironment: 'node'
 }

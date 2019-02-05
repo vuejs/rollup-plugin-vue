@@ -37,7 +37,7 @@
     "pre:docs": "cp CHANGELOG.md docs/changelog.md",
     ":docs": "vuepress dev docs/",
     "post:docs": "rm docs/CHANGELOG.md",
-    "lint": "prettier --no-semi --single-quote --write **/*.js src/*.ts **/*.vue !test/target/** !dist/**",
+    "lint": "prettier --no-semi --single-quote --write **/*.js **/*.ts **/*.vue !test/target/** !dist/**",
     "release": "standard-version -a",
     "test": "jest"
   },
