@@ -4,7 +4,7 @@ import {
   parseVuePartRequest,
   resolveVuePart,
   isVuePartRequest,
-  transformRequireToImport,
+  transformRequireToImport
 } from './utils'
 import {
   createDefaultCompiler,
@@ -13,7 +13,7 @@ import {
   StyleOptions,
   TemplateOptions,
   StyleCompileResult,
-  DescriptorCompileResult,
+  DescriptorCompileResult
 } from '@vue/component-compiler'
 import { Plugin, RawSourceMap } from 'rollup'
 import * as path from 'path'
@@ -21,7 +21,7 @@ import { parse, SFCDescriptor, SFCBlock } from '@vue/component-compiler-utils'
 import debug from 'debug'
 import {
   VueTemplateCompiler,
-  VueTemplateCompilerParseOptions,
+  VueTemplateCompilerParseOptions
 } from '@vue/component-compiler-utils/dist/types'
 
 const templateCompiler = require('vue-template-compiler')
@@ -118,8 +118,11 @@ export interface VuePluginOptions {
  */
 export default function vue(opts: VuePluginOptions = {}): Plugin {
   const isVue = createVueFilter(opts.include, opts.exclude)
-  const isProduction = (opts.template && opts.template.isProduction) ||
-    process.env.NODE_ENV === 'production' || process.env.BUILD === 'production'
+  const isProduction =
+    opts.template && typeof opts.template.isProduction === 'boolean'
+      ? opts.template.isProduction
+      : process.env.NODE_ENV === 'production' ||
+        process.env.BUILD === 'production'
 
   d('Version ' + version)
   d(`Build environment: ${isProduction ? 'production' : 'development'}`)
@@ -128,13 +131,15 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
   if (!opts.normalizer)
     opts.normalizer = '~' + 'vue-runtime-helpers/dist/normalize-component.js'
   if (!opts.styleInjector)
-    opts.styleInjector = '~' + 'vue-runtime-helpers/dist/inject-style/browser.js'
+    opts.styleInjector =
+      '~' + 'vue-runtime-helpers/dist/inject-style/browser.js'
   if (!opts.styleInjectorSSR)
-    opts.styleInjectorSSR = '~' + 'vue-runtime-helpers/dist/inject-style/server.js'
+    opts.styleInjectorSSR =
+      '~' + 'vue-runtime-helpers/dist/inject-style/server.js'
 
   createVuePartRequest.defaultLang = {
     ...createVuePartRequest.defaultLang,
-    ...opts.defaultLang,
+    ...opts.defaultLang
   }
 
   const shouldExtractCss = opts.css === false
@@ -162,9 +167,9 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
       video: ['src', 'poster'],
       source: 'src',
       img: 'src',
-      image: 'xlink:href',
+      image: 'xlink:href'
     },
-    ...opts.template,
+    ...opts.template
   } as any
   if (opts.template && typeof opts.template.isProduction === 'undefined') {
     opts.template.isProduction = isProduction
@@ -194,7 +199,9 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
           if (src.startsWith('.')) {
             return path.resolve(path.dirname(ref.filename), src as string)
           } else {
-            return require.resolve(src, { paths: [path.dirname(ref.filename)] })
+            return require.resolve(src, {
+              paths: [path.dirname(ref.filename)]
+            })
           }
         }
 
@@ -230,7 +237,7 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
               compiler: opts.compiler || templateCompiler,
               compilerParseOptions: opts.compilerParseOptions,
               sourceRoot: opts.sourceRoot,
-              needMap: true,
+              needMap: true
             })
           )
         )
@@ -257,7 +264,7 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
         const input: any = {
           scopeId,
           styles,
-          customBlocks: [],
+          customBlocks: []
         }
 
         if (descriptor.template) {
@@ -297,7 +304,7 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
                 ? JSON.stringify(path.basename(filename))
                 : JSON.stringify(filename)
             }
-            `,
+            `
             }
           : { code: '' }
 
@@ -352,6 +359,6 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
 
         return result
       }
-    },
+    }
   }
 }

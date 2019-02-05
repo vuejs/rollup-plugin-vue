@@ -30,8 +30,8 @@ export interface VuePartRequestCreator {
 }
 
 export function createVueFilter(
-  include: Array<string|RegExp> | string | RegExp = [/\.vue$/i],
-  exclude: Array<string|RegExp> | string | RegExp = []
+  include: Array<string | RegExp> | string | RegExp = [/\.vue$/i],
+  exclude: Array<string | RegExp> | string | RegExp = []
 ): (file: string) => boolean {
   const filter = createFilter(include, exclude)
 
@@ -128,14 +128,20 @@ export function transformRequireToImport(code: string): string {
   const imports: { [key: string]: string } = {}
   let strImports = ''
 
-  code = code.replace(/require\(("(?:[^"\\]|\\.)+"|'(?:[^'\\]|\\.)+')\)/g, (_, name): any => {
-    if (!(name in imports)) {
-      imports[name] = `__$_require_${name.replace(/[^a-z0-9]/g, '_').replace(/_{2,}/g, '_').replace(/^_|_$/g, '')}__`
-      strImports += 'import ' + imports[name] + ' from ' + name + '\n'
+  code = code.replace(
+    /require\(("(?:[^"\\]|\\.)+"|'(?:[^'\\]|\\.)+')\)/g,
+    (_, name): any => {
+      if (!(name in imports)) {
+        imports[name] = `__$_require_${name
+          .replace(/[^a-z0-9]/g, '_')
+          .replace(/_{2,}/g, '_')
+          .replace(/^_|_$/g, '')}__`
+        strImports += 'import ' + imports[name] + ' from ' + name + '\n'
+      }
+
+      return imports[name]
     }
-    
-    return imports[name]
-  })
+  )
 
   return strImports + code
 }
