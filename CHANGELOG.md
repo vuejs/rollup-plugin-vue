@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.7.1"></a>
+## [4.7.1](https://github.com/vuejs/rollup-plugin-vue/compare/v4.7.0...v4.7.1) (2019-02-05)
+
+
+### Bug Fixes
+
+* Add deprecation warning for *CustomBlocks options ([eb1c863](https://github.com/vuejs/rollup-plugin-vue/commit/eb1c863))
+
+
+
 <a name="4.7.0"></a>
 # [4.7.0](https://github.com/vuejs/rollup-plugin-vue/compare/v4.6.2...v4.7.0) (2019-02-05)
 
