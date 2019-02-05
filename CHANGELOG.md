@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.7.0"></a>
+# [4.7.0](https://github.com/vuejs/rollup-plugin-vue/compare/v4.6.2...v4.7.0) (2019-02-05)
+
+
+### Bug Fixes
+
+* Use isProduction when defined and fallback to NODE_ENV/BUILD ([5fb30ce](https://github.com/vuejs/rollup-plugin-vue/commit/5fb30ce))
+* Use template.isProduction option if set ([#267](https://github.com/vuejs/rollup-plugin-vue/issues/267)) ([911eabc](https://github.com/vuejs/rollup-plugin-vue/commit/911eabc))
+
+
+### Features
+
+* Add data option to allow prepending style block content ([a5711f6](https://github.com/vuejs/rollup-plugin-vue/commit/a5711f6)), closes [#93](https://github.com/vuejs/rollup-plugin-vue/issues/93)
+* Add exposeFilename to control __file property ([5c1dffb](https://github.com/vuejs/rollup-plugin-vue/commit/5c1dffb))
+* Combine customBlocks inclusion/exclusion option ([8ae8568](https://github.com/vuejs/rollup-plugin-vue/commit/8ae8568))
+
+
+
 <a name="4.6.2"></a>
 ## [4.6.2](https://github.com/vuejs/rollup-plugin-vue/compare/v4.6.1...v4.6.2) (2019-01-17)
 
