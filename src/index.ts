@@ -57,23 +57,14 @@ export interface VuePluginOptions {
     [key: string]: string
   }
   /**
-   * Exclude customBlocks for final build.
-   * @default `['*']`
+   * Exclude/Include customBlocks for final build.
+   * @default `['!*']`
    * @example
    * ```js
-   * VuePlugin({ blackListCustomBlocks: ['markdown', 'test'] })
+   * VuePlugin({ customBlocks: ['markdown', '!test'] })
    * ```
    */
-  blackListCustomBlocks?: string[]
-  /**
-   * Include customBlocks for final build.
-   * @default `[]`
-   * @example
-   * ```js
-   * VuePlugin({ blackListCustomBlocks: ['markdown', 'test'] })
-   * ```
-   */
-  whiteListCustomBlocks?: string[]
+  customBlocks?: string[] | (() => boolean)
   /**
    * Inject CSS in JavaScript.
    * @default `true`
@@ -152,12 +143,8 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
   }
 
   const shouldExtractCss = opts.css === false
-  const blacklisted = new Set(opts.blackListCustomBlocks || ['*'])
-  const whitelisted = new Set(opts.whiteListCustomBlocks || [])
 
-  const isAllowed = (customBlockType: string) =>
-    (!blacklisted.has('*') || !blacklisted.has(customBlockType)) &&
-    (whitelisted.has('*') || whitelisted.has(customBlockType))
+  const isAllowed = createCustomBlockFilter(opts.customBlocks)
 
   const beforeAssemble =
     opts.beforeAssemble ||
@@ -165,11 +152,11 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
 
   const exposeFilename =
     typeof opts.exposeFilename === 'boolean' ? opts.exposeFilename : false
+
   delete opts.beforeAssemble
   delete opts.css
   delete opts.exposeFilename
-  delete opts.blackListCustomBlocks
-  delete opts.whiteListCustomBlocks
+  delete opts.customBlocks
   delete opts.defaultLang
   delete opts.include
   delete opts.exclude
@@ -381,4 +368,20 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
       }
     }
   }
+}
+
+function createCustomBlockFilter(
+  customBlocks?: string[] | ((tag: string) => boolean)
+): (tag: string) => boolean {
+  if (typeof customBlocks === 'function') return customBlocks
+  if (!Array.isArray(customBlocks)) return () => false
+
+  const allowed = new Set(customBlocks.filter(tag => !tag.startsWith('!')))
+  const notAllowed = new Set(
+    customBlocks.filter(tag => tag.startsWith('!')).map(tag => tag.substr(1))
+  )
+
+  return tag =>
+    (allowed.has('*') || allowed.has(tag)) &&
+    !(notAllowed.has('*') || notAllowed.has(tag))
 }
