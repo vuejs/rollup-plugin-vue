@@ -77,6 +77,27 @@ export interface VuePluginOptions {
   customBlocks?: string[] | ((tag: string) => boolean)
 
   /**
+   * Exclude customBlocks for final build.
+   * @default `['*']`
+   * @deprecated
+   * @example
+   * ```js
+   * VuePlugin({ blackListCustomBlocks: ['markdown', 'test'] })
+   * ```
+   */
+  blackListCustomBlocks?: string[]
+  /**
+   * Include customBlocks for final build.
+   * @default `[]`
+   * @deprecated
+   * @example
+   * ```js
+   * VuePlugin({ blackListCustomBlocks: ['markdown', 'test'] })
+   * ```
+   */
+  whiteListCustomBlocks?: string[]
+
+  /**
    * Prepend CSS.
    * @default `undefined`
    * @example
@@ -164,8 +185,17 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
   }
 
   const shouldExtractCss = opts.css === false
+  const customBlocks: string[] =  []
 
-  const isAllowed = createCustomBlockFilter(opts.customBlocks)
+  if (opts.blackListCustomBlocks) {
+    console.warn('`blackListCustomBlocks` option is deprecated use `customBlocks`. See https://rollup-plugin-vue.vuejs.org/options.html#customblocks.')
+    customBlocks.push(...opts.blackListCustomBlocks.map(tag => '!' + tag))
+  }
+  if (opts.whiteListCustomBlocks) {
+    console.warn('`whiteListCustomBlocks` option is deprecated use `customBlocks`. See https://rollup-plugin-vue.vuejs.org/options.html#customblocks.')
+    customBlocks.push(...opts.whiteListCustomBlocks)
+  }
+  const isAllowed = createCustomBlockFilter(opts.customBlocks || customBlocks)
 
   const beforeAssemble =
     opts.beforeAssemble ||
@@ -181,6 +211,8 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
   delete opts.css
   delete opts.exposeFilename
   delete opts.customBlocks
+  delete opts.blackListCustomBlocks
+  delete opts.whiteListCustomBlocks
   delete opts.defaultLang
   delete opts.include
   delete opts.exclude
