@@ -29,19 +29,26 @@ e.g.: `defaultLang: { script: 'ts' }` would set default `<script>` block languag
 `defaultLang` does not set default language in templates for your editor/IDE.
 :::
 
-## `blackListCustomBlocks`
 
-- type: `string[]`
-- default: `['*']`
+## `customBlocks`
 
-Exclude custom block from final bundle.
+- type: `string[] | ((tag: string) => boolean)`
+- default: `() => false`
 
-## `whiteListCustomBlocks`
+Include/exclude custom block in final bundle. 
+e.g.
 
-- type: `string[]`
-- default: `[]`
-
-Include custom block in final bundle.
+``` js
+...
+ VuePlugin({
+   customBlocks: [
+     '!docs', // exclude <docs>
+     'gql', // include <gql>
+     '!*', // exclude everything else
+   ]
+ })
+...
+```
 
 ## `css`
 
@@ -49,6 +56,13 @@ Include custom block in final bundle.
 - default: `true`
 
 Inject CSS in JavaScript. Setting `css: false` would extract styles in a `.css` file.
+
+## `data`
+
+- type: `{ [lang: string]: string | (() => string)}`
+- default: `{}`
+
+Prepend content to `<style>` blocks in `.vue` files.
 
 ## `compiler`
 

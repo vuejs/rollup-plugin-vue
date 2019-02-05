@@ -49,6 +49,7 @@
     "@vue/component-compiler-utils": "^2.1.0",
     "debug": "^4.1.1",
     "hash-sum": "^1.0.2",
+    "magic-string": "^0.25.2",
     "querystring": "^0.2.0",
     "rollup-pluginutils": "^2.0.1",
     "source-map": "0.7.3",

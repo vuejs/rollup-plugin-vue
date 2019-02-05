@@ -15,6 +15,7 @@ import {
   StyleCompileResult,
   DescriptorCompileResult
 } from '@vue/component-compiler'
+import MagicString from 'magic-string'
 import { Plugin, RawSourceMap } from 'rollup'
 import * as path from 'path'
 import { parse, SFCDescriptor, SFCBlock } from '@vue/component-compiler-utils'
@@ -32,6 +33,15 @@ const d = debug('rollup-plugin-vue')
 const dR = debug('rollup-plugin-vue:resolve')
 const dL = debug('rollup-plugin-vue:load')
 const dT = debug('rollup-plugin-vue:transform')
+
+export interface VuePluginOptionsData {
+  css: string | (() => string)
+  less: string | (() => string)
+  postcss: string | (() => string)
+  sass: string | (() => string)
+  scss: string | (() => string)
+  stylus: string | (() => string)
+}
 
 export interface VuePluginOptions {
   /**
@@ -65,6 +75,17 @@ export interface VuePluginOptions {
    * ```
    */
   customBlocks?: string[] | ((tag: string) => boolean)
+
+  /**
+   * Prepend CSS.
+   * @default `undefined`
+   * @example
+   * ```js
+   * VuePlugin({ data: { scss: '$color: red;' } }) // to extract css
+   * ```
+   */
+  data?: Partial<VuePluginOptionsData>
+
   /**
    * Inject CSS in JavaScript.
    * @default `true`
@@ -153,6 +174,9 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
   const exposeFilename =
     typeof opts.exposeFilename === 'boolean' ? opts.exposeFilename : false
 
+  const data: VuePluginOptionsData = (opts.data || {}) as any
+
+  delete opts.data
   delete opts.beforeAssemble
   delete opts.css
   delete opts.exposeFilename
@@ -180,6 +204,26 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
 
   if (opts.css === false) d('Running in CSS extract mode')
 
+  function prependStyle(
+    id: string,
+    lang: string,
+    code: string,
+    map: any
+  ): { code: string } {
+    if (!(lang in data)) return { code }
+    const ms = new MagicString(code, {
+      filename: id,
+      indentExclusionRanges: []
+    })
+
+    const value: string | (() => string) = (data as any)[lang]
+    const fn = typeof value === 'function' ? value : () => value
+
+    ms.prepend(fn())
+
+    return { code: ms.toString() }
+  }
+
   return {
     name: 'VuePlugin',
 
@@ -193,6 +237,7 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
       if (!isVuePartRequest(id)) return
       id = path.resolve(path.dirname(importer), id)
       const ref = parseVuePartRequest(id)
+
       if (ref) {
         const element = resolveVuePart(descriptors, ref)
         const src = (element as SFCBlock).src
@@ -217,11 +262,15 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
       if (!request) return null
 
       const element = resolveVuePart(descriptors, request)
-      const code =
+      let code =
         'code' in element
           ? ((element as any).code as string) // .code is set when extract styles is used. { css: false }
           : element.content
-      const map = element.map as RawSourceMap
+      let map = element.map as RawSourceMap
+
+      if (request.meta.type === 'styles') {
+        code = prependStyle(id, request.meta.lang, code, map).code
+      }
 
       dL(`id: ${id}\ncode: \n${code}\nmap: ${JSON.stringify(map, null, 2)}\n\n`)
 
@@ -254,6 +303,15 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
 
         const styles = await Promise.all(
           descriptor.styles.map(async style => {
+            if (style.content) {
+              style.content = prependStyle(
+                filename,
+                style.lang || 'css',
+                style.content,
+                style.map
+              ).code
+            }
+
             const compiled = await compiler.compileStyleAsync(
               filename,
               scopeId,
@@ -382,7 +440,10 @@ function createCustomBlockFilter(
     customBlocks.filter(tag => tag.startsWith('!')).map(tag => tag.substr(1))
   )
 
-  return tag =>
-    (allowed.has('*') || allowed.has(tag)) &&
-    !(notAllowed.has('*') || notAllowed.has(tag))
+  return tag => {
+    if (allowed.has(tag)) return true
+    if (notAllowed.has(tag)) return false
+    if (notAllowed.has('*')) return false
+    return allowed.has('*')
+  }
 }
