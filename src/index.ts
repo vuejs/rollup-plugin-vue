@@ -185,14 +185,18 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
   }
 
   const shouldExtractCss = opts.css === false
-  const customBlocks: string[] =  []
+  const customBlocks: string[] = []
 
   if (opts.blackListCustomBlocks) {
-    console.warn('`blackListCustomBlocks` option is deprecated use `customBlocks`. See https://rollup-plugin-vue.vuejs.org/options.html#customblocks.')
+    console.warn(
+      '`blackListCustomBlocks` option is deprecated use `customBlocks`. See https://rollup-plugin-vue.vuejs.org/options.html#customblocks.'
+    )
     customBlocks.push(...opts.blackListCustomBlocks.map(tag => '!' + tag))
   }
   if (opts.whiteListCustomBlocks) {
-    console.warn('`whiteListCustomBlocks` option is deprecated use `customBlocks`. See https://rollup-plugin-vue.vuejs.org/options.html#customblocks.')
+    console.warn(
+      '`whiteListCustomBlocks` option is deprecated use `customBlocks`. See https://rollup-plugin-vue.vuejs.org/options.html#customblocks.'
+    )
     customBlocks.push(...opts.whiteListCustomBlocks)
   }
   const isAllowed = createCustomBlockFilter(opts.customBlocks || customBlocks)
