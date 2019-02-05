@@ -83,6 +83,15 @@ export interface VuePluginOptions {
    * ```
    */
   css?: boolean
+  /**
+   * Expose filename in __file property.
+   * @default `false`
+   * @example
+   * ```js
+   * VuePlugin({ exposeFilename: true })
+   * ```
+   */
+  exposeFilename?: boolean
   compiler?: VueTemplateCompiler
   compilerParseOptions?: VueTemplateCompilerParseOptions
   sourceRoot?: string
@@ -154,8 +163,11 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
     opts.beforeAssemble ||
     ((d: DescriptorCompileResult): DescriptorCompileResult => d)
 
+  const exposeFilename =
+    typeof opts.exposeFilename === 'boolean' ? opts.exposeFilename : false
   delete opts.beforeAssemble
   delete opts.css
+  delete opts.exposeFilename
   delete opts.blackListCustomBlocks
   delete opts.whiteListCustomBlocks
   delete opts.defaultLang
@@ -171,9 +183,11 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
     },
     ...opts.template
   } as any
+
   if (opts.template && typeof opts.template.isProduction === 'undefined') {
     opts.template.isProduction = isProduction
   }
+
   const compiler = createDefaultCompiler(opts)
   const descriptors = new Map<string, SFCDescriptor>()
 
@@ -229,6 +243,7 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
 
     async transform(source: string, filename: string) {
       if (isVue(filename)) {
+        // Create deep copy to prevent issue during watching changes.
         const descriptor: SFCDescriptor = JSON.parse(
           JSON.stringify(
             parse({
@@ -298,11 +313,16 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
               'script'
             )}'
             export default script
+            ${
+              exposeFilename
+                ? `
             // For security concerns, we use only base name in production mode. See https://github.com/vuejs/rollup-plugin-vue/issues/258
             script.__file = ${
               isProduction
                 ? JSON.stringify(path.basename(filename))
                 : JSON.stringify(filename)
+            }`
+                : ''
             }
             `
             }
