@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="4.7.2"></a>
+## [4.7.2](https://github.com/vuejs/rollup-plugin-vue/compare/v4.7.1...v4.7.2) (2019-02-20)
+
+
+### Bug Fixes
+
+* Add needMap option to disable source maps ([3f879f3](https://github.com/vuejs/rollup-plugin-vue/commit/3f879f3))
+
+
+
 <a name="4.7.1"></a>
 ## [4.7.1](https://github.com/vuejs/rollup-plugin-vue/compare/v4.7.0...v4.7.1) (2019-02-05)
 
