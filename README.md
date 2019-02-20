@@ -34,6 +34,8 @@ export default {
 }
 ```
 
+See [available options](https://rollup-plugin-vue.vuejs.org/options.html) for `VuePluginOptions`.
+
 ## Security
 
 If you discover any security related issues, please email hi@znck.me instead of using the issue tracker.
