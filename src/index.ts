@@ -158,7 +158,7 @@ export interface VuePluginOptions {
 /**
  * Rollup plugin for handling .vue files.
  */
-export default function vue(opts: VuePluginOptions = {}): Plugin {
+export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
   const isVue = createVueFilter(opts.include, opts.exclude)
   const isProduction =
     opts.template && typeof opts.template.isProduction === 'boolean'
@@ -324,7 +324,7 @@ export default function vue(opts: VuePluginOptions = {}): Plugin {
               compiler: opts.compiler || templateCompiler,
               compilerParseOptions: opts.compilerParseOptions,
               sourceRoot: opts.sourceRoot,
-              needMap: true
+              needMap: 'needMap' in opts ? (opts as any).needMap : true
             })
           )
         )
