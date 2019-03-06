@@ -51,7 +51,7 @@
     "hash-sum": "^1.0.2",
     "magic-string": "^0.25.2",
     "querystring": "^0.2.0",
-    "rollup-pluginutils": "^2.0.1",
+    "rollup-pluginutils": "^2.4.1",
     "source-map": "0.7.3",
     "vue-runtime-helpers": "1.0.0"
   },
