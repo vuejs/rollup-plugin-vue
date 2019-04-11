@@ -45,8 +45,8 @@
     "dist/"
   ],
   "dependencies": {
-    "@vue/component-compiler": "^3.6",
-    "@vue/component-compiler-utils": "^2.1.0",
+    "@vue/component-compiler": "^4.0.0",
+    "@vue/component-compiler-utils": "^3.0.0",
     "debug": "^4.1.1",
     "hash-sum": "^1.0.2",
     "magic-string": "^0.25.2",
@@ -71,7 +71,7 @@
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
     "conventional-changelog": "^3.0.5",
     "jest": "^23.6.0",
-    "node-sass": "^4.9.0",
+    "sass": "^1.18.0",
     "postcss": "^7.0.11",
     "postcss-assets": "^5.0.0",
     "prettier": "^1.12.1",
