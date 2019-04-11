@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="5.0.0"></a>
+# [5.0.0](https://github.com/vuejs/rollup-plugin-vue/compare/v4.7.2...v5.0.0) (2019-04-11)
+
+
+### Chores
+
+* Upgrade [@vue](https://github.com/vue)/component-compiler & [@vue](https://github.com/vue)/component-compiler-utils ([e215fe7](https://github.com/vuejs/rollup-plugin-vue/commit/e215fe7))
+
+
+### BREAKING CHANGES
+
+* `@vue/component-compiler-utils@3.0.0` uses `sass` instead of `node-sass`
+
+
+
 <a name="4.7.2"></a>
 ## [4.7.2](https://github.com/vuejs/rollup-plugin-vue/compare/v4.7.1...v4.7.2) (2019-02-20)
 
