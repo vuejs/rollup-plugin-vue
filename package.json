@@ -53,7 +53,7 @@
     "querystring": "^0.2.0",
     "rollup-pluginutils": "^2.4.1",
     "source-map": "0.7.3",
-    "vue-runtime-helpers": "1.0.0"
+    "vue-runtime-helpers": "1.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.46",
@@ -71,7 +71,6 @@
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
     "conventional-changelog": "^3.0.5",
     "jest": "^23.6.0",
-    "sass": "^1.18.0",
     "postcss": "^7.0.11",
     "postcss-assets": "^5.0.0",
     "prettier": "^1.12.1",
@@ -87,6 +86,7 @@
     "rollup-plugin-typescript": "^1.0.0",
     "rollup-plugin-typescript2": "^0.18.1",
     "rollup-plugin-url": "^2.1.0",
+    "sass": "^1.18.0",
     "ts-jest": "^23.10.5",
     "typescript": "^3.2.2",
     "vue": "^2.5.16",
