@@ -182,7 +182,7 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
   if (!opts.styleInjectorSSR)
     opts.styleInjectorSSR =
       '~' + 'vue-runtime-helpers/dist/inject-style/server.mjs'
-  if (!opts.styleInjectorSSR)
+  if (!opts.styleInjectorShadow)
     opts.styleInjectorShadow =
       '~' + 'vue-runtime-helpers/dist/inject-style/shadow.mjs'
 
