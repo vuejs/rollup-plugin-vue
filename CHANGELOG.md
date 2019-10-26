@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="5.1.1"></a>
+## [5.1.1](https://github.com/vuejs/rollup-plugin-vue/compare/v5.1.0...v5.1.1) (2019-10-26)
+
+
+### Bug Fixes
+
+* typo in option name ([7b848ee](https://github.com/vuejs/rollup-plugin-vue/commit/7b848ee))
+
+
+
 <a name="5.1.0"></a>
 # [5.1.0](https://github.com/vuejs/rollup-plugin-vue/compare/v5.0.1...v5.1.0) (2019-10-26)
 
