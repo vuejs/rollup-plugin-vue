@@ -45,7 +45,7 @@
     "dist/"
   ],
   "dependencies": {
-    "@vue/component-compiler": "^4.0.0",
+    "@vue/component-compiler": "^4.1.0",
     "@vue/component-compiler-utils": "^3.0.0",
     "debug": "^4.1.1",
     "hash-sum": "^1.0.2",
@@ -53,7 +53,7 @@
     "querystring": "^0.2.0",
     "rollup-pluginutils": "^2.4.1",
     "source-map": "0.7.3",
-    "vue-runtime-helpers": "1.0.1"
+    "vue-runtime-helpers": "^1.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.46",

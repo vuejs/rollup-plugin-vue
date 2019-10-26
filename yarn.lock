@@ -1435,10 +1435,10 @@
     source-map "~0.6.1"
     vue-template-es2015-compiler "^1.9.0"
 
-"@vue/component-compiler@^4.0.0":
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/@vue/component-compiler/-/component-compiler-4.0.0.tgz#916d57d546d38cc9179fe841c1f7f93d35a255a0"
-  integrity sha512-XZkpbE1B16g7RqM8AL/LP/wr3qkOLDwiO9yF2k/2O5BwGcqPyQOYHtD67sjMso6/703ztykFsbZsJbD/7xFWDQ==
+"@vue/component-compiler@^4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@vue/component-compiler/-/component-compiler-4.1.0.tgz#92ccb90e425aa7e61d58bf092a5cfcdd6d0f9315"
+  integrity sha512-20S7mm7CYP94m2Morw2ftz1tqoBu1nX7KYiqo5rlgKPZ0dlY7VZX7wAL/etN3s4HD0PBeenr1pUUCBIgGSaB2g==
   dependencies:
     "@vue/component-compiler-utils" "^3.0.0"
     clean-css "^4.1.11"
@@ -10264,10 +10264,10 @@ vue-router@^3.0.1:
   resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-3.0.2.tgz#dedc67afe6c4e2bc25682c8b1c2a8c0d7c7e56be"
   integrity sha512-opKtsxjp9eOcFWdp6xLQPLmRGgfM932Tl56U9chYTnoWqKxQ8M20N7AkdEbM5beUh6wICoFGYugAX9vQjyJLFg==
 
-vue-runtime-helpers@1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/vue-runtime-helpers/-/vue-runtime-helpers-1.0.1.tgz#9a7f527d43fdecf83638188fb0e5bae699c2b5bb"
-  integrity sha512-yodqdAWt/QrUkb51jN2DS4dtF4vQWg5YejYdBAcHIOi6kBoGLRVEDz5NYGdh5IhzLrElgi+eKX1DQJmj3bCuJw==
+vue-runtime-helpers@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/vue-runtime-helpers/-/vue-runtime-helpers-1.1.1.tgz#5f9422d4e958478060800afe738df40de7c9f653"
+  integrity sha512-L20UdZnvY9Tmvf7yWJmN2kzlK/KyCFLAXOIUbm7yyRfjDqub6vC1CUrkLH7XGM+GRO8MnBap6uUYvgQTJ1yOOQ==
 
 vue-server-renderer@^2.5.16:
   version "2.5.22"
