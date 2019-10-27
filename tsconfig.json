@@ -10,12 +10,13 @@
     "declaration": true,
     "allowJs": false,
     "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "noUnusedLocals": true,
     "strictNullChecks": true,
     "noImplicitAny": true,
     "removeComments": false,
     "lib": ["es2015", "es6", "es7", "dom"]
   },
-  "include": ["src", "typings"],
+  "include": ["src", "typings", "runtime.js"],
   "exclude": ["node_modules"]
 }
