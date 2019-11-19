@@ -4,7 +4,8 @@ import {
   parseVuePartRequest,
   resolveVuePart,
   isVuePartRequest,
-  transformRequireToImport
+  transformRequireToImport,
+  VuePartRequestMeta
 } from './utils'
 import {
   createDefaultCompiler,
@@ -13,7 +14,8 @@ import {
   StyleOptions,
   TemplateOptions,
   StyleCompileResult,
-  DescriptorCompileResult
+  DescriptorCompileResult,
+  CustomBlockOptions,
 } from '@vue/component-compiler'
 import MagicString from 'magic-string'
 import { Plugin } from 'rollup'
@@ -34,6 +36,9 @@ const dR = debug('rollup-plugin-vue:resolve')
 const dL = debug('rollup-plugin-vue:load')
 const dT = debug('rollup-plugin-vue:transform')
 
+const isObject = (obj: any) => Object.prototype.toString.call(obj)
+const hasCustomBlockTransformer = (opts: CustomBlockOptions) => isObject(opts) === '[object Object]' && ('transformers' in opts)
+
 export interface VuePluginOptionsData {
   css: string | (() => string)
   less: string | (() => string)
@@ -42,6 +47,13 @@ export interface VuePluginOptionsData {
   scss: string | (() => string)
   stylus: string | (() => string)
 }
+
+export type CustomBlockLoaderResult = {
+  code: string;
+  map?: any;
+}
+
+export type CustomBlockLoader = (content: string, meta: VuePartRequestMeta, map?: any) => CustomBlockLoaderResult
 
 export interface VuePluginOptions {
   /**
@@ -74,8 +86,23 @@ export interface VuePluginOptions {
    * VuePlugin({ customBlocks: ['markdown', '!test'] })
    * ```
    */
-  customBlocks?: string[] | ((tag: string) => boolean)
-
+  customBlocks?: string[] | ((tag: string) => boolean) | CustomBlockOptions
+  /**
+   * loaders for custom blocks
+   * @default `{}``
+   * @example
+   * ```js
+   * VuePlugin({
+   *   customBlockLoaders: {
+   *     i18n: (content, meta, map) => {
+   *        // ...
+   *        return { code, map }
+   *     }
+   *   }
+   * })
+   * ```
+   */
+  customBlockLoaders?: { [block: string]: CustomBlockLoader }
   /**
    * Exclude customBlocks for final build.
    * @default `['*']`
@@ -140,6 +167,10 @@ export interface VuePluginOptions {
    * @@vue/component-compiler [#](https://github.com/vuejs/vue-component-compiler#api) template processing options.
    */
   template?: TemplateOptions
+  /**
+   * @@vue/component-compiler [#](https://github.com/vuejs/vue-component-compiler#api) custom block processing options.
+   */
+  customBlock?: CustomBlockOptions
   /**
    * @@vue/component-compiler [#](https://github.com/vuejs/vue-component-compiler#api) module name or global function for custom runtime component normalizer.
    */
@@ -467,12 +498,30 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
   }
 }
 
+/*
+function getCustomBlockTransformers(
+  customBlocks: string[] | ((tag: string) => boolean) | CustomBlockOptions
+): Map<string, CustomBlockTransformer> | null {
+  if (Array.isArray(customBlocks) || typeof customBlocks === 'function') {
+    return null
+  } else if (hasCustomBlockTransformer(customBlocks)) {
+    const blocks = Object.keys(customBlocks.transformers || {})
+    const transformers = new Map<string, CustomBlockTransformer>()
+    blocks.forEach(block => {
+      transformers.set(block, customBlocks.transformers[block])
+    })
+    return transformers
+  } else {
+    return null
+  }
+}
+*/
+
 function createCustomBlockFilter(
-  customBlocks?: string[] | ((tag: string) => boolean)
+  customBlocks: string[] | ((tag: string) => boolean)
 ): (tag: string) => boolean {
   if (typeof customBlocks === 'function') return customBlocks
   if (!Array.isArray(customBlocks)) return () => false
-
   const allowed = new Set(customBlocks.filter(tag => !tag.startsWith('!')))
   const notAllowed = new Set(
     customBlocks.filter(tag => tag.startsWith('!')).map(tag => tag.substr(1))
