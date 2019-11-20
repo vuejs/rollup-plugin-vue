@@ -358,7 +358,7 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
         )
         descriptors.set(filename, descriptor)
 
-        const assmbleComponent = async (
+        const assembleComponent = async (
           opts: {
             script: ScriptOptions,
             style: StyleOptions,
@@ -549,7 +549,7 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
           return assemble(compiler, filename, beforeAssemble(input), opts as Partial<VuePluginOptions>)
         }
 
-        const result = await assmbleComponent(opts as any, descriptor, filename, isProduction)
+        const result = await assembleComponent(opts as any, descriptor, filename, isProduction)
         dT(
           `id: ${filename}\ncode:\n${result.code}\n\nmap:\n${JSON.stringify(
             result.map,
