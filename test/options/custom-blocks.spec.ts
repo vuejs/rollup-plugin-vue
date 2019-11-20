@@ -40,7 +40,17 @@ describe('customBlocks', () => {
 
   it('array of tags', async () => {
     const { code } = await setup({
-      customBlocks: ['custom']
+      customBlocks: ['custom'],
+      customBlockLoaders: {
+        custom: (content, map) => {
+          const code = `
+          ${content}
+          export default {
+          }
+          `
+          return { code, map }
+        }
+      }
     })
 
     expect(code).toEqual(expect.stringContaining('My Custom Block'))

@@ -16,6 +16,7 @@ import {
   StyleCompileResult,
   DescriptorCompileResult,
   CustomBlockOptions,
+  CustomBlockTransformerResult
 } from '@vue/component-compiler'
 import MagicString from 'magic-string'
 import { Plugin } from 'rollup'
@@ -35,9 +36,6 @@ const d = debug('rollup-plugin-vue')
 const dR = debug('rollup-plugin-vue:resolve')
 const dL = debug('rollup-plugin-vue:load')
 const dT = debug('rollup-plugin-vue:transform')
-
-const isObject = (obj: any) => Object.prototype.toString.call(obj)
-const hasCustomBlockTransformer = (opts: CustomBlockOptions) => isObject(opts) === '[object Object]' && ('transformers' in opts)
 
 export interface VuePluginOptionsData {
   css: string | (() => string)
@@ -86,7 +84,7 @@ export interface VuePluginOptions {
    * VuePlugin({ customBlocks: ['markdown', '!test'] })
    * ```
    */
-  customBlocks?: string[] | ((tag: string) => boolean) | CustomBlockOptions
+  customBlocks?: string[] | ((tag: string) => boolean)
   /**
    * loaders for custom blocks
    * @default `{}``
@@ -235,6 +233,7 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
     customBlocks.push(...opts.whiteListCustomBlocks)
   }
   const isAllowed = createCustomBlockFilter(opts.customBlocks || customBlocks)
+  const customBlockLoaders = opts.customBlockLoaders || {}
 
   const beforeAssemble =
     opts.beforeAssemble ||
@@ -250,27 +249,13 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
   delete opts.css
   delete opts.exposeFilename
   delete opts.customBlocks
+  delete opts.customBlockLoaders
   delete opts.blackListCustomBlocks
   delete opts.whiteListCustomBlocks
   delete opts.defaultLang
   delete opts.include
   delete opts.exclude
 
-  opts.template = {
-    transformAssetUrls: {
-      video: ['src', 'poster'],
-      source: 'src',
-      img: 'src',
-      image: 'xlink:href'
-    },
-    ...opts.template
-  } as any
-
-  if (opts.template && typeof opts.template.isProduction === 'undefined') {
-    opts.template.isProduction = isProduction
-  }
-
-  const compiler = createDefaultCompiler(opts)
   const descriptors = new Map<string, SFCDescriptor>()
 
   if (opts.css === false) d('Running in CSS extract mode')
@@ -327,10 +312,13 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
 
     load(id: string) {
       const request = parseVuePartRequest(id)
+      dL(`request: ${JSON.stringify(request)}`)
 
       if (!request) return null
 
       const element = resolveVuePart(descriptors, request)
+      dL(`element: ${JSON.stringify(element)}`)
+
       let code =
         'code' in element
           ? ((element as any).code as string) // .code is set when extract styles is used. { css: false }
@@ -339,6 +327,13 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
 
       if (request.meta.type === 'styles') {
         code = prependStyle(id, request.meta.lang, code, map).code
+      } else if (request.meta.type === 'customBlocks') {
+        const transform = customBlockLoaders[element.type]
+        if (transform) {
+          const transformed = transform(element.content, request.meta, element.map)
+          code = transformed.code
+          map = transformed.map
+        }
       }
 
       dL(`id: ${id}\ncode: \n${code}\nmap: ${JSON.stringify(map, null, 2)}\n\n`)
@@ -361,127 +356,200 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
             })
           )
         )
-
         descriptors.set(filename, descriptor)
 
-        const scopeId =
-          'data-v-' +
-          (isProduction
-            ? hash(path.basename(filename) + source)
-            : hash(filename + source))
+        const assmbleComponent = async (
+          opts: {
+            script: ScriptOptions,
+            style: StyleOptions,
+            template: TemplateOptions,
+            customBlock: CustomBlockOptions
+          },
+          descriptor: SFCDescriptor,
+          filename: string,
+          isProduction: boolean
+        ) => {
 
-        const styles = await Promise.all(
-          descriptor.styles.map(async style => {
-            if (style.content) {
-              style.content = prependStyle(
+          // 
+          // setup option for createDefaultCompiler
+          // 
+          opts.template = {
+            transformAssetUrls: {
+              video: ['src', 'poster'],
+              source: 'src',
+              img: 'src',
+              image: 'xlink:href'
+            },
+            ...opts.template
+          } as any
+        
+          if (!opts.customBlock) {
+            const targetBlocks = [...new Set(descriptor.customBlocks.map(b => b.type))] // remove duplicates custom blocks
+            opts.customBlock = targetBlocks.reduce((ret, block) => {
+              if (!ret.transformers) {
+                ret.transformers = {}
+              }
+              // setup transform for custom block
+              ret.transformers[block] = (block, index): CustomBlockTransformerResult => {
+                dT(`custom block transformer: block=${JSON.stringify(block)}, index=${index}`)
+                const code = `
+                export * from '${createVuePartRequest(
+                  filename,
+                  (typeof block.attrs.lang === 'string' && block.attrs.lang) ||
+                    createVuePartRequest.defaultLang[block.type] ||
+                    block.type,
+                  'customBlocks',
+                  index
+                )}'
+                `
+                return { code, map: block.map }
+              }
+              return ret
+            }, { transfomers: {} } as CustomBlockOptions)
+          }
+        
+          if (opts.template && typeof opts.template.isProduction === 'undefined') {
+            opts.template.isProduction = isProduction
+          }
+
+          //
+          // create component compiler
+          // 
+          const compiler = createDefaultCompiler(opts)
+
+          //
+          // generate scopeId
+          //
+          const scopeId =
+            'data-v-' +
+            (isProduction
+              ? hash(path.basename(filename) + source)
+              : hash(filename + source))
+
+          //
+          // build styles
+          //
+          const styles = await Promise.all(
+            descriptor.styles.map(async style => {
+              if (style.content) {
+                style.content = prependStyle(
+                  filename,
+                  style.lang || 'css',
+                  style.content,
+                  style.map
+                ).code
+              }
+
+              const compiled = await compiler.compileStyleAsync(
                 filename,
-                style.lang || 'css',
-                style.content,
-                style.map
-              ).code
-            }
-
-            const compiled = await compiler.compileStyleAsync(
-              filename,
-              scopeId,
-              style
-            )
-            if (compiled.errors.length > 0) throw Error(compiled.errors[0])
-            return compiled
-          })
-        )
-
-        const input: any = {
-          scopeId,
-          styles,
-          customBlocks: []
-        }
-
-        if (descriptor.template) {
-          input.template = compiler.compileTemplate(
-            filename,
-            descriptor.template
+                scopeId,
+                style
+              )
+              if (compiled.errors.length > 0) throw Error(compiled.errors[0])
+              return compiled
+            })
           )
 
-          input.template.code = transformRequireToImport(input.template.code)
-
-          if (input.template.errors && input.template.errors.length) {
-            input.template.errors.map((error: Error) => this.error(error))
+          const input: any = {
+            scopeId,
+            styles,
+            customBlocks: []
           }
 
-          if (input.template.tips && input.template.tips.length) {
-            input.template.tips.map((message: string) => this.warn({ message }))
+          //
+          // build template
+          //
+          if (descriptor.template) {
+            input.template = compiler.compileTemplate(
+              filename,
+              descriptor.template
+            )
+
+            input.template.code = transformRequireToImport(input.template.code)
+
+            if (input.template.errors && input.template.errors.length) {
+              input.template.errors.map((error: Error) => this.error(error))
+            }
+
+            if (input.template.tips && input.template.tips.length) {
+              input.template.tips.map((message: string) => this.warn({ message }))
+            }
           }
-        }
 
-        input.script = descriptor.script
-          ? {
-              code: `
-            export * from '${createVuePartRequest(
-              filename,
-              descriptor.script.lang || 'js',
-              'script'
-            )}'
-            import script from '${createVuePartRequest(
-              filename,
-              descriptor.script.lang || 'js',
-              'script'
-            )}'
-            export default script
-            ${
-              exposeFilename
-                ? `
-            // For security concerns, we use only base name in production mode. See https://github.com/vuejs/rollup-plugin-vue/issues/258
-            script.__file = ${
-              isProduction
-                ? JSON.stringify(path.basename(filename))
-                : JSON.stringify(filename)
-            }`
-                : ''
-            }
-            `
-            }
-          : { code: '' }
-
-        if (shouldExtractCss) {
-          input.styles = input.styles
-            .map((style: StyleCompileResult, index: number) => {
-              ;(descriptor.styles[index] as any).code = style.code
-
-              input.script.code +=
-                '\n' +
-                `import '${createVuePartRequest(
-                  filename,
-                  'css',
-                  'styles',
-                  index
-                )}'`
-
-              if (style.module || descriptor.styles[index].scoped) {
-                return { ...style, code: '', map: undefined }
+          //
+          // build script
+          //
+          input.script = descriptor.script
+            ? {
+                code: `
+              export * from '${createVuePartRequest(
+                filename,
+                descriptor.script.lang || 'js',
+                'script'
+              )}'
+              import script from '${createVuePartRequest(
+                filename,
+                descriptor.script.lang || 'js',
+                'script'
+              )}'
+              export default script
+              ${
+                exposeFilename
+                  ? `
+              // For security concerns, we use only base name in production mode. See https://github.com/vuejs/rollup-plugin-vue/issues/258
+              script.__file = ${
+                isProduction
+                  ? JSON.stringify(path.basename(filename))
+                  : JSON.stringify(filename)
+              }`
+                  : ''
               }
-            })
-            .filter(Boolean)
+              `
+              }
+            : { code: '' }
+
+          //
+          // extract CSS
+          //
+          if (shouldExtractCss) {
+            input.styles = input.styles
+              .map((style: StyleCompileResult, index: number) => {
+                ;(descriptor.styles[index] as any).code = style.code
+                input.script.code +=
+                  '\n' +
+                  `import '${createVuePartRequest(
+                    filename,
+                    'css',
+                    'styles',
+                    index
+                  )}'`
+
+                if (style.module || descriptor.styles[index].scoped) {
+                  return { ...style, code: '', map: undefined }
+                }
+              })
+              .filter(Boolean)
+          }
+
+          //
+          // tweak script
+          //
+          input.script.code = input.script.code.replace(/^\s+/gm, '')
+
+          //
+          // build custom blocks
+          //
+          descriptor.customBlocks.forEach((block, index) => {
+            if (!isAllowed(block.type)) return
+            const compiled = compiler.compileCustomBlock(block, index)
+            dT(`custom block compiled: ${JSON.stringify(compiled)}`)
+            input.customBlocks.push(compiled)
+          })
+
+          return assemble(compiler, filename, beforeAssemble(input), opts as Partial<VuePluginOptions>)
         }
 
-        input.script.code = input.script.code.replace(/^\s+/gm, '')
-
-        const result = assemble(compiler, filename, beforeAssemble(input), opts)
-
-        descriptor.customBlocks.forEach((block, index) => {
-          if (!isAllowed(block.type)) return
-          result.code +=
-            '\n' +
-            `export * from '${createVuePartRequest(
-              filename,
-              (typeof block.attrs.lang === 'string' && block.attrs.lang) ||
-                createVuePartRequest.defaultLang[block.type] ||
-                block.type,
-              'customBlocks',
-              index
-            )}'`
-        })
-
+        const result = await assmbleComponent(opts as any, descriptor, filename, isProduction)
         dT(
           `id: ${filename}\ncode:\n${result.code}\n\nmap:\n${JSON.stringify(
             result.map,
@@ -489,7 +557,6 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
             2
           )}\n`
         )
-
         result.map = result.map || { mappings: '' }
 
         return result
@@ -498,27 +565,8 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
   }
 }
 
-/*
-function getCustomBlockTransformers(
-  customBlocks: string[] | ((tag: string) => boolean) | CustomBlockOptions
-): Map<string, CustomBlockTransformer> | null {
-  if (Array.isArray(customBlocks) || typeof customBlocks === 'function') {
-    return null
-  } else if (hasCustomBlockTransformer(customBlocks)) {
-    const blocks = Object.keys(customBlocks.transformers || {})
-    const transformers = new Map<string, CustomBlockTransformer>()
-    blocks.forEach(block => {
-      transformers.set(block, customBlocks.transformers[block])
-    })
-    return transformers
-  } else {
-    return null
-  }
-}
-*/
-
 function createCustomBlockFilter(
-  customBlocks: string[] | ((tag: string) => boolean)
+  customBlocks?: string[] | ((tag: string) => boolean)
 ): (tag: string) => boolean {
   if (typeof customBlocks === 'function') return customBlocks
   if (!Array.isArray(customBlocks)) return () => false
