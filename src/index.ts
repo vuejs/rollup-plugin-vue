@@ -21,7 +21,7 @@ import {
 import MagicString from 'magic-string'
 import { Plugin } from 'rollup'
 import * as path from 'path'
-import { parse, SFCDescriptor, SFCBlock } from '@vue/component-compiler-utils'
+import { parse, SFCDescriptor, SFCBlock, SFCCustomBlock } from '@vue/component-compiler-utils'
 import debug from 'debug'
 import {
   VueTemplateCompiler,
@@ -390,7 +390,7 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
                 ret.transformers = {}
               }
               // setup transform for custom block
-              ret.transformers[block] = (block, index): CustomBlockTransformerResult => {
+              ret.transformers[block] = (block: SFCCustomBlock, index: number): CustomBlockTransformerResult => {
                 dT(`custom block transformer: block=${JSON.stringify(block)}, index=${index}`)
                 const code = `
                 export * from '${createVuePartRequest(
