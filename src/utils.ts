@@ -1,4 +1,8 @@
-import { SFCDescriptor, SFCBlock, SFCCustomBlock } from '@vue/component-compiler-utils'
+import {
+  SFCDescriptor,
+  SFCBlock,
+  SFCCustomBlock
+} from '@vue/component-compiler-utils'
 import { createFilter } from 'rollup-pluginutils'
 import * as queryString from 'querystring'
 import * as path from 'path'
@@ -56,14 +60,21 @@ export function isVuePartRequest(id: string): boolean {
   return getVueMetaFromQuery(id) !== null
 }
 
-export function createVuePartRequest(filename: string, lang: string | undefined, type: string, index?: number): string {
+export function createVuePartRequest(
+  filename: string,
+  lang: string | undefined,
+  type: string,
+  index?: number
+): string {
   lang = DEFAULT_LANGS[type] || lang
 
   const match = GET_QUERY.exec(filename)
 
   const query = match ? queryString.parse(match[2]) : {}
 
-  query[PARAM_NAME] = [type, index, lang].filter(it => it !== undefined).join('.')
+  query[PARAM_NAME] = [type, index, lang]
+    .filter(it => it !== undefined)
+    .join('.')
 
   return `${path.basename(filename)}?${queryString.stringify(query)}`
 }
@@ -73,7 +84,7 @@ export const DEFAULT_LANGS: Record<string, string> = {
   style: 'css',
   script: 'js',
   docs: 'md',
-  i18n: 'json',
+  i18n: 'json'
 }
 
 export function parseVuePartRequest(id: string): VuePartRequest | undefined {
@@ -86,7 +97,7 @@ export function parseVuePartRequest(id: string): VuePartRequest | undefined {
 
   return {
     filename,
-    meta: params,
+    meta: params
   }
 }
 
@@ -101,7 +112,12 @@ export function resolveVuePart(
   const blocks = descriptor[meta.type]
   const block = Array.isArray(blocks) ? blocks[meta.index as number] : blocks
 
-  if (!block) throw Error(`Requested (type=${meta.type} & index=${meta.index}) block not found in ${filename}`)
+  if (!block)
+    throw Error(
+      `Requested (type=${meta.type} & index=${
+        meta.index
+      }) block not found in ${filename}`
+    )
 
   return block
 }
