@@ -4,7 +4,8 @@ import {
   parseVuePartRequest,
   resolveVuePart,
   isVuePartRequest,
-  transformRequireToImport
+  transformRequireToImport,
+  DEFAULT_LANGS
 } from './utils'
 import {
   createDefaultCompiler,
@@ -183,9 +184,13 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
   if (!opts.styleInjectorShadow)
     opts.styleInjectorShadow = '~' + require.resolve('../runtime/shadow')
 
-  createVuePartRequest.defaultLang = {
-    ...createVuePartRequest.defaultLang,
+  const defaultLang: Record<string, string> = {
+    ...DEFAULT_LANGS,
     ...opts.defaultLang
+  }
+
+  if (opts.defaultLang && typeof opts.defaultLang.styles === 'string') {
+    defaultLang.style = opts.defaultLang.styles
   }
 
   const shouldExtractCss = opts.css === false
@@ -269,10 +274,10 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
 
     resolveId(id, importer) {
       const request = id
-      
-      if (!importer) return 
+
+      if (!importer) return
       if (!isVuePartRequest(id)) return
-      
+
       id = path.resolve(path.dirname(importer), id)
       const ref = parseVuePartRequest(id)
 
@@ -307,7 +312,12 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
       let map = element.map as any
 
       if (request.meta.type === 'styles') {
-        code = prependStyle(id, request.meta.lang, code, map).code
+        code = prependStyle(
+          id,
+          request.meta.lang || defaultLang.style,
+          code,
+          map
+        ).code
       }
 
       dL(`id: ${id}\ncode: \n${code}\nmap: ${JSON.stringify(map, null, 2)}\n\n`)
@@ -344,7 +354,7 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
             if (style.content) {
               style.content = prependStyle(
                 filename,
-                style.lang || 'css',
+                style.lang || defaultLang.style,
                 style.content,
                 style.map
               ).code
@@ -388,12 +398,12 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
               code: `
             export * from '${createVuePartRequest(
               filename,
-              descriptor.script.lang || 'js',
+              descriptor.script.lang || defaultLang.script,
               'script'
             )}'
             import script from '${createVuePartRequest(
               filename,
-              descriptor.script.lang || 'js',
+              descriptor.script.lang || defaultLang.script,
               'script'
             )}'
             export default script
@@ -433,22 +443,23 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
             .filter(Boolean)
         }
 
+        // Why?
         input.script.code = input.script.code.replace(/^\s+/gm, '')
 
         const result = assemble(compiler, filename, beforeAssemble(input), opts)
 
         descriptor.customBlocks.forEach((block, index) => {
           if (!isAllowed(block.type)) return
+          const lang =
+            typeof block.attrs.lang === 'string'
+              ? block.attrs.lang
+              : defaultLang[block.type] || block.type
+          const id = createVuePartRequest(filename, lang, block.type, index)
           result.code +=
             '\n' +
-            `export * from '${createVuePartRequest(
-              filename,
-              (typeof block.attrs.lang === 'string' && block.attrs.lang) ||
-                createVuePartRequest.defaultLang[block.type] ||
-                block.type,
-              'customBlocks',
-              index
-            )}'`
+            `export * from '${id}'\n` +
+            `import __custom_block_${index}__ from '${id}'\n` +
+            `__custom_block_${index}__(__vue_component__)`
         })
 
         dT(
