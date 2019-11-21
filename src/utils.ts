@@ -1,8 +1,4 @@
-import {
-  SFCDescriptor,
-  SFCBlock,
-  SFCCustomBlock
-} from '@vue/component-compiler-utils'
+import { SFCDescriptor, SFCBlock, SFCCustomBlock } from '@vue/component-compiler-utils'
 import { createFilter } from 'rollup-pluginutils'
 import * as queryString from 'querystring'
 import * as path from 'path'
@@ -19,14 +15,6 @@ export interface VuePartRequestMeta {
   type: 'template' | 'script' | 'styles' | 'customBlocks'
   lang: string
   index?: number
-}
-
-export interface VuePartRequestCreator {
-  (filename: string, lang: string, type: string, index?: number): string
-
-  defaultLang: {
-    [key: string]: string
-  }
 }
 
 export function createVueFilter(
@@ -49,7 +37,11 @@ export function getVueMetaFromQuery(id: string): VuePartRequestMeta | null {
         ? (query[PARAM_NAME] as any)[0]
         : query[PARAM_NAME]) as string
 
-      const [type, index, lang] = data.split('.')
+      let [type, index, lang] = data.split('.')
+
+      if (!/^(template|style|script)$/i.test(type)) {
+        type = 'customBlocks'
+      }
 
       return (lang
         ? { type, lang, index: parseInt(index) } // styles.0.css
@@ -64,29 +56,24 @@ export function isVuePartRequest(id: string): boolean {
   return getVueMetaFromQuery(id) !== null
 }
 
-export const createVuePartRequest: VuePartRequestCreator = ((
-  filename: string,
-  lang: string | undefined,
-  type: string,
-  index?: number
-): string => {
-  lang = lang || createVuePartRequest.defaultLang[type]
+export function createVuePartRequest(filename: string, lang: string | undefined, type: string, index?: number): string {
+  lang = DEFAULT_LANGS[type] || lang
 
   const match = GET_QUERY.exec(filename)
 
   const query = match ? queryString.parse(match[2]) : {}
 
-  query[PARAM_NAME] = [type, index, lang]
-    .filter(it => it !== undefined)
-    .join('.')
+  query[PARAM_NAME] = [type, index, lang].filter(it => it !== undefined).join('.')
 
   return `${path.basename(filename)}?${queryString.stringify(query)}`
-}) as VuePartRequestCreator
+}
 
-createVuePartRequest.defaultLang = {
+export const DEFAULT_LANGS: Record<string, string> = {
   template: 'html',
   styles: 'css',
-  script: 'js'
+  script: 'js',
+  docs: 'md',
+  i18n: 'json',
 }
 
 export function parseVuePartRequest(id: string): VuePartRequest | undefined {
@@ -99,7 +86,7 @@ export function parseVuePartRequest(id: string): VuePartRequest | undefined {
 
   return {
     filename,
-    meta: params
+    meta: params,
   }
 }
 
@@ -114,12 +101,7 @@ export function resolveVuePart(
   const blocks = descriptor[meta.type]
   const block = Array.isArray(blocks) ? blocks[meta.index as number] : blocks
 
-  if (!block)
-    throw Error(
-      `Requested (type=${meta.type} & index=${
-        meta.index
-      }) block not found in ${filename}`
-    )
+  if (!block) throw Error(`Requested (type=${meta.type} & index=${meta.index}) block not found in ${filename}`)
 
   return block
 }
