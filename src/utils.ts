@@ -66,7 +66,7 @@ export function createVuePartRequest(
   type: string,
   index?: number
 ): string {
-  lang = DEFAULT_LANGS[type] || lang
+  lang = lang || DEFAULT_LANGS[type]
 
   const match = GET_QUERY.exec(filename)
 
