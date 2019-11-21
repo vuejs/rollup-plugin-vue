@@ -181,6 +181,10 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
     ...opts.defaultLang,
   }
 
+  if (opts.defaultLang && typeof opts.defaultLang.styles === 'string') {
+    defaultLang.style = opts.defaultLang.styles
+  }
+
   const shouldExtractCss = opts.css === false
   const customBlocks: string[] = []
 
@@ -292,7 +296,7 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
       let map = element.map as any
 
       if (request.meta.type === 'styles') {
-        code = prependStyle(id, request.meta.lang, code, map).code
+        code = prependStyle(id, request.meta.lang || defaultLang.style, code, map).code
       }
 
       dL(`id: ${id}\ncode: \n${code}\nmap: ${JSON.stringify(map, null, 2)}\n\n`)

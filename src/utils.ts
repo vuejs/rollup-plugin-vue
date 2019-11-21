@@ -39,7 +39,7 @@ export function getVueMetaFromQuery(id: string): VuePartRequestMeta | null {
 
       let [type, index, lang] = data.split('.')
 
-      if (!/^(template|style|script)$/i.test(type)) {
+      if (!/^(template|styles|script)$/i.test(type)) {
         type = 'customBlocks'
       }
 
@@ -70,7 +70,7 @@ export function createVuePartRequest(filename: string, lang: string | undefined,
 
 export const DEFAULT_LANGS: Record<string, string> = {
   template: 'html',
-  styles: 'css',
+  style: 'css',
   script: 'js',
   docs: 'md',
   i18n: 'json',
