@@ -19,7 +19,7 @@ describe('baseline', () => {
     .filter((filename: string) => filename.endsWith('.vue'))
     .map((filename: string) => filename.replace(/\.vue$/i, ''))
     .forEach(fixture => {
-      test(fixture, () => testRunner(fixture, true))
+      test(fixture, () => testRunner(fixture))
       test(fixture + ' (extract css)', () => testRunner(fixture, false))
     })
 })
@@ -28,7 +28,7 @@ afterAll(async () => browser && (await browser.close()))
 
 async function testRunner(
   fixture: string,
-  extractCss: boolean,
+  extractCss?: boolean,
   moreAssertions?: Function
 ): Promise<void> {
   const filename = path.join(__dirname, 'fixtures', fixture + '.vue')

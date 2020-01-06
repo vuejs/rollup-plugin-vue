@@ -60,6 +60,12 @@ export function isVuePartRequest(id: string): boolean {
   return getVueMetaFromQuery(id) !== null
 }
 
+export function isVueStyleRequest(id: string): boolean {
+  const query = getVueMetaFromQuery(id)
+
+  return query !== null && query.type === 'styles'
+}
+
 export function createVuePartRequest(
   filename: string,
   lang: string | undefined,

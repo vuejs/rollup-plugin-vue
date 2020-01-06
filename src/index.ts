@@ -1,30 +1,11 @@
-import {
-  createVueFilter,
-  createVuePartRequest,
-  parseVuePartRequest,
-  resolveVuePart,
-  isVuePartRequest,
-  transformRequireToImport,
-  DEFAULT_LANGS
-} from './utils'
-import {
-  createDefaultCompiler,
-  assemble,
-  ScriptOptions,
-  StyleOptions,
-  TemplateOptions,
-  StyleCompileResult,
-  DescriptorCompileResult
-} from '@vue/component-compiler'
-import MagicString from 'magic-string'
-import { Plugin } from 'rollup'
-import * as path from 'path'
-import { parse, SFCDescriptor, SFCBlock } from '@vue/component-compiler-utils'
+import { assemble, createDefaultCompiler, DescriptorCompileResult, ScriptOptions, StyleCompileResult, StyleOptions, TemplateOptions } from '@vue/component-compiler'
+import { parse, SFCBlock, SFCDescriptor } from '@vue/component-compiler-utils'
+import { VueTemplateCompiler, VueTemplateCompilerParseOptions } from '@vue/component-compiler-utils/dist/types'
 import debug from 'debug'
-import {
-  VueTemplateCompiler,
-  VueTemplateCompilerParseOptions
-} from '@vue/component-compiler-utils/dist/types'
+import MagicString from 'magic-string'
+import * as path from 'path'
+import { Plugin } from 'rollup'
+import { createVueFilter, createVuePartRequest, DEFAULT_LANGS, isVuePartRequest, isVueStyleRequest, parseVuePartRequest, resolveVuePart, transformRequireToImport } from './utils'
 
 const templateCompiler = require('vue-template-compiler')
 const hash = require('hash-sum')
@@ -117,6 +98,7 @@ export interface VuePluginOptions {
    * ```
    */
   css?: boolean
+  
   /**
    * Expose filename in __file property.
    * @default `false`
@@ -129,6 +111,7 @@ export interface VuePluginOptions {
   compiler?: VueTemplateCompiler
   compilerParseOptions?: VueTemplateCompilerParseOptions
   sourceRoot?: string
+  
   /**
    * @@vue/component-compiler [#](https://github.com/vuejs/vue-component-compiler#api) script processing options.
    */
@@ -168,25 +151,20 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
   const isProduction =
     opts.template && typeof opts.template.isProduction === 'boolean'
       ? opts.template.isProduction
-      : process.env.NODE_ENV === 'production' ||
-        process.env.BUILD === 'production'
+      : process.env.NODE_ENV === 'production' || process.env.BUILD === 'production'
 
   d('Version ' + version)
   d(`Build environment: ${isProduction ? 'production' : 'development'}`)
   d(`Build target: ${process.env.VUE_ENV || 'browser'}`)
 
-  if (!opts.normalizer)
-    opts.normalizer = '~' + require.resolve('../runtime/normalize')
-  if (!opts.styleInjector)
-    opts.styleInjector = '~' + require.resolve('../runtime/browser')
-  if (!opts.styleInjectorSSR)
-    opts.styleInjectorSSR = '~' + require.resolve('../runtime/server')
-  if (!opts.styleInjectorShadow)
-    opts.styleInjectorShadow = '~' + require.resolve('../runtime/shadow')
+  if (!opts.normalizer) opts.normalizer = '~' + require.resolve('../runtime/normalize')
+  if (!opts.styleInjector) opts.styleInjector = '~' + require.resolve('../runtime/browser')
+  if (!opts.styleInjectorSSR) opts.styleInjectorSSR = '~' + require.resolve('../runtime/server')
+  if (!opts.styleInjectorShadow) opts.styleInjectorShadow = '~' + require.resolve('../runtime/shadow')
 
   const defaultLang: Record<string, string> = {
     ...DEFAULT_LANGS,
-    ...opts.defaultLang
+    ...opts.defaultLang,
   }
 
   if (opts.defaultLang && typeof opts.defaultLang.styles === 'string') {
@@ -194,6 +172,9 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
   }
 
   const shouldExtractCss = opts.css === false
+  const shouldProcessCss = opts.css === true
+  const shouldRollupProcessCss = !shouldExtractCss && !shouldProcessCss
+
   const customBlocks: string[] = []
 
   if (opts.blackListCustomBlocks) {
@@ -210,12 +191,9 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
   }
   const isAllowed = createCustomBlockFilter(opts.customBlocks || customBlocks)
 
-  const beforeAssemble =
-    opts.beforeAssemble ||
-    ((d: DescriptorCompileResult): DescriptorCompileResult => d)
+  const beforeAssemble = opts.beforeAssemble || ((d: DescriptorCompileResult): DescriptorCompileResult => d)
 
-  const exposeFilename =
-    typeof opts.exposeFilename === 'boolean' ? opts.exposeFilename : false
+  const exposeFilename = typeof opts.exposeFilename === 'boolean' ? opts.exposeFilename : false
 
   const data: VuePluginOptionsData = (opts.data || {}) as any
 
@@ -235,9 +213,9 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
       video: ['src', 'poster'],
       source: 'src',
       img: 'src',
-      image: 'xlink:href'
+      image: 'xlink:href',
     },
-    ...opts.template
+    ...opts.template,
   } as any
 
   if (opts.template && typeof opts.template.isProduction === 'undefined') {
@@ -249,16 +227,11 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
 
   if (opts.css === false) d('Running in CSS extract mode')
 
-  function prependStyle(
-    id: string,
-    lang: string,
-    code: string,
-    map: any
-  ): { code: string } {
+  function prependStyle(id: string, lang: string, code: string, map: any): { code: string } {
     if (!(lang in data)) return { code }
     const ms = new MagicString(code, {
       filename: id,
-      indentExclusionRanges: []
+      indentExclusionRanges: [],
     })
 
     const value: string | (() => string) = (data as any)[lang]
@@ -269,11 +242,26 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
     return { code: ms.toString() }
   }
 
+  let areRuntimeHelpersExternalized = false
+
   return {
     name: 'VuePlugin',
 
+    options(options) {
+      if (Array.isArray(options.external))
+        areRuntimeHelpersExternalized = options.external.includes('vue-runtime-helpers')
+      else if (typeof options.external === 'function') {
+        if (options.external('vue-runtime-helpers', require.resolve('../runtime/normalize.js'), true))
+          areRuntimeHelpersExternalized = true
+      }
+    },
+
     resolveId(id, importer) {
       const request = id
+
+      if (id === 'vue-runtime-helpers' && !areRuntimeHelpersExternalized) {
+        return require.resolve('vue-runtime-helpers/dist/index.mjs')
+      }
 
       if (!importer) return
       if (!isVuePartRequest(id)) return
@@ -289,7 +277,7 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
             return path.resolve(path.dirname(ref.filename), src as string)
           } else {
             return require.resolve(src, {
-              paths: [path.dirname(ref.filename)]
+              paths: [path.dirname(ref.filename)],
             })
           }
         }
@@ -312,12 +300,7 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
       let map = element.map as any
 
       if (request.meta.type === 'styles') {
-        code = prependStyle(
-          id,
-          request.meta.lang || defaultLang.style,
-          code,
-          map
-        ).code
+        code = prependStyle(id, request.meta.lang || defaultLang.style, code, map).code
       }
 
       dL(`id: ${id}\ncode: \n${code}\nmap: ${JSON.stringify(map, null, 2)}\n\n`)
@@ -336,51 +319,59 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
               compiler: opts.compiler || templateCompiler,
               compilerParseOptions: opts.compilerParseOptions,
               sourceRoot: opts.sourceRoot,
-              needMap: 'needMap' in opts ? (opts as any).needMap : true
+              needMap: 'needMap' in opts ? (opts as any).needMap : true,
             })
           )
         )
 
         descriptors.set(filename, descriptor)
 
-        const scopeId =
-          'data-v-' +
-          (isProduction
-            ? hash(path.basename(filename) + source)
-            : hash(filename + source))
+        const scopeId = 'data-v-' + (isProduction ? hash(path.basename(filename) + source) : hash(filename + source))
 
-        const styles = await Promise.all(
-          descriptor.styles.map(async style => {
-            if (style.content) {
-              style.content = prependStyle(
-                filename,
-                style.lang || defaultLang.style,
-                style.content,
-                style.map
-              ).code
-            }
+        const prefixImports: string[] = []
+        const styles = shouldRollupProcessCss
+          ? descriptor.styles
+              .map((style: SFCBlock, index: number) => {
+                const content = `rollup0plugin0vue0css0import${index}`
+                const identifiers = style.module ? `rollup0plugin0vue0identifiers0import${index}` : undefined
+                const imports = `css as ${content}` + (style.module ? `, identifiers as ${identifiers}` : '')
 
-            const compiled = await compiler.compileStyleAsync(
-              filename,
-              scopeId,
-              style
+                prefixImports.push(`import { ${imports} } '${createVuePartRequest(filename, 'css', 'styles', index)}'`)
+
+                const result: StyleCompileResult = {
+                  code: content,
+                  module: identifiers,
+                  map: undefined,
+                  errors: [],
+                  moduleName: identifiers ? (typeof style.module === 'string' ? style.module : '$style') : undefined,
+                  media: typeof style.attrs.media === 'string' ? style.attrs.media : undefined,
+                  scoped: 'scoped' in style.attrs,
+                  rawResult: null as any,
+                }
+
+                return result
+              })
+              .filter(Boolean)
+          : await Promise.all(
+              descriptor.styles.map(async style => {
+                if (style.content) {
+                  style.content = prependStyle(filename, style.lang || defaultLang.style, style.content, style.map).code
+                }
+
+                const compiled = await compiler.compileStyleAsync(filename, scopeId, style)
+                if (compiled.errors.length > 0) throw Error(compiled.errors[0])
+                return compiled
+              })
             )
-            if (compiled.errors.length > 0) throw Error(compiled.errors[0])
-            return compiled
-          })
-        )
 
-        const input: any = {
+        let input: any = {
           scopeId,
           styles,
-          customBlocks: []
+          customBlocks: [],
         }
 
         if (descriptor.template) {
-          input.template = compiler.compileTemplate(
-            filename,
-            descriptor.template
-          )
+          input.template = compiler.compileTemplate(filename, descriptor.template)
 
           input.template.code = transformRequireToImport(input.template.code)
 
@@ -396,11 +387,8 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
         input.script = descriptor.script
           ? {
               code: `
-            export * from '${createVuePartRequest(
-              filename,
-              descriptor.script.lang || defaultLang.script,
-              'script'
-            )}'
+            ${prefixImports.join('\n')}
+            export * from '${createVuePartRequest(filename, descriptor.script.lang || defaultLang.script, 'script')}'
             import script from '${createVuePartRequest(
               filename,
               descriptor.script.lang || defaultLang.script,
@@ -411,30 +399,21 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
               exposeFilename
                 ? `
             // For security concerns, we use only base name in production mode. See https://github.com/vuejs/rollup-plugin-vue/issues/258
-            script.__file = ${
-              isProduction
-                ? JSON.stringify(path.basename(filename))
-                : JSON.stringify(filename)
-            }`
+            script.__file = ${isProduction ? JSON.stringify(path.basename(filename)) : JSON.stringify(filename)}`
                 : ''
             }
-            `
+            `,
             }
-          : { code: '' }
+          : { code: `${prefixImports.join('\n')}` }
+
+        input = beforeAssemble(input)
 
         if (shouldExtractCss) {
           input.styles = input.styles
             .map((style: StyleCompileResult, index: number) => {
               ;(descriptor.styles[index] as any).code = style.code
 
-              input.script.code +=
-                '\n' +
-                `import '${createVuePartRequest(
-                  filename,
-                  'css',
-                  'styles',
-                  index
-                )}'`
+              prefixImports.push(`import '${createVuePartRequest(filename, 'css', 'styles', index)}'`)
 
               if (style.module || descriptor.styles[index].scoped) {
                 return { ...style, code: '', map: undefined }
@@ -443,17 +422,11 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
             .filter(Boolean)
         }
 
-        // Why?
-        input.script.code = input.script.code.replace(/^\s+/gm, '')
-
-        const result = assemble(compiler, filename, beforeAssemble(input), opts)
+        const result = assemble(compiler, filename, input, opts)
 
         descriptor.customBlocks.forEach((block, index) => {
           if (!isAllowed(block.type)) return
-          const lang =
-            typeof block.attrs.lang === 'string'
-              ? block.attrs.lang
-              : defaultLang[block.type] || block.type
+          const lang = typeof block.attrs.lang === 'string' ? block.attrs.lang : defaultLang[block.type] || block.type
           const id = createVuePartRequest(filename, lang, block.type, index)
           result.code +=
             '\n' +
@@ -462,32 +435,55 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
             `__custom_block_${index}__(__vue_component__)`
         })
 
-        dT(
-          `id: ${filename}\ncode:\n${result.code}\n\nmap:\n${JSON.stringify(
-            result.map,
-            null,
-            2
-          )}\n`
-        )
+        dT(`id: ${filename}\ncode:\n${result.code}\n\nmap:\n${JSON.stringify(result.map, null, 2)}\n`)
 
         result.map = result.map || { mappings: '' }
 
         return result
       }
-    }
+
+      if (shouldRollupProcessCss && isVueStyleRequest(filename)) {
+        const request = parseVuePartRequest(filename)!
+        const descriptor = descriptors.get(request.filename)!
+
+        const scopeId =
+          'data-v-' + (isProduction ? hash(path.basename(request.filename) + source) : hash(request.filename + source))
+        const block = descriptor.styles[request.meta.index!]
+
+        if (!block) return
+        const compiled = await compiler.compileStyleAsync(filename, scopeId, {
+          ...block,
+          lang: 'css',
+          attrs: {
+            ...block.attrs,
+            lang: 'css',
+          },
+          content: source,
+          map: undefined,
+        })
+        if (compiled.errors.length > 0) throw Error(compiled.errors[0])
+
+        let code = `export const css = ${JSON.stringify(compiled.code)}\n`
+
+        if (block.module) {
+          code += `export const identifiers = ${JSON.stringify(compiled.module)}\n`
+        }
+
+        return {
+          code,
+          map: { mappings: '' },
+        }
+      }
+    },
   }
 }
 
-function createCustomBlockFilter(
-  customBlocks?: string[] | ((tag: string) => boolean)
-): (tag: string) => boolean {
+function createCustomBlockFilter(customBlocks?: string[] | ((tag: string) => boolean)): (tag: string) => boolean {
   if (typeof customBlocks === 'function') return customBlocks
   if (!Array.isArray(customBlocks)) return () => false
 
   const allowed = new Set(customBlocks.filter(tag => !tag.startsWith('!')))
-  const notAllowed = new Set(
-    customBlocks.filter(tag => tag.startsWith('!')).map(tag => tag.substr(1))
-  )
+  const notAllowed = new Set(customBlocks.filter(tag => tag.startsWith('!')).map(tag => tag.substr(1)))
 
   return tag => {
     if (allowed.has(tag)) return true
