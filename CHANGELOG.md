@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="5.1.4"></a>
+## [5.1.4](https://github.com/vuejs/rollup-plugin-vue/compare/v5.1.3...v5.1.4) (2019-11-21)
+
+
+### Bug Fixes
+
+* use inline block language in part request ([7434ea2](https://github.com/vuejs/rollup-plugin-vue/commit/7434ea2))
+
+
+
+<a name="5.1.3"></a>
+## [5.1.3](https://github.com/vuejs/rollup-plugin-vue/compare/v5.1.2...v5.1.3) (2019-11-21)
+
+
+### Bug Fixes
+
+* call transformer from whitelisted custom blocks ([#310](https://github.com/vuejs/rollup-plugin-vue/issues/310)) ([ab13f3b](https://github.com/vuejs/rollup-plugin-vue/commit/ab13f3b))
+
+
+
+<a name="5.1.2"></a>
+## [5.1.2](https://github.com/vuejs/rollup-plugin-vue/compare/v5.1.1...v5.1.2) (2019-10-27)
+
+
+### Bug Fixes
+
+* use local runtime helpers for externalising vue-runtime-helpers ([3b0b4de](https://github.com/vuejs/rollup-plugin-vue/commit/3b0b4de))
+
+
+
 <a name="5.1.1"></a>
 ## [5.1.1](https://github.com/vuejs/rollup-plugin-vue/compare/v5.1.0...v5.1.1) (2019-10-26)
 
