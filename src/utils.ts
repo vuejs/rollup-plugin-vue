@@ -21,6 +21,14 @@ export interface VuePartRequestMeta {
   index?: number
 }
 
+export interface VuePartRequestCreator {
+  (filename: string, lang: string, type: string, index?: number): string
+
+  defaultLang: {
+    [key: string]: string
+  }
+}
+
 export function createVueFilter(
   include: Array<string | RegExp> | string | RegExp = [/\.vue$/i],
   exclude: Array<string | RegExp> | string | RegExp = []
@@ -41,11 +49,7 @@ export function getVueMetaFromQuery(id: string): VuePartRequestMeta | null {
         ? (query[PARAM_NAME] as any)[0]
         : query[PARAM_NAME]) as string
 
-      let [type, index, lang] = data.split('.')
-
-      if (!/^(template|styles|script)$/i.test(type)) {
-        type = 'customBlocks'
-      }
+      const [type, index, lang] = data.split('.')
 
       return (lang
         ? { type, lang, index: parseInt(index) } // styles.0.css
@@ -60,13 +64,13 @@ export function isVuePartRequest(id: string): boolean {
   return getVueMetaFromQuery(id) !== null
 }
 
-export function createVuePartRequest(
+export const createVuePartRequest: VuePartRequestCreator = ((
   filename: string,
   lang: string | undefined,
   type: string,
   index?: number
-): string {
-  lang = DEFAULT_LANGS[type] || lang
+): string => {
+  lang = lang || createVuePartRequest.defaultLang[type]
 
   const match = GET_QUERY.exec(filename)
 
@@ -77,14 +81,12 @@ export function createVuePartRequest(
     .join('.')
 
   return `${path.basename(filename)}?${queryString.stringify(query)}`
-}
+}) as VuePartRequestCreator
 
-export const DEFAULT_LANGS: Record<string, string> = {
+createVuePartRequest.defaultLang = {
   template: 'html',
-  style: 'css',
-  script: 'js',
-  docs: 'md',
-  i18n: 'json'
+  styles: 'css',
+  script: 'js'
 }
 
 export function parseVuePartRequest(id: string): VuePartRequest | undefined {
