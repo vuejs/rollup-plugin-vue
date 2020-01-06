@@ -16,7 +16,7 @@ import {
   DescriptorCompileResult
 } from '@vue/component-compiler'
 import MagicString from 'magic-string'
-import { Plugin } from 'rollup'
+import { Plugin, RawSourceMap } from 'rollup'
 import * as path from 'path'
 import { parse, SFCDescriptor, SFCBlock } from '@vue/component-compiler-utils'
 import debug from 'debug'
@@ -175,13 +175,16 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
   d(`Build target: ${process.env.VUE_ENV || 'browser'}`)
 
   if (!opts.normalizer)
-    opts.normalizer = '~' + require.resolve('../runtime/normalize')
+    opts.normalizer = '~' + 'vue-runtime-helpers/dist/normalize-component.mjs'
   if (!opts.styleInjector)
-    opts.styleInjector = '~' + require.resolve('../runtime/browser')
+    opts.styleInjector =
+      '~' + 'vue-runtime-helpers/dist/inject-style/browser.mjs'
   if (!opts.styleInjectorSSR)
-    opts.styleInjectorSSR = '~' + require.resolve('../runtime/server')
+    opts.styleInjectorSSR =
+      '~' + 'vue-runtime-helpers/dist/inject-style/server.mjs'
   if (!opts.styleInjectorShadow)
-    opts.styleInjectorShadow = '~' + require.resolve('../runtime/shadow')
+    opts.styleInjectorShadow =
+      '~' + 'vue-runtime-helpers/dist/inject-style/shadow.mjs'
 
   createVuePartRequest.defaultLang = {
     ...createVuePartRequest.defaultLang,
@@ -269,10 +272,12 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
 
     resolveId(id, importer) {
       const request = id
-      
-      if (!importer) return 
+      if (id.startsWith('vue-runtime-helpers/')) {
+        id = require.resolve(id)
+        dR(`form: ${request} \nto: ${id}\n`)
+        return id
+      }
       if (!isVuePartRequest(id)) return
-      
       id = path.resolve(path.dirname(importer), id)
       const ref = parseVuePartRequest(id)
 
@@ -304,7 +309,7 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
         'code' in element
           ? ((element as any).code as string) // .code is set when extract styles is used. { css: false }
           : element.content
-      let map = element.map as any
+      let map = element.map as RawSourceMap
 
       if (request.meta.type === 'styles') {
         code = prependStyle(id, request.meta.lang, code, map).code
