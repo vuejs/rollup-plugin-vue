@@ -2,16 +2,6 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-<a name="5.1.3"></a>
-## [5.1.3](https://github.com/vuejs/rollup-plugin-vue/compare/v5.1.2...v5.1.3) (2019-11-21)
-
-
-### Bug Fixes
-
-* call transformer from whitelisted custom blocks ([#310](https://github.com/vuejs/rollup-plugin-vue/issues/310)) ([ab13f3b](https://github.com/vuejs/rollup-plugin-vue/commit/ab13f3b))
-
-
-
 <a name="5.1.2"></a>
 ## [5.1.2](https://github.com/vuejs/rollup-plugin-vue/compare/v5.1.1...v5.1.2) (2019-10-27)
 
