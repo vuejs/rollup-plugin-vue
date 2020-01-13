@@ -36,7 +36,7 @@ This plugin also enables:
 - custom blocks
 - static assets references within `<style>` and `<template>`
 
-And many other other features, maintaining parity with [Vue Loader](https://vue-loader.vuejs.org).
+And many other features, maintaining parity with [Vue Loader](https://vue-loader.vuejs.org).
 
 ## Why should I use Rollup over Webpack?
 
