@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="5.1.6"></a>
+## [5.1.6](https://github.com/vuejs/rollup-plugin-vue/compare/v5.1.5...v5.1.6) (2020-01-22)
+
+
+### Bug Fixes
+
+* **tsconfig.json:** transpile async await in order to be compatible to rollup-plugin-typescript2 ([#324](https://github.com/vuejs/rollup-plugin-vue/issues/324)) ([deb4a1b](https://github.com/vuejs/rollup-plugin-vue/commit/deb4a1b))
+
+
+
 <a name="5.1.5"></a>
 ## [5.1.5](https://github.com/vuejs/rollup-plugin-vue/compare/v5.1.4...v5.1.5) (2020-01-06)
 
