@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "dependencies": {
+    "rollup-plugin-postcss": "^2.0.4"
+  },
+  "scripts": {
+    "build": "rollup -c"
+  }
+}

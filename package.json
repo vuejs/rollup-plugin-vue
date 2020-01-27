@@ -1,0 +1,45 @@
+{
+  "name": "rollup-plugin-vue",
+  "version": "6.0.0",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/rollup-plugin-vue.esm.js",
+  "typings": "dist/index.d.ts",
+  "author": "Rahul Kadyan <hi@znck.me> (https://znck.me)",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@vue/compiler-sfc": "^3.0.0-alpha.3",
+    "debug": "^4.1.1",
+    "hash-sum": "^2.0.0",
+    "rollup-pluginutils": "^2.8.2"
+  },
+  "peerDependencies": {},
+  "devDependencies": {
+    "@types/jest": "^24.9.0",
+    "husky": "^4.2.0",
+    "rollup": "^1.29.1",
+    "tsdx": "^0.12.3",
+    "tslib": "^1.10.0",
+    "typescript": "^3.7.5"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "tsdx lint"
+    }
+  },
+  "prettier": {
+    "printWidth": 80,
+    "trailingComma": "es5",
+    "semi": false,
+    "singleQuote": true
+  },
+  "scripts": {
+    "build": "tsdx build",
+    "lint": "tsdx lint",
+    "prepare": "tsdx build",
+    "start": "tsdx watch",
+    "test": "tsdx test"
+  }
+}
