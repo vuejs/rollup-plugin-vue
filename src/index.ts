@@ -23,7 +23,6 @@ import { basename, relative } from 'path'
 import qs from 'querystring'
 import { Plugin, RollupError } from 'rollup'
 import { createFilter } from 'rollup-pluginutils'
-import { genCSSModulesCode } from './cssModules'
 import { encode } from 'sourcemap-codec'
 
 const debug = createDebugger('rollup-plugin-vue')
@@ -459,4 +458,21 @@ function normalizeSourceMap(map: SFCTemplateCompileResults['map']): any {
     sourcesContent: map.sourcesContent,
     mappings: typeof map.mappings === 'string' ? map.mappings : '',
   }
+}
+
+function genCSSModulesCode(
+  // @ts-ignore
+  id: string,
+  index: number,
+  request: string,
+  moduleName: string | boolean
+): string {
+  const styleVar = `style${index}`
+  let code = `\nimport ${styleVar} from ${request}`
+
+  // inject variable
+  const name = typeof moduleName === 'string' ? moduleName : '$style'
+  code += `\ncssModules["${name}"] = ${styleVar}`
+
+  return code
 }

@@ -3,7 +3,6 @@
   "version": "6.0.0-alpha.0",
   "license": "MIT",
   "main": "dist/index.js",
-  "module": "dist/rollup-plugin-vue.esm.js",
   "typings": "dist/index.d.ts",
   "author": "Rahul Kadyan <hi@znck.me> (https://znck.me)",
   "files": [
@@ -12,6 +11,7 @@
   "dependencies": {
     "debug": "^4.1.1",
     "hash-sum": "^2.0.0",
+    "lint-staged": "^10.1.1",
     "rollup-pluginutils": "^2.8.2",
     "sourcemap-codec": "^1.4.8"
   },
@@ -19,9 +19,10 @@
     "@vue/compiler-sfc": "*"
   },
   "devDependencies": {
-    "@vue/compiler-sfc": "^3.0.0-alpha.10",
+    "@rollup/plugin-typescript": "^4.0.0",
     "@types/debug": "^4.1.5",
     "@types/jest": "^24.9.0",
+    "@vue/compiler-sfc": "^3.0.0-alpha.10",
     "husky": "^4.2.0",
     "rollup": "^1.29.1",
     "tsdx": "^0.12.3",
@@ -29,7 +30,14 @@
     "typescript": "^3.7.5"
   },
   "husky": {
-    "hooks": {}
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,js,json}": [
+      "prettier --write"
+    ]
   },
   "prettier": {
     "printWidth": 80,
@@ -38,10 +46,10 @@
     "singleQuote": true
   },
   "scripts": {
-    "build": "tsdx build",
-    "lint": "tsdx lint",
-    "prepare": "tsdx build",
-    "start": "tsdx watch",
+    "build": "rollup -c",
+    "lint": "tsdx lint src",
+    "prepublishOnly": "npm run build",
+    "start": "tsdx watch --target node",
     "test": "tsdx test"
   }
 }
