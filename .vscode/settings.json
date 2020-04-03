@@ -1,0 +1,5 @@
+{
+  "markdownlint.config": {
+    "no-trailing-punctuation": false
+  }
+}

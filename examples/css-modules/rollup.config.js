@@ -1,13 +1,14 @@
 import vue from '../../dist/rollup-plugin-vue.esm'
 import postcss from 'rollup-plugin-postcss'
 
-export default [
+/** @type {import('rollup').RollupOptions[]} */
+const config = [
   {
     input: 'src/App.vue',
     output: {
       file: 'dist/app.js',
       format: 'esm',
-      sourcemap: true,
+      sourcemap: 'inline',
     },
     plugins: [
       vue(),
@@ -19,6 +20,10 @@ export default [
       }),
       postcss({ include: /(?<!&module=.*)\.css$/ }),
     ],
-    external: ['vue'],
+    external(id) {
+      return /(^vue$|style-inject)/.test(id)
+    },
   },
 ]
+
+export default config

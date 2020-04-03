@@ -5,7 +5,7 @@ export default [{
   output: {
     file: 'dist/app.js',
     format: 'esm',
-    sourcemap: true
+    sourcemap: 'inline',
   },
   plugins: [vue()],
   external: ['vue']

@@ -17,7 +17,6 @@ import {
   SFCTemplateCompileOptions,
   SFCTemplateCompileResults,
 } from '@vue/compiler-sfc'
-// @ts-ignore
 import createDebugger from 'debug'
 import hash from 'hash-sum'
 import { basename, relative } from 'path'
@@ -25,6 +24,7 @@ import qs from 'querystring'
 import { Plugin, RollupError } from 'rollup'
 import { createFilter } from 'rollup-pluginutils'
 import { genCSSModulesCode } from './cssModules'
+import { encode } from 'sourcemap-codec'
 
 const debug = createDebugger('rollup-plugin-vue')
 
@@ -73,7 +73,6 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
       return undefined
     },
     load(id) {
-      debug(`load(${id})`)
       const query = parseVuePartRequest(id)
 
       if (query.vue) {
@@ -91,27 +90,52 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             : null
 
         if (block) {
-          return {
+          const result = {
             code: block.content,
-            map: normalizeSourceMap(block.map, 'load:' + id)
+            map: normalizeSourceMap(block.map),
           }
+
+          if (query.type === 'template') {
+            // generate source mapping for each character.
+            result.map.mappings = encode(
+              result.code.split(/\r?\n/).map((line, index) => {
+                const segments: [number, number, number, number][] = []
+                for (let i = 0; i < line.length; ++i) {
+                  segments.push([i, 0, block.loc.start.line + index - 1, i])
+                }
+
+                return segments
+              })
+            )
+          }
+
+          debug(
+            `load(${id})`,
+            '\n' +
+              result.code +
+              '\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,' +
+              Buffer.from(JSON.stringify(result.map), 'utf-8').toString(
+                'base64'
+              )
+          )
+
+          return result
         }
       }
 
       return undefined
     },
     async transform(code, id) {
-      debug(`transform(${id})`)
       const query = parseVuePartRequest(id)
       if (query.vue) {
         const descriptor = getDescriptor(query.filename)
         if (query.type === 'template') {
+          debug(`transform(${id})`)
           const block = descriptor.template!
           const result = compileTemplate({
             filename: query.filename,
-            source: block.content,
+            source: code,
             preprocessLang: block.lang,
-            inMap: normalizeSourceMap(block.map!, 'transform:' + id),
             compiler: options.compiler,
             compilerOptions: options.compilerOptions,
             transformAssetUrls: options.transformAssetUrls,
@@ -139,9 +163,10 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
 
           return {
             code: result.code,
-            map: normalizeSourceMap(result.map!, id),
+            map: normalizeSourceMap(result.map!),
           }
         } else if (query.type === 'style' && query.scoped) {
+          debug(`transform(${id})`)
           const block = descriptor.styles[query.index]!
           const result = await compileStyleAsync({
             filename: query.filename,
@@ -163,11 +188,12 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
 
           return {
             code: result.code,
-            map: normalizeSourceMap(result.map!, id),
+            map: normalizeSourceMap(result.map!),
           }
         }
         return null
       } else if (filter(id)) {
+        debug(`transform(${id})`)
         const { descriptor, errors } = parseSFC(code, id, rootContext)
 
         if (errors.length) {
@@ -184,9 +210,13 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           options
         )
 
+        debug('transient .vue file:', '\n' + output + '\n')
+
         return {
           code: output,
-          map: null,
+          map: {
+            mappings: '',
+          },
         }
       } else {
         return null
@@ -262,6 +292,7 @@ function parseSFC(
     sourceMap: true,
     filename: id,
     sourceRoot: sourceRoot,
+    pad: 'line',
   })
 
   cache.set(id, descriptor)
@@ -294,8 +325,8 @@ function transformVueSFC(
   const scriptImport = getScriptCode(descriptor, resourcePath)
   const stylesCode = getStyleCode(descriptor, resourcePath, id)
   const output = [
-    templateImport,
     scriptImport,
+    templateImport,
     stylesCode,
     `script.render = render`,
   ]
@@ -416,12 +447,8 @@ function _(any: any) {
   return JSON.stringify(any)
 }
 
-function normalizeSourceMap(map: SFCTemplateCompileResults['map'], extra?: any): any {
+function normalizeSourceMap(map: SFCTemplateCompileResults['map']): any {
   if (!map) return null as any
-
-  if (typeof map.mappings !== 'string') {
-    console.log(extra, map)
-  }
 
   return {
     version: Number(map.version),
