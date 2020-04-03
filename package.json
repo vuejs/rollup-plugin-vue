@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-vue",
-  "version": "6.0.0",
+  "version": "6.0.0-alpha.0",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/rollup-plugin-vue.esm.js",
@@ -10,14 +10,16 @@
     "dist"
   ],
   "dependencies": {
-    "@vue/compiler-sfc": "^3.0.0-alpha.3",
     "debug": "^4.1.1",
     "hash-sum": "^2.0.0",
     "rollup-pluginutils": "^2.8.2",
     "sourcemap-codec": "^1.4.8"
   },
-  "peerDependencies": {},
+  "peerDependencies": {
+    "@vue/compiler-sfc": "*"
+  },
   "devDependencies": {
+    "@vue/compiler-sfc": "^3.0.0-alpha.10",
     "@types/debug": "^4.1.5",
     "@types/jest": "^24.9.0",
     "husky": "^4.2.0",
@@ -27,8 +29,7 @@
     "typescript": "^3.7.5"
   },
   "husky": {
-    "hooks": {
-    }
+    "hooks": {}
   },
   "prettier": {
     "printWidth": 80,
