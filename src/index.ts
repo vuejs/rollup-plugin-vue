@@ -85,6 +85,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
 
       return undefined
     },
+
     load(id) {
       const query = parseVuePartRequest(id)
 
@@ -192,6 +193,9 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             source: block.content,
             scoped: block.scoped,
             modules: !!block.module,
+            modulesOptions: options.cssModulesOptions,
+            preprocessLang: block.lang as any,
+            preprocessCustomRequire: options.preprocessCustomRequire,
           })
 
           if (result.errors.length) {
@@ -477,8 +481,8 @@ function attrsToQuery(attrs: SFCBlock['attrs'], langFallback?: string): string {
       }`
     }
   }
-  if (langFallback && !(`lang` in attrs)) {
-    query += `&lang.${langFallback}`
+  if (langFallback) {
+    query += `lang` in attrs ? `.${langFallback}` : `&lang.${langFallback}`
   }
   return query
 }
@@ -522,6 +526,5 @@ function genCSSModulesCode(
   return code
 }
 
-// overwrite TS generated exports for commonjs usage
-// but preserves typing
+// overwrite for cjs require('rollup-plugin-vue')() usage
 module.exports = PluginVue
