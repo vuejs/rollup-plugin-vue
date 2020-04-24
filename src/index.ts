@@ -521,3 +521,7 @@ function genCSSModulesCode(
   code += `\ncssModules["${name}"] = ${styleVar}`
   return code
 }
+
+// overwrite TS generated exports for commonjs usage
+// but preserves typing
+module.exports = PluginVue
