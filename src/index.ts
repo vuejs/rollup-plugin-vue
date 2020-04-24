@@ -16,6 +16,7 @@ import {
   SFCDescriptor,
   SFCTemplateCompileOptions,
   SFCTemplateCompileResults,
+  SFCStyleCompileOptions,
 } from '@vue/compiler-sfc'
 import createDebugger from 'debug'
 import hash from 'hash-sum'
@@ -29,13 +30,26 @@ const debug = createDebugger('rollup-plugin-vue')
 
 export interface Options
   extends Pick<
-    SFCTemplateCompileOptions,
-    'compiler' | 'compilerOptions' | 'transformAssetUrls'
-  > {
+      SFCTemplateCompileOptions,
+      'compiler' | 'compilerOptions' | 'transformAssetUrls'
+    >,
+    Pick<SFCStyleCompileOptions, 'preprocessCustomRequire'> {
   include: string | RegExp | (string | RegExp)[]
   exclude: string | RegExp | (string | RegExp)[]
   target: 'node' | 'browser'
   exposeFilename: boolean
+
+  // TODO this will be exposed via SFCAsyncStyleCompileOptions which we forgot
+  // to export in @vue/compiler-sfc
+  cssModulesOptions?: {
+    scopeBehaviour?: 'global' | 'local'
+    globalModulePaths?: string[]
+    generateScopedName?:
+      | string
+      | ((name: string, filename: string, css: string) => string)
+    hashPrefix?: string
+    localsConvention?: 'camelCase' | 'camelCaseOnly' | 'dashes' | 'dashesOnly'
+  }
 }
 
 const defaultOptions: Options = {
@@ -124,10 +138,12 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
 
       return undefined
     },
+
     async transform(code, id) {
       const query = parseVuePartRequest(id)
       if (query.vue) {
         const descriptor = getDescriptor(query.filename)
+        const hasScoped = descriptor.styles.some((s) => s.scoped)
         if (query.type === 'template') {
           debug(`transform(${id})`)
           const block = descriptor.template!
@@ -138,13 +154,13 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             compiler: options.compiler,
             compilerOptions: {
               ...options.compilerOptions,
-              scopeId: `data-v-${query.id}`,
+              scopeId: hasScoped ? `data-v-${query.id}` : undefined,
             },
             transformAssetUrls: options.transformAssetUrls,
           })
 
           if (result.errors.length) {
-            result.errors.forEach(error =>
+            result.errors.forEach((error) =>
               this.error(
                 typeof error === 'string'
                   ? { id: query.filename, message: error }
@@ -155,7 +171,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           }
 
           if (result.tips.length) {
-            result.tips.forEach(tip =>
+            result.tips.forEach((tip) =>
               this.warn({
                 id: query.filename,
                 message: tip,
@@ -167,19 +183,19 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             code: result.code,
             map: normalizeSourceMap(result.map!),
           }
-        } else if (query.type === 'style' && query.scoped) {
+        } else if (query.type === 'style') {
           debug(`transform(${id})`)
           const block = descriptor.styles[query.index]!
           const result = await compileStyleAsync({
             filename: query.filename,
             id: `data-v-${query.id!}`,
             source: block.content,
-            scoped: query.scoped,
-            trim: true,
+            scoped: block.scoped,
+            modules: !!block.module,
           })
 
           if (result.errors.length) {
-            result.errors.forEach(error =>
+            result.errors.forEach((error) =>
               this.error({
                 id: query.filename,
                 message: error.message,
@@ -188,9 +204,13 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             return null
           }
 
-          return {
-            code: result.code,
-            map: normalizeSourceMap(result.map!),
+          if (query.module) {
+            return `export default ${_(result.modules)}`
+          } else {
+            return {
+              code: result.code,
+              map: normalizeSourceMap(result.map!),
+            }
           }
         }
         return null
@@ -199,7 +219,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
         const { descriptor, errors } = parseSFC(code, id, rootContext)
 
         if (errors.length) {
-          errors.forEach(error => this.error(createRollupError(id, error)))
+          errors.forEach((error) => this.error(createRollupError(id, error)))
           return null
         }
 
@@ -323,7 +343,7 @@ function transformVueSFC(
     .replace(/\\/g, '/')
   const id = hash(isProduction ? shortFilePath + '\n' + code : shortFilePath)
   // feature information
-  const hasScoped = descriptor.styles.some(s => s.scoped)
+  const hasScoped = descriptor.styles.some((s) => s.scoped)
   const templateImport = getTemplateCode(
     descriptor,
     resourcePath,
@@ -395,20 +415,30 @@ function getStyleCode(
   if (descriptor.styles.length) {
     descriptor.styles.forEach((style, i) => {
       const src = style.src || resourcePath
+      // do not include module in default query, since we use it to indicate
+      // that the module needs to export the modules json
       const attrsQuery = attrsToQuery(style.attrs, 'css')
+      const attrsQueryWithoutModule = attrsQuery.replace(/&module(=true)?/, '')
       // make sure to only pass id when necessary so that we don't inject
       // duplicate tags when multiple components import the same css file
       const idQuery = style.scoped ? `&id=${id}` : ``
-      const query = `?vue&type=style&index=${i}${idQuery}${attrsQuery}`
-      const styleRequest = _(src + query)
+      const query = `?vue&type=style&index=${i}${idQuery}`
+      const styleRequest = src + query + attrsQuery
+      const styleRequestWithoutModule = src + query + attrsQueryWithoutModule
       if (style.module) {
         if (!hasCSSModules) {
           stylesCode += `const cssModules = script.__cssModules = {}`
           hasCSSModules = true
         }
-        stylesCode += genCSSModulesCode(id, i, styleRequest, style.module)
+        stylesCode += genCSSModulesCode(
+          id,
+          i,
+          styleRequest,
+          styleRequestWithoutModule,
+          style.module
+        )
       } else {
-        stylesCode += `\nimport ${styleRequest}`
+        stylesCode += `\nimport ${_(styleRequest)}`
       }
       // TODO SSR critical CSS collection
     })
@@ -442,7 +472,9 @@ function attrsToQuery(attrs: SFCBlock['attrs'], langFallback?: string): string {
   for (const name in attrs) {
     const value = attrs[name]
     if (!ignoreList.includes(name)) {
-      query += `&${qs.escape(name)}=${value ? qs.escape(String(value)) : ``}`
+      query += `&${qs.escape(name)}${
+        value ? `=${qs.escape(String(value))}` : ``
+      }`
     }
   }
   if (langFallback && !(`lang` in attrs)) {
@@ -474,14 +506,18 @@ function genCSSModulesCode(
   id: string,
   index: number,
   request: string,
+  requestWithoutModule: string,
   moduleName: string | boolean
 ): string {
   const styleVar = `style${index}`
-  let code = `\nimport ${styleVar} from ${request}`
+  let code =
+    // first import the CSS for extraction
+    `\nimport ${_(requestWithoutModule)}` +
+    // then import the json file to expose to component...
+    `\nimport ${styleVar} from ${_(request + '.js')}`
 
   // inject variable
   const name = typeof moduleName === 'string' ? moduleName : '$style'
   code += `\ncssModules["${name}"] = ${styleVar}`
-
   return code
 }
