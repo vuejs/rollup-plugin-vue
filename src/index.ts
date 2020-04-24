@@ -136,7 +136,10 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             source: code,
             preprocessLang: block.lang,
             compiler: options.compiler,
-            compilerOptions: options.compilerOptions,
+            compilerOptions: {
+              ...options.compilerOptions,
+              scopeId: `data-v-${query.id}`,
+            },
             transformAssetUrls: options.transformAssetUrls,
           })
 
@@ -232,7 +235,13 @@ type Query =
   | {
       filename: string
       vue: true
-      type: 'script' | 'template'
+      type: 'script'
+    }
+  | {
+      filename: string
+      vue: true
+      type: 'template'
+      id?: string
     }
   | {
       filename: string
