@@ -1,6 +1,6 @@
 {
   "name": "rollup-plugin-vue",
-  "version": "6.0.0-alpha.2",
+  "version": "6.0.0-alpha.3",
   "license": "MIT",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
