@@ -39,6 +39,10 @@ export interface Options
   target: 'node' | 'browser'
   exposeFilename: boolean
 
+  // if true, handle preprocessors directly instead of delegating to other
+  // rollup plugins
+  preprocessStyles?: boolean
+
   // TODO this will be exposed via SFCAsyncStyleCompileOptions which we forgot
   // to export in @vue/compiler-sfc
   cssModulesOptions?: {
@@ -194,7 +198,9 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             scoped: block.scoped,
             modules: !!block.module,
             modulesOptions: options.cssModulesOptions,
-            preprocessLang: block.lang as any,
+            preprocessLang: options.preprocessStyles
+              ? (block.lang as any)
+              : undefined,
             preprocessCustomRequire: options.preprocessCustomRequire,
           })
 
@@ -355,7 +361,12 @@ function transformVueSFC(
     hasScoped
   )
   const scriptImport = getScriptCode(descriptor, resourcePath)
-  const stylesCode = getStyleCode(descriptor, resourcePath, id)
+  const stylesCode = getStyleCode(
+    descriptor,
+    resourcePath,
+    id,
+    options.preprocessStyles
+  )
   const output = [
     scriptImport,
     templateImport,
@@ -412,7 +423,8 @@ function getScriptCode(descriptor: SFCDescriptor, resourcePath: string) {
 function getStyleCode(
   descriptor: SFCDescriptor,
   resourcePath: string,
-  id: string
+  id: string,
+  preprocessStyles?: boolean
 ) {
   let stylesCode = ``
   let hasCSSModules = false
@@ -421,7 +433,7 @@ function getStyleCode(
       const src = style.src || resourcePath
       // do not include module in default query, since we use it to indicate
       // that the module needs to export the modules json
-      const attrsQuery = attrsToQuery(style.attrs, 'css')
+      const attrsQuery = attrsToQuery(style.attrs, 'css', preprocessStyles)
       const attrsQueryWithoutModule = attrsQuery.replace(/&module(=true)?/, '')
       // make sure to only pass id when necessary so that we don't inject
       // duplicate tags when multiple components import the same css file
@@ -471,7 +483,11 @@ function createRollupError(id: string, error: CompilerError): RollupError {
 // these are built-in query parameters so should be ignored
 // if the user happen to add them as attrs
 const ignoreList = ['id', 'index', 'src', 'type']
-function attrsToQuery(attrs: SFCBlock['attrs'], langFallback?: string): string {
+function attrsToQuery(
+  attrs: SFCBlock['attrs'],
+  langFallback?: string,
+  forceLangFallback = false
+): string {
   let query = ``
   for (const name in attrs) {
     const value = attrs[name]
@@ -482,7 +498,12 @@ function attrsToQuery(attrs: SFCBlock['attrs'], langFallback?: string): string {
     }
   }
   if (langFallback) {
-    query += `lang` in attrs ? `.${langFallback}` : `&lang.${langFallback}`
+    query +=
+      `lang` in attrs
+        ? forceLangFallback
+          ? `.${langFallback}`
+          : ``
+        : `&lang.${langFallback}`
   }
   return query
 }
