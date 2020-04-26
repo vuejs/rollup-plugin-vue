@@ -4,7 +4,7 @@
     "target": "esnext",
     "module": "commonjs",
     "lib": ["dom", "esnext"],
-    "importHelpers": true,
+    "importHelpers": false,
     "declaration": true,
     "sourceMap": false,
     "rootDir": "src",
