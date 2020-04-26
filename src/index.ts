@@ -2,7 +2,7 @@ try {
   require.resolve('@vue/compiler-sfc')
 } catch (e) {
   throw new Error(
-    'vue-loader requires @vue/compiler-sfc to be present in the dependency ' +
+    'rollup-plugin-vue requires @vue/compiler-sfc to be present in the dependency ' +
       'tree.'
   )
 }
