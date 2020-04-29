@@ -157,6 +157,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             source: code,
             preprocessLang: block.lang,
             compiler: options.compiler,
+            ssr: isServer,
             compilerOptions: {
               ...options.compilerOptions,
               scopeId: hasScoped ? `data-v-${query.id}` : undefined,
@@ -241,7 +242,6 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           { rootContext, isProduction, isServer },
           options
         )
-
         debug('transient .vue file:', '\n' + output + '\n')
 
         return {
@@ -345,6 +345,7 @@ function transformVueSFC(
   {
     rootContext,
     isProduction,
+    isServer,
   }: { rootContext: string; isProduction: boolean; isServer: boolean },
   options: Options
 ) {
@@ -358,7 +359,8 @@ function transformVueSFC(
     descriptor,
     resourcePath,
     id,
-    hasScoped
+    hasScoped,
+    isServer
   )
   const scriptImport = getScriptCode(descriptor, resourcePath)
   const stylesCode = getStyleCode(
@@ -371,7 +373,7 @@ function transformVueSFC(
     scriptImport,
     templateImport,
     stylesCode,
-    `script.render = render`,
+    isServer ? `script.ssrRender = ssrRender` : `script.render = render`,
   ]
   if (hasScoped) {
     output.push(`script.__scopeId = ${_(`data-v-${id}`)}`)
@@ -381,7 +383,9 @@ function transformVueSFC(
   } else if (options.exposeFilename) {
     output.push(`script.__file = ${_(basename(shortFilePath))}`)
   }
-  output.push('export default script')
+  output.push(
+    'import { defineComponent } from "vue"; export default defineComponent(script)'
+  )
 
   return output.join('\n')
 }
@@ -390,7 +394,8 @@ function getTemplateCode(
   descriptor: SFCDescriptor,
   resourcePath: string,
   id: string,
-  hasScoped: boolean
+  hasScoped: boolean,
+  isServer: boolean
 ) {
   let templateImport = `const render = () => {}`
   let templateRequest
@@ -401,7 +406,9 @@ function getTemplateCode(
     const attrsQuery = attrsToQuery(descriptor.template.attrs)
     const query = `?vue&type=template${idQuery}${scopedQuery}${attrsQuery}`
     templateRequest = _(src + query)
-    templateImport = `import { render } from ${templateRequest}`
+    templateImport = `import { ${
+      isServer ? 'ssrRender' : 'render'
+    } } from ${templateRequest}`
   }
 
   return templateImport
