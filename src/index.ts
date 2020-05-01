@@ -383,10 +383,7 @@ function transformVueSFC(
   } else if (options.exposeFilename) {
     output.push(`script.__file = ${_(basename(shortFilePath))}`)
   }
-  output.push(
-    'import { defineComponent } from "vue"; export default defineComponent(script)'
-  )
-
+  output.push('export default script')
   return output.join('\n')
 }
 
