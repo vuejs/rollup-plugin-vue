@@ -156,6 +156,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             filename: query.filename,
             source: code,
             preprocessLang: block.lang,
+            preprocessCustomRequire: options.preprocessCustomRequire,
             compiler: options.compiler,
             ssr: isServer,
             compilerOptions: {
