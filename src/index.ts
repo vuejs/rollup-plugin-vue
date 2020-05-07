@@ -24,7 +24,6 @@ import { basename, relative } from 'path'
 import qs from 'querystring'
 import { Plugin, RollupError } from 'rollup'
 import { createFilter } from 'rollup-pluginutils'
-import { encode } from 'sourcemap-codec'
 
 const debug = createDebugger('rollup-plugin-vue')
 
@@ -108,36 +107,10 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             : null
 
         if (block) {
-          const result = {
+          return {
             code: block.content,
             map: normalizeSourceMap(block.map),
           }
-
-          if (query.type === 'template') {
-            // generate source mapping for each character.
-            result.map.mappings = encode(
-              result.code.split(/\r?\n/).map((line, index) => {
-                const segments: [number, number, number, number][] = []
-                for (let i = 0; i < line.length; ++i) {
-                  segments.push([i, 0, block.loc.start.line + index - 1, i])
-                }
-
-                return segments
-              })
-            )
-          }
-
-          debug(
-            `load(${id})`,
-            '\n' +
-              result.code +
-              '\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,' +
-              Buffer.from(JSON.stringify(result.map), 'utf-8').toString(
-                'base64'
-              )
-          )
-
-          return result
         }
       }
 
@@ -524,12 +497,8 @@ function normalizeSourceMap(map: SFCTemplateCompileResults['map']): any {
   if (!map) return null as any
 
   return {
+    ...map,
     version: Number(map.version),
-    file: map.file,
-    names: map.names,
-    sources: map.sources,
-    sourceRoot: map.sourceRoot,
-    sourcesContent: map.sourcesContent,
     mappings: typeof map.mappings === 'string' ? map.mappings : '',
   }
 }

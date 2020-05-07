@@ -16,8 +16,7 @@
   "dependencies": {
     "debug": "^4.1.1",
     "hash-sum": "^2.0.0",
-    "rollup-pluginutils": "^2.8.2",
-    "sourcemap-codec": "^1.4.8"
+    "rollup-pluginutils": "^2.8.2"
   },
   "peerDependencies": {
     "@vue/compiler-sfc": "*"
