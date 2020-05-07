@@ -136,6 +136,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           const result = compileTemplate({
             filename: query.filename,
             source: code,
+            inMap: query.src ? undefined : block.map,
             preprocessLang: block.lang,
             preprocessCustomRequire: options.preprocessCustomRequire,
             compiler: options.compiler,
