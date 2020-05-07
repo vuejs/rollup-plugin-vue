@@ -18,9 +18,10 @@ import {
   SFCTemplateCompileResults,
   SFCStyleCompileOptions,
 } from '@vue/compiler-sfc'
+import fs from 'fs'
 import createDebugger from 'debug'
 import hash from 'hash-sum'
-import { basename, relative } from 'path'
+import { basename, relative, dirname, resolve } from 'path'
 import qs from 'querystring'
 import { Plugin, RollupError } from 'rollup'
 import { createFilter } from 'rollup-pluginutils'
@@ -77,39 +78,46 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
 
   return {
     name: 'vue',
-    resolveId(id) {
+    resolveId(id, importer) {
       const query = parseVuePartRequest(id)
 
       if (query.vue) {
+        if (query.src) {
+          id = resolve(dirname(importer!), id)
+          // map src request to the importer vue file descriptor
+          const [filename] = id.split('?', 2)
+          cache.set(filename, getDescriptor(importer!))
+        }
         debug(`resolveId(${id})`)
-
         return id
       }
-
       return undefined
     },
 
     load(id) {
       const query = parseVuePartRequest(id)
-
       if (query.vue) {
+        if (query.src) {
+          return fs.readFileSync(query.filename, 'utf-8')
+        }
         const descriptor = getDescriptor(query.filename)
+        if (descriptor) {
+          const block =
+            query.type === 'template'
+              ? descriptor.template!
+              : query.type === 'script'
+              ? descriptor.script!
+              : query.type === 'style'
+              ? descriptor.styles[query.index]
+              : query.type === 'custom'
+              ? descriptor.customBlocks[query.index]
+              : null
 
-        const block =
-          query.type === 'template'
-            ? descriptor.template!
-            : query.type === 'script'
-            ? descriptor.script!
-            : query.type === 'style'
-            ? descriptor.styles[query.index]
-            : query.type === 'custom'
-            ? descriptor.customBlocks[query.index]
-            : null
-
-        if (block) {
-          return {
-            code: block.content,
-            map: normalizeSourceMap(block.map),
+          if (block) {
+            return {
+              code: block.content,
+              map: normalizeSourceMap(block.map),
+            }
           }
         }
       }
@@ -169,7 +177,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           const result = await compileStyleAsync({
             filename: query.filename,
             id: `data-v-${query.id!}`,
-            source: block.content,
+            source: code,
             scoped: block.scoped,
             modules: !!block.module,
             modulesOptions: options.cssModulesOptions,
@@ -243,12 +251,14 @@ type Query =
       filename: string
       vue: true
       type: 'script'
+      src?: true
     }
   | {
       filename: string
       vue: true
       type: 'template'
       id?: string
+      src?: true
     }
   | {
       filename: string
@@ -258,12 +268,14 @@ type Query =
       id?: string
       scoped?: boolean
       module?: string | boolean
+      src?: true
     }
   | {
       filename: string
       vue: true
       type: 'custom'
       index: number
+      src?: true
     }
 
 function parseVuePartRequest(id: string): Query {
@@ -278,10 +290,9 @@ function parseVuePartRequest(id: string): Query {
       ...raw,
       filename,
       vue: true,
-      type: raw.type,
       index: Number(raw.index),
+      src: 'src' in raw,
       scoped: 'scoped' in raw,
-      module: raw.module,
     } as any
   }
 
@@ -295,7 +306,7 @@ function getDescriptor(id: string) {
     return cache.get(id)!
   }
 
-  throw new Error(`${id} is not parsed it yet`)
+  throw new Error(`${id} is not parsed yet`)
 }
 
 function parseSFC(
@@ -377,8 +388,9 @@ function getTemplateCode(
     const src = descriptor.template.src || resourcePath
     const idQuery = `&id=${id}`
     const scopedQuery = hasScoped ? `&scoped=true` : ``
+    const srcQuery = descriptor.template.src ? `&src` : ``
     const attrsQuery = attrsToQuery(descriptor.template.attrs)
-    const query = `?vue&type=template${idQuery}${scopedQuery}${attrsQuery}`
+    const query = `?vue&type=template${idQuery}${srcQuery}${scopedQuery}${attrsQuery}`
     templateRequest = _(src + query)
     templateImport = `import { ${
       isServer ? 'ssrRender' : 'render'
@@ -393,7 +405,8 @@ function getScriptCode(descriptor: SFCDescriptor, resourcePath: string) {
   if (descriptor.script) {
     const src = descriptor.script.src || resourcePath
     const attrsQuery = attrsToQuery(descriptor.script.attrs, 'js')
-    const query = `?vue&type=script${attrsQuery}`
+    const srcQuery = descriptor.script.src ? `&src` : ``
+    const query = `?vue&type=script${srcQuery}${attrsQuery}`
     const scriptRequest = _(src + query)
     scriptImport =
       `import script from ${scriptRequest}\n` + `export * from ${scriptRequest}` // support named exports
@@ -419,7 +432,8 @@ function getStyleCode(
       // make sure to only pass id when necessary so that we don't inject
       // duplicate tags when multiple components import the same css file
       const idQuery = style.scoped ? `&id=${id}` : ``
-      const query = `?vue&type=style&index=${i}${idQuery}`
+      const srcQuery = style.src ? `&src` : ``
+      const query = `?vue&type=style&index=${i}${srcQuery}${idQuery}`
       const styleRequest = src + query + attrsQuery
       const styleRequestWithoutModule = src + query + attrsQueryWithoutModule
       if (style.module) {
