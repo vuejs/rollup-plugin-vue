@@ -217,7 +217,10 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           }
 
           if (query.module) {
-            return `export default ${_(result.modules)}`
+            return {
+              code: `export default ${_(result.modules)}`,
+              map: null,
+            }
           } else {
             return {
               code: result.code,
