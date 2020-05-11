@@ -22,6 +22,7 @@ import { parse, SFCDescriptor, SFCBlock } from '@vue/component-compiler-utils'
 import debug from 'debug'
 import {
   VueTemplateCompiler,
+  VueTemplateCompilerOptions,
   VueTemplateCompilerParseOptions
 } from '@vue/component-compiler-utils/dist/types'
 
@@ -159,6 +160,20 @@ export interface VuePluginOptions {
 
   beforeAssemble?(descriptor: DescriptorCompileResult): DescriptorCompileResult
 }
+
+// Official VueTemplateCompilerOptions does not expose scopeId as a part of public API
+// ScopeId is required to correctly compile Vue template with SSR optimization.
+interface TemplateOptionsRollup extends TemplateOptions {
+  compilerOptions: VueTemplateCompilerOptions & {
+    scopeId?: string
+  }
+}
+
+interface VueCompilerOptions {
+  script?: ScriptOptions | undefined;
+  style?: StyleOptions | undefined;
+  template?: TemplateOptionsRollup | undefined;
+}
 /**
  * Rollup plugin for handling .vue files.
  */
@@ -242,11 +257,25 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
     opts.template.isProduction = isProduction
   }
 
-  const compiler = createDefaultCompiler(opts)
   const descriptors = new Map<string, SFCDescriptor>()
 
   if (opts.css === false) d('Running in CSS extract mode')
 
+  const getCompiler = ({ scopeId }: { scopeId?: string}) => {
+    const options: VueCompilerOptions = { ...opts }
+
+    options.template = {
+      ...options.template!,
+      compilerOptions: {
+        ...(options.template!.compilerOptions
+          ? options.template!.compilerOptions
+          : {}),
+        scopeId: scopeId
+      }
+    }
+
+    return createDefaultCompiler(options)
+  }
   function prependStyle(
     id: string,
     lang: string,
@@ -343,6 +372,11 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
           (isProduction
             ? hash(path.basename(filename) + source)
             : hash(filename + source))
+
+        const hasScopedStyles = descriptor.styles.some(style => !!style.scoped)
+        const compiler = getCompiler({
+          scopeId: hasScopedStyles ? scopeId : undefined
+        })
 
         const styles = await Promise.all(
           descriptor.styles.map(async style => {
