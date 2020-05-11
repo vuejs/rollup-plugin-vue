@@ -12,7 +12,7 @@
 - **Error: 'default' is not exported by node_modules/vue-runtime-helpers/dist/normalize-component.js**  
   You may encounter this error when using version 4.6.2 onwards. The solution is to include `rollup-plugin-commonjs`. In your config file `rollup.config.js`, you have to import this plugin and invoke it like so:
   
-  ```
+  ``` js
   import vue from 'rollup-plugin-vue';
   import commonjs from 'rollup-plugin-commonjs';
 
