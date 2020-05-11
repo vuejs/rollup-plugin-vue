@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/project
     docker:
-      - image: alekzonder/puppeteer # base pluginImage: node/8-slim
+      - image: circleci/node:12-browsers
     steps:
       - checkout
       - run:
