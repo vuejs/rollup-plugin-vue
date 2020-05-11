@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="5.1.7"></a>
+## [5.1.7](https://github.com/vuejs/rollup-plugin-vue/compare/v5.1.6...v5.1.7) (2020-05-11)
+
+
+### Bug Fixes
+
+* bump component-compiler to allow tree-shaking ([a85e6d9](https://github.com/vuejs/rollup-plugin-vue/commit/a85e6d9))
+* provide scopeId to template compiler when the component has scoped styles ([#337](https://github.com/vuejs/rollup-plugin-vue/issues/337)) ([1fec2c5](https://github.com/vuejs/rollup-plugin-vue/commit/1fec2c5))
+* some wording ([#339](https://github.com/vuejs/rollup-plugin-vue/issues/339)) ([6a94a53](https://github.com/vuejs/rollup-plugin-vue/commit/6a94a53))
+
+
+
 <a name="5.1.6"></a>
 ## [5.1.6](https://github.com/vuejs/rollup-plugin-vue/compare/v5.1.5...v5.1.6) (2020-01-22)
 
