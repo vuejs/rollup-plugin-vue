@@ -439,7 +439,7 @@ function getStyleCode(
       const styleRequestWithoutModule = src + query + attrsQueryWithoutModule
       if (style.module) {
         if (!hasCSSModules) {
-          stylesCode += `const cssModules = script.__cssModules = {}`
+          stylesCode += `\nconst cssModules = script.__cssModules = {}`
           hasCSSModules = true
         }
         stylesCode += genCSSModulesCode(
