@@ -45,15 +45,15 @@
     "dist/"
   ],
   "dependencies": {
-    "@vue/component-compiler": "^4.2.1",
+    "@vue/component-compiler": "^4.2.2",
     "@vue/component-compiler-utils": "^3.1.2",
     "debug": "^4.1.1",
     "hash-sum": "^1.0.2",
     "magic-string": "^0.25.7",
     "querystring": "^0.2.0",
-    "rollup-pluginutils": "^2.4.1",
+    "rollup-pluginutils": "^2.8.2",
     "source-map": "0.7.3",
-    "vue-runtime-helpers": "^1.1.1"
+    "vue-runtime-helpers": "^1.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.46",

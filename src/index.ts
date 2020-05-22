@@ -170,9 +170,9 @@ interface TemplateOptionsRollup extends TemplateOptions {
 }
 
 interface VueCompilerOptions {
-  script?: ScriptOptions | undefined;
-  style?: StyleOptions | undefined;
-  template?: TemplateOptionsRollup | undefined;
+  script?: ScriptOptions | undefined
+  style?: StyleOptions | undefined
+  template?: TemplateOptionsRollup | undefined
 }
 /**
  * Rollup plugin for handling .vue files.
@@ -261,7 +261,7 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
 
   if (opts.css === false) d('Running in CSS extract mode')
 
-  const getCompiler = ({ scopeId }: { scopeId?: string}) => {
+  const getCompiler = ({ scopeId }: { scopeId?: string }) => {
     const options: VueCompilerOptions = { ...opts }
 
     options.template = {
