@@ -11,7 +11,8 @@
   "scripts": {
     "build": "tsc -p .",
     "prepublishOnly": "tsc -p .",
-    "dev": "tsc -w -p ."
+    "dev": "tsc -w -p .",
+    "test:unit": "jest"
   },
   "dependencies": {
     "debug": "^4.1.1",
