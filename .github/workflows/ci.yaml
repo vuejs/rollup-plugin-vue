@@ -1,0 +1,37 @@
+name: CI
+
+on: [push, pull_request]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  unit:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup node_modules cache
+        uses: actions/cache@v1
+        env:
+          cache-name: yarn
+        with:
+          path: .yarn
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+
+      - name: Install yarn
+        run: hash yarn 2>/dev/null || curl -s -L https://yarnpkg.com/install.sh | sudo node
+
+      - name: Install dependencies and build packages
+        run: |
+          yarn config set cache-folder $(pwd)/.yarn
+          yarn install --frozen-lockfile
+          yarn run build
+
+      - name: Run unit tests
+        run: yarn test:unit --coverage

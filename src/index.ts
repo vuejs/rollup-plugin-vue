@@ -391,12 +391,7 @@ function getTemplateCode(
     const scopedQuery = hasScoped ? `&scoped=true` : ``
     const srcQuery = descriptor.template.src ? `&src` : ``
     const attrsQuery = attrsToQuery(descriptor.template.attrs)
-    const ext = extensionFragment(
-      'template',
-      descriptor.template.attrs.lang as string,
-      'html'
-    )
-    const query = `?vue&type=template${idQuery}${srcQuery}${scopedQuery}${attrsQuery}${ext}`
+    const query = `?vue&type=template${idQuery}${srcQuery}${scopedQuery}${attrsQuery}`
     templateRequest = _(src + query)
     templateImport = `import { ${
       isServer ? 'ssrRender' : 'render'
@@ -412,12 +407,7 @@ function getScriptCode(descriptor: SFCDescriptor, resourcePath: string) {
     const src = descriptor.script.src || resourcePath
     const attrsQuery = attrsToQuery(descriptor.script.attrs, 'js')
     const srcQuery = descriptor.script.src ? `&src` : ``
-    const ext = extensionFragment(
-      'script',
-      descriptor.script.attrs.lang as string,
-      'js'
-    )
-    const query = `?vue&type=script${srcQuery}${attrsQuery}${ext}`
+    const query = `?vue&type=script${srcQuery}${attrsQuery}`
     const scriptRequest = _(src + query)
     scriptImport =
       `import script from ${scriptRequest}\n` + `export * from ${scriptRequest}` // support named exports
@@ -445,14 +435,8 @@ function getStyleCode(
       const idQuery = style.scoped ? `&id=${id}` : ``
       const srcQuery = style.src ? `&src` : ``
       const query = `?vue&type=style&index=${i}${srcQuery}${idQuery}`
-      const ext = extensionFragment(
-        'template',
-        style.attrs.lang as string,
-        'html'
-      )
-      const styleRequest = src + query + attrsQuery + ext
-      const styleRequestWithoutModule =
-        src + query + attrsQueryWithoutModule + ext
+      const styleRequest = src + query + attrsQuery
+      const styleRequestWithoutModule = src + query + attrsQueryWithoutModule
       if (style.module) {
         if (!hasCSSModules) {
           stylesCode += `\nconst cssModules = script.__cssModules = {}`
@@ -494,15 +478,7 @@ function createRollupError(id: string, error: CompilerError): RollupError {
 
 // these are built-in query parameters so should be ignored
 // if the user happen to add them as attrs
-const ignoreList = ['id', 'index', 'src', 'type']
-
-function extensionFragment(
-  block: string,
-  lang?: string,
-  langFallback?: string
-) {
-  return `#.${lang || langFallback || block}`
-}
+const ignoreList = ['id', 'index', 'src', 'type', 'lang']
 
 function attrsToQuery(
   attrs: SFCBlock['attrs'],
@@ -518,12 +494,12 @@ function attrsToQuery(
       }`
     }
   }
-  if (langFallback) {
+  if (langFallback || attrs.lang) {
     query +=
       `lang` in attrs
         ? forceLangFallback
-          ? `.${langFallback}`
-          : ``
+          ? `&lang.${langFallback}`
+          : `&lang.${attrs.lang}`
         : `&lang.${langFallback}`
   }
   return query
