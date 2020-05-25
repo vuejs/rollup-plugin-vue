@@ -2,5 +2,9 @@
   "private": true,
   "scripts": {
     "build": "rollup -c"
+  },
+  "dependencies": {
+    "rollup": "^2.10.9",
+    "rollup-plugin-vue": "link:../.."
   }
 }

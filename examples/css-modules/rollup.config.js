@@ -1,4 +1,4 @@
-import vue from '../../dist/rollup-plugin-vue.esm'
+import VuePlugin from 'rollup-plugin-vue'
 import postcss from 'rollup-plugin-postcss'
 
 /** @type {import('rollup').RollupOptions[]} */
@@ -11,7 +11,7 @@ const config = [
       sourcemap: 'inline',
     },
     plugins: [
-      vue(),
+      VuePlugin(),
       postcss({
         modules: {
           generateScopedName: '[local]___[hash:base64:5]',
