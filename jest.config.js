@@ -6,6 +6,8 @@ module.exports = {
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
+  collectCoverageFrom: ['<rootDir>/src/.*\\.ts'],
+  coveragePathIgnorePatterns: ['.*\\.spec\\.ts'],
   globals: {
     'ts-jest': {
       packageJson: '<rootDir>/package.json',
