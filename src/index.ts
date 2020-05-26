@@ -39,6 +39,8 @@ export interface Options
   target: 'node' | 'browser'
   exposeFilename: boolean
 
+  customBlocks?: string[]
+
   // if true, handle preprocessors directly instead of delegating to other
   // rollup plugins
   preprocessStyles?: boolean
@@ -61,6 +63,7 @@ const defaultOptions: Options = {
   exclude: [],
   target: 'browser',
   exposeFilename: false,
+  customBlocks: [],
 }
 
 export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
@@ -75,6 +78,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
   const rootContext = process.cwd()
 
   const filter = createFilter(options.include, options.exclude)
+  const filterCustomBlock = createCustomBlockFilter(options.customBlocks)
 
   return {
     name: 'vue',
@@ -88,6 +92,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           const [filename] = id.split('?', 2)
           cache.set(filename, getDescriptor(importer!))
         }
+        if (!filter(query.filename)) return undefined
         debug(`resolveId(${id})`)
         return id
       }
@@ -128,6 +133,8 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
     async transform(code, id) {
       const query = parseVuePartRequest(id)
       if (query.vue) {
+        if (!filter(query.filename)) return null
+
         const descriptor = getDescriptor(query.filename)
         const hasScoped = descriptor.styles.some((s) => s.scoped)
         if (query.type === 'template') {
@@ -225,7 +232,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           code,
           id,
           descriptor,
-          { rootContext, isProduction, isServer },
+          { rootContext, isProduction, isServer, filterCustomBlock },
           options
         )
         debug('transient .vue file:', '\n' + output + '\n')
@@ -240,6 +247,27 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
         return null
       }
     },
+  }
+}
+
+function createCustomBlockFilter(
+  queries?: string[]
+): (type: string) => boolean {
+  if (!queries || queries.length === 0) return () => false
+
+  const allowed = new Set(queries.filter((query) => /^[a-z]/i.test(query)))
+  const disallowed = new Set(
+    queries
+      .filter((query) => /^![a-z]/i.test(query))
+      .map((query) => query.substr(1))
+  )
+  const allowAll = queries.includes('*') || !queries.includes('!*')
+
+  return (type: string) => {
+    if (allowed.has(type)) return true
+    if (disallowed.has(type)) return true
+
+    return allowAll
   }
 }
 
@@ -280,7 +308,7 @@ type Query =
     }
 
 function parseVuePartRequest(id: string): Query {
-  const [filename, query] = id.replace(/#\.[\w-]+$/, '').split('?', 2)
+  const [filename, query] = id.split('?', 2)
 
   if (!query) return { vue: false, filename }
 
@@ -335,7 +363,13 @@ function transformVueSFC(
     rootContext,
     isProduction,
     isServer,
-  }: { rootContext: string; isProduction: boolean; isServer: boolean },
+    filterCustomBlock,
+  }: {
+    rootContext: string
+    isProduction: boolean
+    isServer: boolean
+    filterCustomBlock: (type: string) => boolean
+  },
   options: Options
 ) {
   const shortFilePath = relative(rootContext, resourcePath)
@@ -358,10 +392,16 @@ function transformVueSFC(
     id,
     options.preprocessStyles
   )
+  const customBlocksCode = getCustomBlock(
+    descriptor,
+    resourcePath,
+    filterCustomBlock
+  )
   const output = [
     scriptImport,
     templateImport,
     stylesCode,
+    customBlocksCode,
     isServer ? `script.ssrRender = ssrRender` : `script.render = render`,
   ]
   if (hasScoped) {
@@ -429,7 +469,10 @@ function getStyleCode(
       // do not include module in default query, since we use it to indicate
       // that the module needs to export the modules json
       const attrsQuery = attrsToQuery(style.attrs, 'css', preprocessStyles)
-      const attrsQueryWithoutModule = attrsQuery.replace(/&module(=true)?/, '')
+      const attrsQueryWithoutModule = attrsQuery.replace(
+        /&module(=true|=[^&]+)?/,
+        ''
+      )
       // make sure to only pass id when necessary so that we don't inject
       // duplicate tags when multiple components import the same css file
       const idQuery = style.scoped ? `&id=${id}` : ``
@@ -456,6 +499,28 @@ function getStyleCode(
     })
   }
   return stylesCode
+}
+
+function getCustomBlock(
+  descriptor: SFCDescriptor,
+  resourcePath: string,
+  filter: (type: string) => boolean
+) {
+  let code = ''
+
+  descriptor.customBlocks.forEach((block, index) => {
+    if (filter(block.type)) {
+      const src = block.src || resourcePath
+      const attrsQuery = attrsToQuery(block.attrs, block.type)
+      const srcQuery = block.src ? `&src` : ``
+      const query = `?vue&type=${block.type}&index=${index}${srcQuery}${attrsQuery}`
+      const request = _(src + query)
+      code += `import block${index} from ${request}\n`
+      code += `if (typeof block${index} === 'function') block${index}(script)\n`
+    }
+  })
+
+  return code
 }
 
 function createRollupError(id: string, error: CompilerError): RollupError {
