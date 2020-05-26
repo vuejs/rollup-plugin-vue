@@ -4,7 +4,7 @@ describe('Rollup Plugin Vue', () => {
   describe('transform', () => {
     let transform: (code: string, fileName: string) => Promise<{ code: string }>
     beforeEach(() => {
-      transform = PluginVue().transform as any
+      transform = PluginVue({ customBlocks: ['*'] }).transform as any
     })
 
     it('should transform <script> block', async () => {
@@ -53,10 +53,9 @@ describe('Rollup Plugin Vue', () => {
 
       expect(code).toEqual(
         expect.stringContaining(
-          `import { render } from "example.vue?vue&type=template&id=`
+          `import { render } from "example.vue?vue&type=template&id=063a7d4c"`
         )
       )
-      expect(code).not.toEqual(expect.stringContaining(`lang.html`))
       expect(code).toEqual(expect.stringContaining(`script.render = render`))
     })
 
@@ -67,11 +66,105 @@ describe('Rollup Plugin Vue', () => {
       )
       expect(code).toEqual(
         expect.stringContaining(
-          `import { render } from "example.vue?vue&type=template&id=`
+          `import { render } from "example.vue?vue&type=template&id=063a7d4c"`
         )
       )
-      expect(code).not.toEqual(expect.stringContaining(`lang.pug`))
       expect(code).toEqual(expect.stringContaining(`script.render = render`))
+    })
+
+    it('should transform <style> block', async () => {
+      const { code } = await transform(`<style>.foo {}</style>`, `example.vue`)
+      expect(code).toEqual(
+        expect.stringContaining(
+          `import "example.vue?vue&type=style&index=0&lang.css"`
+        )
+      )
+    })
+
+    it('should transform <style scoped> block', async () => {
+      const { code } = await transform(
+        `<style scoped>.foo {}</style>`,
+        `example.vue`
+      )
+      expect(code).toEqual(
+        expect.stringContaining(
+          `import "example.vue?vue&type=style&index=0&id=063a7d4c&scoped=true&lang.css`
+        )
+      )
+    })
+
+    it('should transform <style module> block', async () => {
+      const { code } = await transform(
+        `<style module>.foo {}</style>`,
+        `example.vue`
+      )
+      expect(code).toEqual(
+        expect.stringContaining(
+          `import "example.vue?vue&type=style&index=0&lang.css`
+        )
+      )
+      expect(code).toEqual(
+        expect.stringContaining(
+          `import style0 from "example.vue?vue&type=style&index=0&module=true&lang.css`
+        )
+      )
+      expect(code).toEqual(expect.stringContaining('script.__cssModules = {}'))
+      expect(code).toEqual(
+        expect.stringContaining('cssModules["$style"] = style0')
+      )
+    })
+
+    it('should transform <style module="custom"> block', async () => {
+      const { code } = await transform(
+        `<style module="custom">.foo {}</style>`,
+        `example.vue`
+      )
+      expect(code).toEqual(
+        expect.stringContaining(
+          `import "example.vue?vue&type=style&index=0&lang.css`
+        )
+      )
+      expect(code).toEqual(
+        expect.stringContaining(
+          `import style0 from "example.vue?vue&type=style&index=0&module=custom&lang.css`
+        )
+      )
+      expect(code).toEqual(expect.stringContaining('script.__cssModules = {}'))
+      expect(code).toEqual(
+        expect.stringContaining('cssModules["custom"] = style0')
+      )
+    })
+
+    it.skip('should transform multiple <style module> block', async () => {
+      await transform(
+        `<style module>.foo {}</style>
+         <style module>.bar {}</style>`,
+        `example.vue`
+      )
+      // TODO: Maybe warn about duplicate css module?
+    })
+
+    it('should transform <i18n> block', async () => {
+      const { code } = await transform(`<i18n>{}</i18n>`, `example.vue`)
+      expect(code).toEqual(
+        expect.stringContaining(
+          `import block0 from "example.vue?vue&type=i18n&index=0&lang.i18n`
+        )
+      )
+      expect(code).toEqual(expect.stringContaining('block0(script)'))
+    })
+
+    it('should transform <i18n lang="json"> block', async () => {
+      const { code } = await transform(
+        `<i18n lang="json">{}</i18n>`,
+        `example.vue`
+      )
+      expect(code).toEqual(
+        expect.stringContaining(
+          `import block0 from "example.vue?vue&type=i18n&index=0&lang.json`
+        )
+      )
+      expect(code).toEqual(expect.stringContaining('block0(script)'))
     })
   })
 })
