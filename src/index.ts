@@ -308,7 +308,7 @@ type Query =
     }
 
 function parseVuePartRequest(id: string): Query {
-  const [filename, query] = id.replace(/#\.[\w-]+$/, '').split('?', 2)
+  const [filename, query] = id.split('?', 2)
 
   if (!query) return { vue: false, filename }
 
