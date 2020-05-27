@@ -91,8 +91,9 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           // map src request to the importer vue file descriptor
           const [filename] = id.split('?', 2)
           cache.set(filename, getDescriptor(importer!))
+        } else if (!filter(query.filename)) {
+          return undefined
         }
-        if (!filter(query.filename)) return undefined
         debug(`resolveId(${id})`)
         return id
       }
