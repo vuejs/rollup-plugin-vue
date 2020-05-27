@@ -17,6 +17,7 @@ import {
   SFCTemplateCompileOptions,
   SFCTemplateCompileResults,
   SFCStyleCompileOptions,
+  SFCAsyncStyleCompileOptions,
 } from '@vue/compiler-sfc'
 import fs from 'fs'
 import createDebugger from 'debug'
@@ -28,12 +29,7 @@ import { createFilter } from 'rollup-pluginutils'
 
 const debug = createDebugger('rollup-plugin-vue')
 
-export interface Options
-  extends Pick<
-      SFCTemplateCompileOptions,
-      'compiler' | 'compilerOptions' | 'transformAssetUrls'
-    >,
-    Pick<SFCStyleCompileOptions, 'preprocessCustomRequire'> {
+export interface Options {
   include: string | RegExp | (string | RegExp)[]
   exclude: string | RegExp | (string | RegExp)[]
   target: 'node' | 'browser'
@@ -45,17 +41,14 @@ export interface Options
   // rollup plugins
   preprocessStyles?: boolean
 
-  // TODO this will be exposed via SFCAsyncStyleCompileOptions which we forgot
-  // to export in @vue/compiler-sfc
-  cssModulesOptions?: {
-    scopeBehaviour?: 'global' | 'local'
-    globalModulePaths?: string[]
-    generateScopedName?:
-      | string
-      | ((name: string, filename: string, css: string) => string)
-    hashPrefix?: string
-    localsConvention?: 'camelCase' | 'camelCaseOnly' | 'dashes' | 'dashesOnly'
-  }
+  // sfc template options
+  compiler?: SFCTemplateCompileOptions['compiler']
+  compilerOptions?: SFCTemplateCompileOptions['compilerOptions']
+  transformAssetUrls?: SFCTemplateCompileOptions['transformAssetUrls']
+
+  // sfc style options
+  preprocessCustomRequire?: SFCAsyncStyleCompileOptions['preprocessCustomRequire']
+  cssModulesOptions?: SFCAsyncStyleCompileOptions['modulesOptions']
 }
 
 const defaultOptions: Options = {
