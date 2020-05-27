@@ -19,18 +19,7 @@ jobs:
           cache-name: yarn
         with:
           path: .yarn
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-      
-      - name: Setup node_modules cache for fixtures
-        uses: actions/cache@v1
-        env:
-          cache-name: fixtures
-        with:
-          path: examples/.yarn
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
@@ -43,12 +32,6 @@ jobs:
           yarn config set cache-folder $(pwd)/.yarn
           yarn install --frozen-lockfile
           yarn run build
-      
-      - name: Install dependencies of fixtures
-        run: |
-          cd examples
-          yarn config set cache-folder $(pwd)/.yarn
-          yarn install --frozen-lockfile
 
       - name: Run unit tests
         run: yarn test:unit --coverage
@@ -70,7 +53,18 @@ jobs:
           cache-name: yarn
         with:
           path: .yarn
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+
+      - name: Setup node_modules cache for fixtures
+        uses: actions/cache@v1
+        env:
+          cache-name: fixtures
+        with:
+          path: examples/.yarn
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('examples/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
@@ -84,5 +78,11 @@ jobs:
           yarn install --frozen-lockfile
           yarn run build
 
-      - name: Run unit tests
+      - name: Install dependencies of fixtures
+        run: |
+          cd examples
+          yarn config set cache-folder $(pwd)/.yarn
+          yarn install --frozen-lockfile
+
+      - name: Run e2e tests
         run: yarn test:e2e
