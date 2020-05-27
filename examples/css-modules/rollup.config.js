@@ -1,5 +1,6 @@
 import VuePlugin from 'rollup-plugin-vue'
 import postcss from 'rollup-plugin-postcss'
+import resolve from '@rollup/plugin-node-resolve'
 
 /** @type {import('rollup').RollupOptions[]} */
 const config = [
@@ -11,6 +12,7 @@ const config = [
       sourcemap: 'inline',
     },
     plugins: [
+      resolve(),
       VuePlugin(),
       postcss({
         modules: {
@@ -21,7 +23,7 @@ const config = [
       postcss({ include: /(?<!&module=.*)\.css$/ }),
     ],
     external(id) {
-      return /(^vue$|style-inject)/.test(id)
+      return /^(vue)$/.test(id)
     },
   },
 ]
