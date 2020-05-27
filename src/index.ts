@@ -21,7 +21,7 @@ import {
 import fs from 'fs'
 import createDebugger from 'debug'
 import hash from 'hash-sum'
-import { basename, relative, dirname, resolve } from 'path'
+import { basename, relative } from 'path'
 import qs from 'querystring'
 import { Plugin, RollupError } from 'rollup'
 import { createFilter } from 'rollup-pluginutils'
@@ -82,15 +82,18 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
 
   return {
     name: 'vue',
-    resolveId(id, importer) {
+    async resolveId(id, importer) {
       const query = parseVuePartRequest(id)
 
       if (query.vue) {
         if (query.src) {
-          id = resolve(dirname(importer!), id)
-          // map src request to the importer vue file descriptor
-          const [filename] = id.split('?', 2)
-          cache.set(filename, getDescriptor(importer!))
+          const resolved = await this.resolve(query.filename, importer, {
+            skipSelf: true,
+          })
+          if (resolved) {
+            cache.set(resolved.id, getDescriptor(importer!))
+          }
+          return resolved
         } else if (!filter(query.filename)) {
           return undefined
         }
