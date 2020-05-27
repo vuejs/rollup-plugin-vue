@@ -32,6 +32,12 @@ jobs:
           yarn config set cache-folder $(pwd)/.yarn
           yarn install --frozen-lockfile
           yarn run build
+      
+      - name: Install dependencies of fixtures
+        run: |
+          cd examples
+          yarn config set cache-folder $(pwd)/../.yarn
+          yarn install --frozen-lockfile
 
       - name: Run unit tests
         run: yarn test:unit --coverage
