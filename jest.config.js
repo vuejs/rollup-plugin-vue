@@ -4,7 +4,7 @@ module.exports = {
   rootDir: __dirname,
   testEnvironment: 'node',
   transform: {
-    '^.+\\.ts$': 'ts-jest',
+    '^.+\\.(ts|js)$': 'ts-jest',
   },
   coveragePathIgnorePatterns: ['.*\\.spec\\.ts'],
   globals: {

@@ -1,0 +1,71 @@
+import { rollup, RollupOutput, RollupWarning } from 'rollup'
+
+describe('simple', () => {
+  let result!: RollupOutput
+
+  beforeAll(async () => {
+    result = await roll('simple')
+  })
+
+  it('should compile <template>', () => {
+    expect(result.output[0].code).toEqual(expect.stringContaining('.render ='))
+  })
+})
+
+describe('css-modules', () => {
+  let result!: RollupOutput
+
+  beforeAll(async () => {
+    result = await roll('css-modules')
+  })
+
+  it('should process <style module> blocks', () => {
+    expect(result.output[0].code).toEqual(
+      expect.stringContaining('cssModules["$style"] =')
+    )
+    expect(result.output[0].code).not.toEqual(
+      expect.stringContaining('.red {\n  color: red;\n}')
+    )
+    expect(result.output[0].code).toEqual(expect.stringContaining('._red_'))
+    expect(result.output[0].code).toEqual(
+      expect.stringContaining('{"red":"_red_')
+    )
+  })
+
+  it('should process <style scoped> blocks', () => {
+    expect(result.output[0].code).toEqual(
+      expect.stringContaining('.__scopeId = "data-v-')
+    )
+    expect(result.output[0].code).not.toEqual(
+      expect.stringContaining('.green {\n  color: red;\n}')
+    )
+    expect(result.output[0].code).toEqual(
+      expect.stringContaining('.green[data-v-')
+    )
+  })
+})
+
+import Path from 'path'
+async function roll(name: string) {
+  const configFile = `../examples/${name}/rollup.config.js`
+  const configModule = require(configFile)
+  const configs = configModule.__esModule ? configModule.default : configModule
+  const config = Array.isArray(configs) ? configs[0] : configs
+
+  config.input = Path.resolve(__dirname, Path.dirname(configFile), config.input)
+  delete config.output
+
+  config.onwarn = function (warning: RollupWarning, warn: Function) {
+    switch (warning.code) {
+      case 'UNUSED_EXTERNAL_IMPORT':
+        return
+      default:
+        warning.message = `(${name}) ${warning.message}`
+        warn(warning)
+    }
+  }
+
+  const bundle = await rollup(config)
+
+  return bundle.generate({ format: 'esm' })
+}

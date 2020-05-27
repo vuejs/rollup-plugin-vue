@@ -1,6 +1,6 @@
 import VuePlugin from 'rollup-plugin-vue'
-import postcss from 'rollup-plugin-postcss'
-import resolve from '@rollup/plugin-node-resolve'
+import PostCSS from 'rollup-plugin-postcss'
+import NodeResolve from '@rollup/plugin-node-resolve'
 
 /** @type {import('rollup').RollupOptions[]} */
 const config = [
@@ -12,15 +12,19 @@ const config = [
       sourcemap: 'inline',
     },
     plugins: [
-      resolve(),
+      // Resolve packages from `node_modules` e.g. `style-inject` module
+      // used by `rollup-plugin-postcss` to inline CSS.
+      NodeResolve(),
       VuePlugin(),
-      postcss({
+      // Process only `<style module>` blocks.
+      PostCSS({
         modules: {
           generateScopedName: '[local]___[hash:base64:5]',
         },
         include: /&module=.*\.css$/,
       }),
-      postcss({ include: /(?<!&module=.*)\.css$/ }),
+      // Process all `<style>` blocks except `<style module>`.
+      PostCSS({ include: /(?<!&module=.*)\.css$/ }),
     ],
     external(id) {
       return /^(vue)$/.test(id)
