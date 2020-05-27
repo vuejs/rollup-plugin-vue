@@ -16,7 +16,6 @@ import {
   SFCDescriptor,
   SFCTemplateCompileOptions,
   SFCTemplateCompileResults,
-  SFCStyleCompileOptions,
   SFCAsyncStyleCompileOptions,
 } from '@vue/compiler-sfc'
 import fs from 'fs'
