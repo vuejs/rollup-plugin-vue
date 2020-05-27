@@ -92,8 +92,10 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           })
           if (resolved) {
             cache.set(resolved.id, getDescriptor(importer!))
+            const [, originalQuery] = id.split('?', 2)
+            resolved.id += `?${originalQuery}`
+            return resolved
           }
-          return resolved
         } else if (!filter(query.filename)) {
           return undefined
         }
@@ -137,7 +139,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
     async transform(code, id) {
       const query = parseVuePartRequest(id)
       if (query.vue) {
-        if (!filter(query.filename)) return null
+        if (!query.src && !filter(query.filename)) return null
 
         const descriptor = getDescriptor(query.filename)
         const hasScoped = descriptor.styles.some((s) => s.scoped)
