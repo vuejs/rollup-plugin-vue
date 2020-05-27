@@ -118,7 +118,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
               ? descriptor.script!
               : query.type === 'style'
               ? descriptor.styles[query.index]
-              : query.type === 'custom'
+              : filterCustomBlock(query.type)
               ? descriptor.customBlocks[query.index]
               : null
 
