@@ -1,4 +1,6 @@
 {
+  "name": "css-modules",
+  "version": "0.0.0",
   "private": true,
   "dependencies": {
     "@rollup/plugin-node-resolve": "^8.0.0",
