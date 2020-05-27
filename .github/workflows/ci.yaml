@@ -23,6 +23,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
+      
+      - name: Setup node_modules cache for fixtures
+        uses: actions/cache@v1
+        env:
+          cache-name: fixtures
+        with:
+          path: examples/.yarn
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
 
       - name: Install yarn
         run: hash yarn 2>/dev/null || curl -s -L https://yarnpkg.com/install.sh | sudo node
@@ -36,7 +47,7 @@ jobs:
       - name: Install dependencies of fixtures
         run: |
           cd examples
-          yarn config set cache-folder $(pwd)/../.yarn
+          yarn config set cache-folder $(pwd)/.yarn
           yarn install --frozen-lockfile
 
       - name: Run unit tests
