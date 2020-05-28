@@ -12,6 +12,22 @@ describe('simple', () => {
   })
 })
 
+describe('custom-block', () => {
+  let result!: RollupOutput
+
+  beforeAll(async () => {
+    result = await roll('custom-block')
+  })
+
+  it('should compile <i18n>', () => {
+    expect(result.output[0].code).toEqual(
+      expect.stringContaining(
+        'component.i18n = {"say":{"hello":"Hello :name"}}'
+      )
+    )
+  })
+})
+
 describe('css-modules', () => {
   let result!: RollupOutput
 

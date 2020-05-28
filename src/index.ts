@@ -112,7 +112,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
               ? descriptor.script!
               : query.type === 'style'
               ? descriptor.styles[query.index]
-              : query.type === 'custom'
+              : typeof query.index === 'number'
               ? descriptor.customBlocks[query.index]
               : null
 
