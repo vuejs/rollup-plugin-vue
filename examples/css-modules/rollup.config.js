@@ -15,16 +15,13 @@ const config = [
       // Resolve packages from `node_modules` e.g. `style-inject` module
       // used by `rollup-plugin-postcss` to inline CSS.
       NodeResolve(),
-      VuePlugin(),
-      // Process only `<style module>` blocks.
-      PostCSS({
-        modules: {
+      VuePlugin({
+        // PostCSS-modules options for <style module> compilation
+        cssModulesOptions: {
           generateScopedName: '[local]___[hash:base64:5]',
         },
-        include: /&module=.*\.css$/,
       }),
-      // Process all `<style>` blocks except `<style module>`.
-      PostCSS({ include: /(?<!&module=.*)\.css$/ }),
+      PostCSS(),
     ],
     external(id) {
       return /^(vue)$/.test(id)
