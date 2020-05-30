@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "module": "ESNext"
+  },
+  "include": ["**/*.ts", "**/*.tsx", "**/*.vue"]
+}
