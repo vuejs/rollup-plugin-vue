@@ -48,6 +48,7 @@ export interface Options {
   // sfc style options
   preprocessCustomRequire?: SFCAsyncStyleCompileOptions['preprocessCustomRequire']
   cssModulesOptions?: SFCAsyncStyleCompileOptions['modulesOptions']
+  preprocessOptions?: SFCAsyncStyleCompileOptions['preprocessOptions']
 }
 
 const defaultOptions: Options = {
@@ -191,6 +192,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
               ? (block.lang as any)
               : undefined,
             preprocessCustomRequire: options.preprocessCustomRequire,
+            preprocessOptions: options.preprocessOptions || {},
           })
 
           if (result.errors.length) {
