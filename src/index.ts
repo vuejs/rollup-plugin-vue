@@ -46,8 +46,10 @@ export interface Options {
   transformAssetUrls?: SFCTemplateCompileOptions['transformAssetUrls']
 
   // sfc style options
-  preprocessCustomRequire?: SFCAsyncStyleCompileOptions['preprocessCustomRequire']
+  postcssOptions?: SFCAsyncStyleCompileOptions['postcssOptions']
+  postcssPlugins?: SFCAsyncStyleCompileOptions['postcssPlugins']
   cssModulesOptions?: SFCAsyncStyleCompileOptions['modulesOptions']
+  preprocessCustomRequire?: SFCAsyncStyleCompileOptions['preprocessCustomRequire']
   preprocessOptions?: SFCAsyncStyleCompileOptions['preprocessOptions']
 }
 
@@ -187,6 +189,8 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             source: code,
             scoped: block.scoped,
             modules: !!block.module,
+            postcssOptions: options.postcssOptions,
+            postcssPlugins: options.postcssPlugins,
             modulesOptions: options.cssModulesOptions,
             preprocessLang: options.preprocessStyles
               ? (block.lang as any)
