@@ -427,7 +427,7 @@ function getTemplateCode(
   hasScoped: boolean,
   isServer: boolean
 ) {
-  let templateImport = `const render = script.render || (() => {})`
+  let templateImport = `const render = script.${isServer ? 'ssrRender' : 'render'} || (() => {})`
   let templateRequest
   if (descriptor.template) {
     const src = descriptor.template.src || resourcePath
