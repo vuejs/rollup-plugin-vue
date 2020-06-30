@@ -187,6 +187,29 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
         } else if (query.type === 'style') {
           debug(`transform(${id})`)
           const block = descriptor.styles[query.index]!
+
+          let preprocessOptions = options.preprocessOptions || {}
+          const preprocessLang = (options.preprocessStyles
+            ? block.lang
+            : undefined) as SFCAsyncStyleCompileOptions['preprocessLang']
+
+          if (preprocessLang) {
+            preprocessOptions =
+              preprocessOptions[preprocessLang] || preprocessOptions
+
+            if (
+              ['scss', 'sass'].includes(preprocessLang) &&
+              !preprocessOptions.includePaths
+            ) {
+              preprocessOptions = {
+                includePaths: ['node_modules'],
+                ...preprocessOptions,
+              }
+            }
+          } else {
+            preprocessOptions = {}
+          }
+
           const result = await compileStyleAsync({
             filename: query.filename,
             id: `data-v-${query.id!}`,
@@ -197,11 +220,9 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             postcssOptions: options.postcssOptions,
             postcssPlugins: options.postcssPlugins,
             modulesOptions: options.cssModulesOptions,
-            preprocessLang: options.preprocessStyles
-              ? (block.lang as any)
-              : undefined,
+            preprocessLang,
             preprocessCustomRequire: options.preprocessCustomRequire,
-            preprocessOptions: options.preprocessOptions || {},
+            preprocessOptions,
           })
 
           if (result.errors.length) {
