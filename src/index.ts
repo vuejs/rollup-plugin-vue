@@ -17,6 +17,8 @@ import {
   SFCTemplateCompileOptions,
   SFCTemplateCompileResults,
   SFCAsyncStyleCompileOptions,
+  TemplateCompiler,
+  CompilerOptions,
 } from '@vue/compiler-sfc'
 import fs from 'fs'
 import createDebugger from 'debug'
@@ -27,6 +29,8 @@ import { Plugin, RollupError } from 'rollup'
 import { createFilter } from 'rollup-pluginutils'
 
 const debug = createDebugger('rollup-plugin-vue')
+
+type TemplateCompilerOptions = [TemplateCompiler, CompilerOptions]
 
 export interface Options {
   include: string | RegExp | (string | RegExp)[]
@@ -44,6 +48,7 @@ export interface Options {
   compiler?: SFCTemplateCompileOptions['compiler']
   compilerOptions?: SFCTemplateCompileOptions['compilerOptions']
   transformAssetUrls?: SFCTemplateCompileOptions['transformAssetUrls']
+  templateCompilers?: Record<string, TemplateCompilerOptions>
 
   // sfc style options
   postcssOptions?: SFCAsyncStyleCompileOptions['postcssOptions']
@@ -139,6 +144,25 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
         const descriptor = getDescriptor(query.filename)
         const hasScoped = descriptor.styles.some((s) => s.scoped)
         if (query.type === 'template') {
+          const compilerKey = query.compiler
+          let compiler = options.compiler
+          let compilerOptions = options.compilerOptions || {}
+          if (compilerKey) {
+            if (
+              options.templateCompilers &&
+              options.templateCompilers[compilerKey]
+            ) {
+              ;[compiler, compilerOptions] = options.templateCompilers[
+                compilerKey
+              ]
+            } else {
+              this.error({
+                id: query.filename,
+                message: `The "${compilerKey}" compiler not found.Please add "templateCompilers" options.`,
+              })
+            }
+          }
+
           debug(`transform(${id})`)
           const block = descriptor.template!
           const result = compileTemplate({
@@ -147,10 +171,10 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             inMap: query.src ? undefined : block.map,
             preprocessLang: block.lang,
             preprocessCustomRequire: options.preprocessCustomRequire,
-            compiler: options.compiler,
+            compiler,
             ssr: isServer,
             compilerOptions: {
-              ...options.compilerOptions,
+              ...compilerOptions,
               scopeId: hasScoped ? `data-v-${query.id}` : undefined,
             },
             transformAssetUrls: options.transformAssetUrls,
@@ -292,6 +316,7 @@ type Query =
       type: 'template'
       id?: string
       src?: true
+      compiler?: string
     }
   | {
       filename: string
