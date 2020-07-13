@@ -483,10 +483,10 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
             `export * from '${createVuePartRequest(
               filename,
               (typeof block.attrs.lang === 'string' && block.attrs.lang) ||
-                createVuePartRequest.defaultLang[block.type] ||
-                block.type,
+                createVuePartRequest.defaultLang[block.type],
               'customBlocks',
-              index
+              index,
+              block.type
             )}'`
         })
 
