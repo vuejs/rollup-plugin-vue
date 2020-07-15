@@ -12,6 +12,7 @@ import {
   compileStyleAsync,
   compileTemplate,
   parse,
+  compileScript,
   SFCBlock,
   SFCDescriptor,
   SFCTemplateCompileOptions,
@@ -152,6 +153,9 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             compilerOptions: {
               ...options.compilerOptions,
               scopeId: hasScoped ? `data-v-${query.id}` : undefined,
+              bindingMetadata: descriptor.script
+                ? descriptor.script.bindings
+                : undefined,
             },
             transformAssetUrls: options.transformAssetUrls,
           })
@@ -351,7 +355,6 @@ function parseSFC(
     sourceMap: true,
     filename: id,
     sourceRoot: sourceRoot,
-    pad: 'line',
   })
 
   cache.set(id, descriptor)
@@ -447,7 +450,8 @@ function getTemplateCode(
 
 function getScriptCode(descriptor: SFCDescriptor, resourcePath: string) {
   let scriptImport = `const script = {}`
-  if (descriptor.script) {
+  if (descriptor.script || descriptor.scriptSetup) {
+    descriptor.script = compileScript(descriptor)
     const src = descriptor.script.src || resourcePath
     const attrsQuery = attrsToQuery(descriptor.script.attrs, 'js')
     const srcQuery = descriptor.script.src ? `&src` : ``
