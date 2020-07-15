@@ -452,14 +452,19 @@ function getTemplateCode(
 function getScriptCode(descriptor: SFCDescriptor, resourcePath: string) {
   let scriptImport = `const script = {}`
   if (descriptor.script || descriptor.scriptSetup) {
-    descriptor.script = compileScript(descriptor)
-    const src = descriptor.script.src || resourcePath
-    const attrsQuery = attrsToQuery(descriptor.script.attrs, 'js')
-    const srcQuery = descriptor.script.src ? `&src` : ``
-    const query = `?vue&type=script${srcQuery}${attrsQuery}`
-    const scriptRequest = _(src + query)
-    scriptImport =
-      `import script from ${scriptRequest}\n` + `export * from ${scriptRequest}` // support named exports
+    if (compileScript) {
+      descriptor.script = compileScript(descriptor)
+    }
+    if (descriptor.script) {
+      const src = descriptor.script.src || resourcePath
+      const attrsQuery = attrsToQuery(descriptor.script.attrs, 'js')
+      const srcQuery = descriptor.script.src ? `&src` : ``
+      const query = `?vue&type=script${srcQuery}${attrsQuery}`
+      const scriptRequest = _(src + query)
+      scriptImport =
+        `import script from ${scriptRequest}\n` +
+        `export * from ${scriptRequest}` // support named exports
+    }
   }
   return scriptImport
 }
