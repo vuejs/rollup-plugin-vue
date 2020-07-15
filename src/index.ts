@@ -192,6 +192,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             id: `data-v-${query.id!}`,
             source: code,
             scoped: block.scoped,
+            vars: !!block.vars,
             modules: !!block.module,
             postcssOptions: options.postcssOptions,
             postcssPlugins: options.postcssPlugins,
