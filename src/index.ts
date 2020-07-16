@@ -187,6 +187,35 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
         } else if (query.type === 'style') {
           debug(`transform(${id})`)
           const block = descriptor.styles[query.index]!
+
+          let preprocessOptions = options.preprocessOptions || {}
+          const preprocessLang = (options.preprocessStyles
+            ? block.lang
+            : undefined) as SFCAsyncStyleCompileOptions['preprocessLang']
+
+          if (preprocessLang) {
+            preprocessOptions =
+              preprocessOptions[preprocessLang] || preprocessOptions
+            // include node_modules for imports by default
+            switch (preprocessLang) {
+              case 'scss':
+              case 'sass':
+                preprocessOptions = {
+                  includePaths: ['node_modules'],
+                  ...preprocessOptions,
+                }
+                break
+              case 'less':
+              case 'stylus':
+                preprocessOptions = {
+                  paths: ['node_modules'],
+                  ...preprocessOptions,
+                }
+            }
+          } else {
+            preprocessOptions = {}
+          }
+
           const result = await compileStyleAsync({
             filename: query.filename,
             id: `data-v-${query.id!}`,
@@ -197,11 +226,9 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             postcssOptions: options.postcssOptions,
             postcssPlugins: options.postcssPlugins,
             modulesOptions: options.cssModulesOptions,
-            preprocessLang: options.preprocessStyles
-              ? (block.lang as any)
-              : undefined,
+            preprocessLang,
             preprocessCustomRequire: options.preprocessCustomRequire,
-            preprocessOptions: options.preprocessOptions || {},
+            preprocessOptions,
           })
 
           if (result.errors.length) {
@@ -347,20 +374,14 @@ function getDescriptor(id: string) {
   throw new Error(`${id} is not parsed yet`)
 }
 
-function parseSFC(
-  code: string,
-  id: string,
-  sourceRoot: string
-): { descriptor: SFCDescriptor; errors: CompilerError[] } {
+function parseSFC(code: string, id: string, sourceRoot: string) {
   const { descriptor, errors } = parse(code, {
     sourceMap: true,
     filename: id,
     sourceRoot: sourceRoot,
   })
-
   cache.set(id, descriptor)
-
-  return { descriptor, errors }
+  return { descriptor, errors: errors }
 }
 
 function transformVueSFC(
@@ -537,21 +558,33 @@ function getCustomBlock(
   return code
 }
 
-function createRollupError(id: string, error: CompilerError): RollupError {
-  return {
-    id,
-    plugin: 'vue',
-    pluginCode: String(error.code),
-    message: error.message,
-    frame: error.loc!.source,
-    parserError: error,
-    loc: error.loc
-      ? {
-          file: id,
-          line: error.loc.start.line,
-          column: error.loc.start.column,
-        }
-      : undefined,
+function createRollupError(
+  id: string,
+  error: CompilerError | SyntaxError
+): RollupError {
+  if ('code' in error) {
+    return {
+      id,
+      plugin: 'vue',
+      pluginCode: String(error.code),
+      message: error.message,
+      frame: error.loc!.source,
+      parserError: error,
+      loc: error.loc
+        ? {
+            file: id,
+            line: error.loc.start.line,
+            column: error.loc.start.column,
+          }
+        : undefined,
+    }
+  } else {
+    return {
+      id,
+      plugin: 'vue',
+      message: error.message,
+      parserError: error,
+    }
   }
 }
 
