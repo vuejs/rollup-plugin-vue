@@ -196,15 +196,21 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           if (preprocessLang) {
             preprocessOptions =
               preprocessOptions[preprocessLang] || preprocessOptions
-
-            if (
-              ['scss', 'sass'].includes(preprocessLang) &&
-              !preprocessOptions.includePaths
-            ) {
-              preprocessOptions = {
-                includePaths: ['node_modules'],
-                ...preprocessOptions,
-              }
+            // include node_modules for imports by default
+            switch (preprocessLang) {
+              case 'scss':
+              case 'sass':
+                preprocessOptions = {
+                  includePaths: ['node_modules'],
+                  ...preprocessOptions,
+                }
+                break
+              case 'less':
+              case 'stylus':
+                preprocessOptions = {
+                  paths: ['node_modules'],
+                  ...preprocessOptions,
+                }
             }
           } else {
             preprocessOptions = {}
@@ -368,20 +374,14 @@ function getDescriptor(id: string) {
   throw new Error(`${id} is not parsed yet`)
 }
 
-function parseSFC(
-  code: string,
-  id: string,
-  sourceRoot: string
-): { descriptor: SFCDescriptor; errors: CompilerError[] } {
+function parseSFC(code: string, id: string, sourceRoot: string) {
   const { descriptor, errors } = parse(code, {
     sourceMap: true,
     filename: id,
     sourceRoot: sourceRoot,
   })
-
   cache.set(id, descriptor)
-
-  return { descriptor, errors }
+  return { descriptor, errors: errors }
 }
 
 function transformVueSFC(
@@ -558,21 +558,33 @@ function getCustomBlock(
   return code
 }
 
-function createRollupError(id: string, error: CompilerError): RollupError {
-  return {
-    id,
-    plugin: 'vue',
-    pluginCode: String(error.code),
-    message: error.message,
-    frame: error.loc!.source,
-    parserError: error,
-    loc: error.loc
-      ? {
-          file: id,
-          line: error.loc.start.line,
-          column: error.loc.start.column,
-        }
-      : undefined,
+function createRollupError(
+  id: string,
+  error: CompilerError | SyntaxError
+): RollupError {
+  if ('code' in error) {
+    return {
+      id,
+      plugin: 'vue',
+      pluginCode: String(error.code),
+      message: error.message,
+      frame: error.loc!.source,
+      parserError: error,
+      loc: error.loc
+        ? {
+            file: id,
+            line: error.loc.start.line,
+            column: error.loc.start.column,
+          }
+        : undefined,
+    }
+  } else {
+    return {
+      id,
+      plugin: 'vue',
+      message: error.message,
+      parserError: error,
+    }
   }
 }
 
