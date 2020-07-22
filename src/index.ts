@@ -140,7 +140,7 @@ export interface VuePluginOptions {
   /**
    * @@vue/component-compiler [#](https://github.com/vuejs/vue-component-compiler#api) template processing options.
    */
-  template?: TemplateOptions
+  template?: Partial<TemplateOptions>
   /**
    * @@vue/component-compiler [#](https://github.com/vuejs/vue-component-compiler#api) module name or global function for custom runtime component normalizer.
    */
