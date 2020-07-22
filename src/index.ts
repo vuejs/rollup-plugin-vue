@@ -123,7 +123,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           if (block) {
             return {
               code: block.content,
-              map: normalizeSourceMap(block.map),
+              map: normalizeSourceMap(block.map, id),
             }
           }
         }
@@ -182,7 +182,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
 
           return {
             code: result.code,
-            map: normalizeSourceMap(result.map!),
+            map: normalizeSourceMap(result.map!, id),
           }
         } else if (query.type === 'style') {
           debug(`transform(${id})`)
@@ -249,7 +249,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           } else {
             return {
               code: result.code,
-              map: normalizeSourceMap(result.map!),
+              map: normalizeSourceMap(result.map!, id),
             }
           }
         }
@@ -621,8 +621,13 @@ function _(any: any) {
   return JSON.stringify(any)
 }
 
-function normalizeSourceMap(map: SFCTemplateCompileResults['map']): any {
+function normalizeSourceMap(map: SFCTemplateCompileResults['map'], id: string): any {
   if (!map) return null as any
+
+  if (!id.includes('type=script')) {
+    map.file = id;
+    map.sources[0] = id;
+  }
 
   return {
     ...map,
