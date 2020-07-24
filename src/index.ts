@@ -202,6 +202,8 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
   if (!opts.styleInjectorShadow)
     opts.styleInjectorShadow =
       '~' + 'vue-runtime-helpers/dist/inject-style/shadow.mjs'
+  if (opts.shadowMode)
+    opts.isWebComponent = true
 
   createVuePartRequest.defaultLang = {
     ...createVuePartRequest.defaultLang,
