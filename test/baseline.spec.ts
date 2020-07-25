@@ -19,8 +19,9 @@ describe('baseline', () => {
     .filter((filename: string) => filename.endsWith('.vue'))
     .map((filename: string) => filename.replace(/\.vue$/i, ''))
     .forEach(fixture => {
-      test(fixture, () => testRunner(fixture, true))
-      test(fixture + ' (extract css)', () => testRunner(fixture, false))
+      // test(fixture, () => testRunner(fixture, true, false))
+      // test(fixture + ' (extract css)', () => testRunner(fixture, false, false))
+      test(fixture + ' (shadow mode)', () => testRunner(fixture, true, true))
     })
 })
 
@@ -29,14 +30,15 @@ afterAll(async () => browser && (await browser.close()))
 async function testRunner(
   fixture: string,
   extractCss: boolean,
+  shadowMode: boolean,
   moreAssertions?: Function
 ): Promise<void> {
   const filename = path.join(__dirname, 'fixtures', fixture + '.vue')
   try {
-    const code = await build(filename, extractCss)
+    const code = await build(filename, extractCss, shadowMode)
 
     const page = await open(
-      fixture + (extractCss ? '-extract' : ''),
+      fixture + (extractCss ? '-extract' : '') + (shadowMode ? '-shadow' : ''),
       browser!,
       code
     )

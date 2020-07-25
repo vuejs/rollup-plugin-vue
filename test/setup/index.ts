@@ -18,7 +18,7 @@ function encodeBase64(input: string): string {
   return new Buffer(input).toString('base64')
 }
 
-export async function build(filename: string, css = false): Promise<string> {
+export async function build(filename: string, css = false, shadowMode = false): Promise<string> {
   const cacheKey = JSON.stringify({ filename, css })
   if (cacheKey in cache) return cache[cacheKey]
   let style: string = ''
@@ -29,11 +29,12 @@ export async function build(filename: string, css = false): Promise<string> {
     style: {
       postcssPlugins: [assets({ basePath: '/' })],
     },
+    shadowMode
   }
   const bundle = await rollup({
     input,
     plugins: [
-      pluginCreateVueApp(input, filename),
+      pluginCreateVueApp(input, filename, shadowMode),
       pluginCSS({
         output: (s: string) => {
           style = s
