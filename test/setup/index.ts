@@ -19,7 +19,7 @@ function encodeBase64(input: string): string {
 }
 
 export async function build(filename: string, css = false, shadowMode = false): Promise<string> {
-  const cacheKey = JSON.stringify({ filename, css })
+  const cacheKey = JSON.stringify({ filename, css, shadowMode })
   if (cacheKey in cache) return cache[cacheKey]
   let style: string = ''
   const input = filename + '__app.js'
@@ -90,6 +90,7 @@ export async function open(
   name: string,
   browser: Browser,
   code: string,
+  shadowMode: boolean,
   id: string = '#test'
 ): Promise<Page> {
   const page = await browser.newPage()
@@ -119,7 +120,11 @@ export async function open(
 
   await page.setContent(content)
 
-  await page.waitFor(id)
-
+  if (shadowMode) {
+    await page.waitFor(id => document.getElementById('app')!.shadowRoot!.querySelector(id), {}, id)
+  } else {
+    await page.waitFor(id)
+  }
+  
   return page
 }
