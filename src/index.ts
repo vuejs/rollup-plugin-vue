@@ -147,16 +147,10 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           debug(`transform(${id})`)
           const block = descriptor.template!
           const preprocessLang = block.lang
-          let preprocessOptions =
+          const preprocessOptions =
             preprocessLang &&
             options.templatePreprocessOptions &&
             options.templatePreprocessOptions[preprocessLang]
-          if (preprocessLang === 'pug') {
-            preprocessOptions = {
-              doctype: 'html',
-              ...preprocessOptions,
-            }
-          }
           const result = compileTemplate({
             filename: query.filename,
             source: code,
