@@ -42,6 +42,10 @@ export interface Options {
   preprocessStyles?: boolean
 
   // sfc template options
+  templatePreprocessOptions?: Record<
+    string,
+    SFCTemplateCompileOptions['preprocessOptions']
+  >
   compiler?: SFCTemplateCompileOptions['compiler']
   compilerOptions?: SFCTemplateCompileOptions['compilerOptions']
   transformAssetUrls?: SFCTemplateCompileOptions['transformAssetUrls']
@@ -142,11 +146,17 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
         if (query.type === 'template') {
           debug(`transform(${id})`)
           const block = descriptor.template!
+          const preprocessLang = block.lang
+          const preprocessOptions =
+            preprocessLang &&
+            options.templatePreprocessOptions &&
+            options.templatePreprocessOptions[preprocessLang]
           const result = compileTemplate({
             filename: query.filename,
             source: code,
             inMap: query.src ? undefined : block.map,
-            preprocessLang: block.lang,
+            preprocessLang,
+            preprocessOptions,
             preprocessCustomRequire: options.preprocessCustomRequire,
             compiler: options.compiler,
             ssr: isServer,
