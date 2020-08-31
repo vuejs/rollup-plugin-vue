@@ -143,6 +143,10 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
 
         const descriptor = getDescriptor(query.filename)
         const hasScoped = descriptor.styles.some((s) => s.scoped)
+        if (query.src) {
+            this.addWatchFile(query.filename);
+        }
+        
         if (query.type === 'template') {
           debug(`transform(${id})`)
           const block = descriptor.template!
