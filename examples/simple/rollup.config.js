@@ -2,9 +2,9 @@ import VuePlugin from 'rollup-plugin-vue'
 
 export default [
   {
-    input: 'src/App.vue',
+    input: 'src/HelloWorld.vue',
     output: {
-      file: 'dist/app.js',
+      file: 'dist/HelloWorld.js',
       format: 'esm',
       sourcemap: 'inline',
     },
