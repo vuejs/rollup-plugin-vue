@@ -418,7 +418,7 @@ function transformVueSFC(
   // feature information
   const hasScoped = descriptor.styles.some((s) => s.scoped)
 
-  const templateImport = descriptor.template
+  const templateImport = !descriptor.template
     ? ''
     : getTemplateCode(descriptor, resourcePath, id, hasScoped, isServer)
 
