@@ -25,6 +25,7 @@
     "@vue/compiler-sfc": "*"
   },
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^9.0.0",
     "@types/debug": "^4.1.5",
     "@types/jest": "^25.2.3",
     "@types/node": "^13.13.2",
@@ -35,6 +36,7 @@
     "npm-run-all": "^4.1.5",
     "prettier": "^2.0.5",
     "rollup": "^2.7.2",
+    "rollup-plugin-postcss": "^3.1.8",
     "ts-jest": "^26.0.0",
     "typescript": "^3.9.3"
   },
