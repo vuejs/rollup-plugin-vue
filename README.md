@@ -15,6 +15,9 @@ With rollup you can break your application into reusable modules.
   <a href="https://coveralls.io/github/znck/rollup-plugin-vue?branch=master">
     <img src="https://coveralls.io/repos/github/znck/rollup-plugin-vue/badge.svg?branch=master&style=flat-square" alt="Coverage Status" />
   </a>
+  <a href="https://www.npmjs.com/package/rollup-plugin-vue">
+    <img src="https://img.shields.io/npm/v/rollup-plugin-vue.svg?sanitize=true" alt="Version" />
+  </a>
 </p>
 
 ## Usage
