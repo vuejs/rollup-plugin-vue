@@ -184,6 +184,13 @@ Configure ES2015+ to ES5 transpiling options for the generated render function c
 
 The template render functions compilation supports a special transform `stripWith` (enabled by default), which removes the `with` usage in generated render functions to make them strict-mode compliant.
 
+## `shadowDom`
+
+- type: `boolean`
+- default: `false`
+
+Compiled the component will be mounted into Shadow DOM. In this mode, instead of the document head, the styles of the component will be injected into this.$root.$options.shadowRoot.
+
 ## `normalizer`
 
 - type: `string`

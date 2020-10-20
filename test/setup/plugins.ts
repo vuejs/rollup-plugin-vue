@@ -52,7 +52,7 @@ export const plugins = [
   })
 ]
 
-export function pluginCreateVueApp(filename: string, component: string): any {
+export function pluginCreateVueApp(filename: string, component: string, shadowMode = false): any {
   return {
     name: 'Inline',
     resolveId(id: string): string | undefined {
@@ -66,8 +66,20 @@ export function pluginCreateVueApp(filename: string, component: string): any {
     Vue.config.productionTip = false
     Vue.config.devtools = false
 
+    ${shadowMode && `
+      const container = document.createElement('div')
+      const app = document.querySelector('#app').attachShadow({mode: 'open'})
+      app.appendChild(container)
+    `}
+
     new Vue({
-      el: '#app',
+      ${shadowMode
+        ? `
+        el: container,
+        shadowRoot: app,
+      ` : `
+        el: '#app',
+      `}
       render (h) {
         return h(Component)
       }

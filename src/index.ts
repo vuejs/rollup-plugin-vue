@@ -133,6 +133,8 @@ export interface VuePluginOptions {
    * @@vue/component-compiler [#](https://github.com/vuejs/vue-component-compiler#api) script processing options.
    */
   script?: ScriptOptions
+
+  shadowMode?: boolean
   /**
    * @@vue/component-compiler [#](https://github.com/vuejs/vue-component-compiler#api) style processing options.
    */
@@ -200,6 +202,8 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
   if (!opts.styleInjectorShadow)
     opts.styleInjectorShadow =
       '~' + 'vue-runtime-helpers/dist/inject-style/shadow.mjs'
+  if (opts.shadowMode)
+    opts.isWebComponent = true
 
   createVuePartRequest.defaultLang = {
     ...createVuePartRequest.defaultLang,
