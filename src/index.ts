@@ -466,7 +466,8 @@ function getTemplateCode(
   hasScoped: boolean,
   isServer: boolean
 ) {
-  let templateImport = `const render = () => {}`
+  const renderFnName = isServer ? 'ssrRender' : 'render'
+  let templateImport = `const ${renderFnName} = () => {}`
   let templateRequest
   if (descriptor.template) {
     const src = descriptor.template.src || resourcePath
@@ -476,9 +477,7 @@ function getTemplateCode(
     const attrsQuery = attrsToQuery(descriptor.template.attrs)
     const query = `?vue&type=template${idQuery}${srcQuery}${scopedQuery}${attrsQuery}`
     templateRequest = _(src + query)
-    templateImport = `import { ${
-      isServer ? 'ssrRender' : 'render'
-    } } from ${templateRequest}`
+    templateImport = `import { ${renderFnName} } from ${templateRequest}`
   }
 
   return templateImport
