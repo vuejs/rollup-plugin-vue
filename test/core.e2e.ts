@@ -12,6 +12,20 @@ describe('simple', () => {
   })
 })
 
+describe('no-template', () => {
+  let result!: RollupOutput
+
+  beforeAll(async () => {
+    result = await roll('no-template')
+  })
+
+  it('should leave the render function alone when no template is in the SFC', () => {
+    expect(result.output[0].code).not.toEqual(
+      expect.stringContaining('.render =')
+    )
+  })
+})
+
 describe('custom-block', () => {
   let result!: RollupOutput
 
