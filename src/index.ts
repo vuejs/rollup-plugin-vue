@@ -12,6 +12,7 @@ import {
   compileStyleAsync,
   compileTemplate,
   parse,
+  compileScript,
   SFCBlock,
   SFCDescriptor,
   SFCTemplateCompileOptions,
@@ -45,6 +46,10 @@ export interface Options {
   preprocessStyles?: boolean
 
   // sfc template options
+  templatePreprocessOptions?: Record<
+    string,
+    SFCTemplateCompileOptions['preprocessOptions']
+  >
   compiler?: SFCTemplateCompileOptions['compiler']
   compilerOptions?: SFCTemplateCompileOptions['compilerOptions']
   transformAssetUrls?: SFCTemplateCompileOptions['transformAssetUrls']
@@ -127,7 +132,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           if (block) {
             return {
               code: block.content,
-              map: normalizeSourceMap(block.map),
+              map: normalizeSourceMap(block.map, id),
             }
           }
         }
@@ -142,6 +147,10 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
         if (!query.src && !filter(query.filename)) return null
         const descriptor = getDescriptor(query.filename)
         const hasScoped = descriptor.styles.some((s) => s.scoped)
+        if (query.src) {
+            this.addWatchFile(query.filename);
+        }
+        
         if (query.type === 'template') {
           const compilerKey = query.compiler
           let compiler = options.compiler
@@ -174,17 +183,26 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
 
           debug(`transform(${id})`)
           const block = descriptor.template!
+          const preprocessLang = block.lang
+          const preprocessOptions =
+            preprocessLang &&
+            options.templatePreprocessOptions &&
+            options.templatePreprocessOptions[preprocessLang]
           const result = compileTemplate({
             filename: query.filename,
             source: code,
             inMap: query.src ? undefined : block.map,
-            preprocessLang: block.lang,
+            preprocessLang,
+            preprocessOptions,
             preprocessCustomRequire: options.preprocessCustomRequire,
             compiler,
             ssr: isServer,
             compilerOptions: {
               ...compilerOptions,
               scopeId: hasScoped ? `data-v-${query.id}` : undefined,
+              bindingMetadata: descriptor.script
+                ? descriptor.script.bindings
+                : undefined,
             },
             transformAssetUrls: options.transformAssetUrls,
           })
@@ -211,25 +229,53 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
 
           return {
             code: result.code,
-            map: normalizeSourceMap(result.map!),
+            map: normalizeSourceMap(result.map!, id),
           }
         } else if (query.type === 'style') {
           debug(`transform(${id})`)
           const block = descriptor.styles[query.index]!
+
+          let preprocessOptions = options.preprocessOptions || {}
+          const preprocessLang = (options.preprocessStyles
+            ? block.lang
+            : undefined) as SFCAsyncStyleCompileOptions['preprocessLang']
+
+          if (preprocessLang) {
+            preprocessOptions =
+              preprocessOptions[preprocessLang] || preprocessOptions
+            // include node_modules for imports by default
+            switch (preprocessLang) {
+              case 'scss':
+              case 'sass':
+                preprocessOptions = {
+                  includePaths: ['node_modules'],
+                  ...preprocessOptions,
+                }
+                break
+              case 'less':
+              case 'stylus':
+                preprocessOptions = {
+                  paths: ['node_modules'],
+                  ...preprocessOptions,
+                }
+            }
+          } else {
+            preprocessOptions = {}
+          }
+
           const result = await compileStyleAsync({
             filename: query.filename,
             id: `data-v-${query.id!}`,
             source: code,
             scoped: block.scoped,
+            vars: !!block.vars,
             modules: !!block.module,
             postcssOptions: options.postcssOptions,
             postcssPlugins: options.postcssPlugins,
             modulesOptions: options.cssModulesOptions,
-            preprocessLang: options.preprocessStyles
-              ? (block.lang as any)
-              : undefined,
+            preprocessLang,
             preprocessCustomRequire: options.preprocessCustomRequire,
-            preprocessOptions: options.preprocessOptions || {},
+            preprocessOptions,
           })
 
           if (result.errors.length) {
@@ -250,7 +296,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           } else {
             return {
               code: result.code,
-              map: normalizeSourceMap(result.map!),
+              map: normalizeSourceMap(result.map!, id),
             }
           }
         }
@@ -376,21 +422,14 @@ function getDescriptor(id: string) {
   throw new Error(`${id} is not parsed yet`)
 }
 
-function parseSFC(
-  code: string,
-  id: string,
-  sourceRoot: string
-): { descriptor: SFCDescriptor; errors: CompilerError[] } {
+function parseSFC(code: string, id: string, sourceRoot: string) {
   const { descriptor, errors } = parse(code, {
     sourceMap: true,
     filename: id,
     sourceRoot: sourceRoot,
-    pad: 'line',
   })
-
   cache.set(id, descriptor)
-
-  return { descriptor, errors }
+  return { descriptor, errors: errors }
 }
 
 function transformVueSFC(
@@ -416,13 +455,17 @@ function transformVueSFC(
   const id = hash(isProduction ? shortFilePath + '\n' + code : shortFilePath)
   // feature information
   const hasScoped = descriptor.styles.some((s) => s.scoped)
-  const templateImport = getTemplateCode(
-    descriptor,
-    resourcePath,
-    id,
-    hasScoped,
-    isServer
-  )
+
+  const templateImport = !descriptor.template
+    ? ''
+    : getTemplateCode(descriptor, resourcePath, id, hasScoped, isServer)
+
+  const renderReplace = !descriptor.template
+    ? ''
+    : isServer
+    ? `script.ssrRender = ssrRender`
+    : `script.render = render`
+
   const scriptImport = getScriptCode(descriptor, resourcePath)
   const stylesCode = getStyleCode(
     descriptor,
@@ -440,7 +483,7 @@ function transformVueSFC(
     templateImport,
     stylesCode,
     customBlocksCode,
-    isServer ? `script.ssrRender = ssrRender` : `script.render = render`,
+    renderReplace,
   ]
   if (hasScoped) {
     output.push(`script.__scopeId = ${_(`data-v-${id}`)}`)
@@ -461,7 +504,8 @@ function getTemplateCode(
   hasScoped: boolean,
   isServer: boolean
 ) {
-  let templateImport = `const render = () => {}`
+  const renderFnName = isServer ? 'ssrRender' : 'render'
+  let templateImport = `const ${renderFnName} = () => {}`
   let templateRequest
   if (descriptor.template) {
     const src = descriptor.template.src || resourcePath
@@ -471,9 +515,7 @@ function getTemplateCode(
     const attrsQuery = attrsToQuery(descriptor.template.attrs)
     const query = `?vue&type=template${idQuery}${srcQuery}${scopedQuery}${attrsQuery}`
     templateRequest = _(src + query)
-    templateImport = `import { ${
-      isServer ? 'ssrRender' : 'render'
-    } } from ${templateRequest}`
+    templateImport = `import { ${renderFnName} } from ${templateRequest}`
   }
 
   return templateImport
@@ -481,14 +523,20 @@ function getTemplateCode(
 
 function getScriptCode(descriptor: SFCDescriptor, resourcePath: string) {
   let scriptImport = `const script = {}`
-  if (descriptor.script) {
-    const src = descriptor.script.src || resourcePath
-    const attrsQuery = attrsToQuery(descriptor.script.attrs, 'js')
-    const srcQuery = descriptor.script.src ? `&src` : ``
-    const query = `?vue&type=script${srcQuery}${attrsQuery}`
-    const scriptRequest = _(src + query)
-    scriptImport =
-      `import script from ${scriptRequest}\n` + `export * from ${scriptRequest}` // support named exports
+  if (descriptor.script || descriptor.scriptSetup) {
+    if (compileScript) {
+      descriptor.script = compileScript(descriptor)
+    }
+    if (descriptor.script) {
+      const src = descriptor.script.src || resourcePath
+      const attrsQuery = attrsToQuery(descriptor.script.attrs, 'js')
+      const srcQuery = descriptor.script.src ? `&src` : ``
+      const query = `?vue&type=script${srcQuery}${attrsQuery}`
+      const scriptRequest = _(src + query)
+      scriptImport =
+        `import script from ${scriptRequest}\n` +
+        `export * from ${scriptRequest}` // support named exports
+    }
   }
   return scriptImport
 }
@@ -561,21 +609,33 @@ function getCustomBlock(
   return code
 }
 
-function createRollupError(id: string, error: CompilerError): RollupError {
-  return {
-    id,
-    plugin: 'vue',
-    pluginCode: String(error.code),
-    message: error.message,
-    frame: error.loc!.source,
-    parserError: error,
-    loc: error.loc
-      ? {
-          file: id,
-          line: error.loc.start.line,
-          column: error.loc.start.column,
-        }
-      : undefined,
+function createRollupError(
+  id: string,
+  error: CompilerError | SyntaxError
+): RollupError {
+  if ('code' in error) {
+    return {
+      id,
+      plugin: 'vue',
+      pluginCode: String(error.code),
+      message: error.message,
+      frame: error.loc!.source,
+      parserError: error,
+      loc: error.loc
+        ? {
+            file: id,
+            line: error.loc.start.line,
+            column: error.loc.start.column,
+          }
+        : undefined,
+    }
+  } else {
+    return {
+      id,
+      plugin: 'vue',
+      message: error.message,
+      parserError: error,
+    }
   }
 }
 
@@ -612,8 +672,13 @@ function _(any: any) {
   return JSON.stringify(any)
 }
 
-function normalizeSourceMap(map: SFCTemplateCompileResults['map']): any {
+function normalizeSourceMap(map: SFCTemplateCompileResults['map'], id: string): any {
   if (!map) return null as any
+
+  if (!id.includes('type=script')) {
+    map.file = id;
+    map.sources[0] = id;
+  }
 
   return {
     ...map,
