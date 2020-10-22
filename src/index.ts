@@ -482,16 +482,19 @@ export default function vue(opts: Partial<VuePluginOptions> = {}): Plugin {
 
         descriptor.customBlocks.forEach((block, index) => {
           if (!isAllowed(block.type)) return
+          const vuePartRequest = createVuePartRequest(
+            filename,
+            (typeof block.attrs.lang === 'string' && block.attrs.lang) ||
+              createVuePartRequest.defaultLang[block.type],
+            'customBlocks',
+            index,
+            block.type
+          )
           result.code +=
             '\n' +
-            `export * from '${createVuePartRequest(
-              filename,
-              (typeof block.attrs.lang === 'string' && block.attrs.lang) ||
-                createVuePartRequest.defaultLang[block.type] ||
-                block.type,
-              'customBlocks',
-              index
-            )}'`
+            `export * from '${vuePartRequest}'\n` +
+            `import __custom_block_${index}__ from '${vuePartRequest}'\n` +
+            `__custom_block_${index}__(__vue_component__)`
         })
 
         dT(

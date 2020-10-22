@@ -22,7 +22,13 @@ export interface VuePartRequestMeta {
 }
 
 export interface VuePartRequestCreator {
-  (filename: string, lang: string, type: string, index?: number): string
+  (
+    filename: string,
+    lang: string,
+    type: string,
+    index?: number,
+    blockType?: string
+  ): string
 
   defaultLang: {
     [key: string]: string
@@ -68,7 +74,8 @@ export const createVuePartRequest: VuePartRequestCreator = ((
   filename: string,
   lang: string | undefined,
   type: string,
-  index?: number
+  index?: number,
+  blockType?: string
 ): string => {
   lang = lang || createVuePartRequest.defaultLang[type]
 
@@ -76,7 +83,7 @@ export const createVuePartRequest: VuePartRequestCreator = ((
 
   const query = match ? queryString.parse(match[2]) : {}
 
-  query[PARAM_NAME] = [type, index, lang]
+  query[PARAM_NAME] = [type, index, blockType, lang]
     .filter(it => it !== undefined)
     .join('.')
 
