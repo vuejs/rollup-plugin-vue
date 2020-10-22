@@ -1,0 +1,15 @@
+{
+  "name": "typescript",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "rollup -c"
+  },
+  "dependencies": {
+    "vue": "^3.0.0-beta.14",
+    "rollup": "^2.10.9",
+    "rollup-plugin-typescript2": "^0.27.1",
+    "typescript": "^3.9.3",
+    "rollup-plugin-vue": "link:../.."
+  }
+}

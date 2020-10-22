@@ -75,6 +75,23 @@ describe('css-modules', () => {
   })
 })
 
+describe('typescript', () => {
+  let result!: RollupOutput
+
+  beforeAll(async () => {
+    result = await roll('typescript')
+  })
+
+  it('should compile <script lang="ts">', () => {
+    expect(result.output[0].code).toEqual(
+      expect.stringContaining("name: 'App'")
+    )
+    expect(result.output[0].code).toEqual(
+      expect.stringContaining("title: 'Bar'")
+    )
+  })
+})
+
 import Path from 'path'
 async function roll(name: string) {
   const configFile = `../examples/${name}/rollup.config.js`
