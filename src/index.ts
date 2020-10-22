@@ -42,6 +42,10 @@ export interface Options {
   preprocessStyles?: boolean
 
   // sfc template options
+  templatePreprocessOptions?: Record<
+    string,
+    SFCTemplateCompileOptions['preprocessOptions']
+  >
   compiler?: SFCTemplateCompileOptions['compiler']
   compilerOptions?: SFCTemplateCompileOptions['compilerOptions']
   transformAssetUrls?: SFCTemplateCompileOptions['transformAssetUrls']
@@ -142,11 +146,17 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
         if (query.type === 'template') {
           debug(`transform(${id})`)
           const block = descriptor.template!
+          const preprocessLang = block.lang
+          const preprocessOptions =
+            preprocessLang &&
+            options.templatePreprocessOptions &&
+            options.templatePreprocessOptions[preprocessLang]
           const result = compileTemplate({
             filename: query.filename,
             source: code,
             inMap: query.src ? undefined : block.map,
-            preprocessLang: block.lang,
+            preprocessLang,
+            preprocessOptions,
             preprocessCustomRequire: options.preprocessCustomRequire,
             compiler: options.compiler,
             ssr: isServer,
@@ -407,13 +417,17 @@ function transformVueSFC(
   const id = hash(isProduction ? shortFilePath + '\n' + code : shortFilePath)
   // feature information
   const hasScoped = descriptor.styles.some((s) => s.scoped)
-  const templateImport = getTemplateCode(
-    descriptor,
-    resourcePath,
-    id,
-    hasScoped,
-    isServer
-  )
+
+  const templateImport = !descriptor.template
+    ? ''
+    : getTemplateCode(descriptor, resourcePath, id, hasScoped, isServer)
+
+  const renderReplace = !descriptor.template
+    ? ''
+    : isServer
+    ? `script.ssrRender = ssrRender`
+    : `script.render = render`
+
   const scriptImport = getScriptCode(descriptor, resourcePath)
   const stylesCode = getStyleCode(
     descriptor,
@@ -431,7 +445,7 @@ function transformVueSFC(
     templateImport,
     stylesCode,
     customBlocksCode,
-    isServer ? `script.ssrRender = ssrRender` : `script.render = render`,
+    renderReplace,
   ]
   if (hasScoped) {
     output.push(`script.__scopeId = ${_(`data-v-${id}`)}`)
@@ -452,7 +466,8 @@ function getTemplateCode(
   hasScoped: boolean,
   isServer: boolean
 ) {
-  let templateImport = `const render = () => {}`
+  const renderFnName = isServer ? 'ssrRender' : 'render'
+  let templateImport = `const ${renderFnName} = () => {}`
   let templateRequest
   if (descriptor.template) {
     const src = descriptor.template.src || resourcePath
@@ -462,9 +477,7 @@ function getTemplateCode(
     const attrsQuery = attrsToQuery(descriptor.template.attrs)
     const query = `?vue&type=template${idQuery}${srcQuery}${scopedQuery}${attrsQuery}`
     templateRequest = _(src + query)
-    templateImport = `import { ${
-      isServer ? 'ssrRender' : 'render'
-    } } from ${templateRequest}`
+    templateImport = `import { ${renderFnName} } from ${templateRequest}`
   }
 
   return templateImport
