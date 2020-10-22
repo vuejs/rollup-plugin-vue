@@ -18,6 +18,6 @@ export default {
 
 <style scoped>
 .green {
-  color: red;
+  color: green;
 }
 </style>
