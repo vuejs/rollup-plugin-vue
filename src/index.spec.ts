@@ -53,7 +53,7 @@ describe('Rollup Plugin Vue', () => {
 
       expect(code).toEqual(
         expect.stringContaining(
-          `import { render } from "example.vue?vue&type=template&id=063a7d4c"`
+          `import { render } from "example.vue?vue&type=template&id=063a7d4c&lang.js"`
         )
       )
       expect(code).toEqual(expect.stringContaining(`script.render = render`))
@@ -66,7 +66,7 @@ describe('Rollup Plugin Vue', () => {
       )
       expect(code).toEqual(
         expect.stringContaining(
-          `import { render } from "example.vue?vue&type=template&id=063a7d4c"`
+          `import { render } from "example.vue?vue&type=template&id=063a7d4c&lang.js"`
         )
       )
       expect(code).toEqual(expect.stringContaining(`script.render = render`))
