@@ -146,7 +146,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
         if (query.src) {
             this.addWatchFile(query.filename);
         }
-        
+
         if (query.type === 'template') {
           debug(`transform(${id})`)
           const block = descriptor.template!
@@ -478,7 +478,7 @@ function getTemplateCode(
     const idQuery = `&id=${id}`
     const scopedQuery = hasScoped ? `&scoped=true` : ``
     const srcQuery = descriptor.template.src ? `&src` : ``
-    const attrsQuery = attrsToQuery(descriptor.template.attrs)
+    const attrsQuery = attrsToQuery(descriptor.template.attrs, 'js')
     const query = `?vue&type=template${idQuery}${srcQuery}${scopedQuery}${attrsQuery}`
     templateRequest = _(src + query)
     templateImport = `import { ${renderFnName} } from ${templateRequest}`
