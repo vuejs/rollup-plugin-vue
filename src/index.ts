@@ -144,7 +144,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
         const descriptor = getDescriptor(query.filename)
         const hasScoped = descriptor.styles.some((s) => s.scoped)
         if (query.src) {
-            this.addWatchFile(query.filename);
+          this.addWatchFile(query.filename)
         }
 
         if (query.type === 'template') {
@@ -478,7 +478,7 @@ function getTemplateCode(
     const idQuery = `&id=${id}`
     const scopedQuery = hasScoped ? `&scoped=true` : ``
     const srcQuery = descriptor.template.src ? `&src` : ``
-    const attrsQuery = attrsToQuery(descriptor.template.attrs, 'js')
+    const attrsQuery = attrsToQuery(descriptor.template.attrs, 'js', true)
     const query = `?vue&type=template${idQuery}${srcQuery}${scopedQuery}${attrsQuery}`
     templateRequest = _(src + query)
     templateImport = `import { ${renderFnName} } from ${templateRequest}`
@@ -638,12 +638,15 @@ function _(any: any) {
   return JSON.stringify(any)
 }
 
-function normalizeSourceMap(map: SFCTemplateCompileResults['map'], id: string): any {
+function normalizeSourceMap(
+  map: SFCTemplateCompileResults['map'],
+  id: string
+): any {
   if (!map) return null as any
 
   if (!id.includes('type=script')) {
-    map.file = id;
-    map.sources[0] = id;
+    map.file = id
+    map.sources[0] = id
   }
 
   return {
