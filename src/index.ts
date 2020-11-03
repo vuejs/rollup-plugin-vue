@@ -18,6 +18,8 @@ import {
   SFCTemplateCompileOptions,
   SFCTemplateCompileResults,
   SFCAsyncStyleCompileOptions,
+  TemplateCompiler,
+  CompilerOptions,
 } from '@vue/compiler-sfc'
 import fs from 'fs'
 import createDebugger from 'debug'
@@ -28,6 +30,8 @@ import { Plugin, RollupError } from 'rollup'
 import { createFilter } from 'rollup-pluginutils'
 
 const debug = createDebugger('rollup-plugin-vue')
+
+type TemplateCompilers = TemplateCompiler | [TemplateCompiler, CompilerOptions]
 
 export interface Options {
   include: string | RegExp | (string | RegExp)[]
@@ -49,6 +53,7 @@ export interface Options {
   compiler?: SFCTemplateCompileOptions['compiler']
   compilerOptions?: SFCTemplateCompileOptions['compilerOptions']
   transformAssetUrls?: SFCTemplateCompileOptions['transformAssetUrls']
+  templateCompilers?: Record<string, TemplateCompilers>
 
   // sfc style options
   postcssOptions?: SFCAsyncStyleCompileOptions['postcssOptions']
@@ -140,7 +145,6 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
       const query = parseVuePartRequest(id)
       if (query.vue) {
         if (!query.src && !filter(query.filename)) return null
-
         const descriptor = getDescriptor(query.filename)
         const hasScoped = descriptor.styles.some((s) => s.scoped)
         if (query.src) {
@@ -148,6 +152,35 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
         }
 
         if (query.type === 'template') {
+          const compilerKey = query.compiler
+          let compiler = options.compiler
+          let compilerOptions = options.compilerOptions || {}
+          if (compilerKey) {
+            if (typeof compilerKey === 'string') {
+              if (
+                options.templateCompilers &&
+                options.templateCompilers[compilerKey]
+              ) {
+                const compilers = options.templateCompilers[compilerKey]
+                if (Array.isArray(compilers)) {
+                  ;[compiler, compilerOptions] = compilers
+                } else {
+                  compiler = compilers
+                }
+              } else {
+                this.error({
+                  id: query.filename,
+                  message: `The "${compilerKey}" compiler not found.Please add "templateCompilers" options.`,
+                })
+              }
+            } else {
+              this.error({
+                id: query.filename,
+                message: `Please ensure custom template compiler attribute.`,
+              })
+            }
+          }
+
           debug(`transform(${id})`)
           const block = descriptor.template!
           const preprocessLang = block.lang
@@ -162,10 +195,10 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             preprocessLang,
             preprocessOptions,
             preprocessCustomRequire: options.preprocessCustomRequire,
-            compiler: options.compiler,
+            compiler,
             ssr: isServer,
             compilerOptions: {
-              ...options.compilerOptions,
+              ...compilerOptions,
               scopeId: hasScoped ? `data-v-${query.id}` : undefined,
               bindingMetadata: descriptor.script
                 ? descriptor.script.bindings
@@ -338,6 +371,7 @@ type Query =
       type: 'template'
       id?: string
       src?: true
+      compiler?: string
     }
   | {
       filename: string
