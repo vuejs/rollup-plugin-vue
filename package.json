@@ -19,6 +19,7 @@
   "dependencies": {
     "debug": "^4.1.1",
     "hash-sum": "^2.0.0",
+    "rollup-plugin-typescript2": "^0.29.0",
     "rollup-pluginutils": "^2.8.2"
   },
   "peerDependencies": {

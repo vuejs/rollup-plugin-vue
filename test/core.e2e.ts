@@ -92,6 +92,18 @@ describe('typescript', () => {
   })
 })
 
+describe('preserve modules', () => {
+  let result!: RollupOutput
+
+  beforeAll(async () => {
+    result = await roll('preserve-modules')
+  })
+
+  it('should have modules', () => {
+    expect(Object.keys(result.output[0].modules).length).not.toEqual(0)
+  })
+})
+
 import Path from 'path'
 async function roll(name: string) {
   const configFile = `../examples/${name}/rollup.config.js`
