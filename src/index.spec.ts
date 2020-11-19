@@ -76,7 +76,7 @@ describe('Rollup Plugin Vue', () => {
       const { code } = await transform(`<style>.foo {}</style>`, `example.vue`)
       expect(code).toEqual(
         expect.stringContaining(
-          `import "example.vue?vue&type=style&index=0&lang.css"`
+          `import "example.vue?vue&type=style&index=0&id=063a7d4c&lang.css"`
         )
       )
     })
@@ -100,12 +100,12 @@ describe('Rollup Plugin Vue', () => {
       )
       expect(code).toEqual(
         expect.stringContaining(
-          `import "example.vue?vue&type=style&index=0&lang.css`
+          `import "example.vue?vue&type=style&index=0&id=063a7d4c&lang.css`
         )
       )
       expect(code).toEqual(
         expect.stringContaining(
-          `import style0 from "example.vue?vue&type=style&index=0&module=true&lang.css`
+          `import style0 from "example.vue?vue&type=style&index=0&id=063a7d4c&module=true&lang.css`
         )
       )
       expect(code).toEqual(expect.stringContaining('script.__cssModules = {}'))
@@ -121,12 +121,12 @@ describe('Rollup Plugin Vue', () => {
       )
       expect(code).toEqual(
         expect.stringContaining(
-          `import "example.vue?vue&type=style&index=0&lang.css`
+          `import "example.vue?vue&type=style&index=0&id=063a7d4c&lang.css`
         )
       )
       expect(code).toEqual(
         expect.stringContaining(
-          `import style0 from "example.vue?vue&type=style&index=0&module=custom&lang.css`
+          `import style0 from "example.vue?vue&type=style&index=0&id=063a7d4c&module=custom&lang.css`
         )
       )
       expect(code).toEqual(expect.stringContaining('script.__cssModules = {}'))

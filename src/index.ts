@@ -18,6 +18,7 @@ import {
   SFCTemplateCompileOptions,
   SFCTemplateCompileResults,
   SFCAsyncStyleCompileOptions,
+  generateCssVars,
 } from '@vue/compiler-sfc'
 import fs from 'fs'
 import createDebugger from 'debug'
@@ -117,7 +118,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             query.type === 'template'
               ? descriptor.template!
               : query.type === 'script'
-              ? descriptor.script!
+              ? descriptor.scriptCompiled || descriptor.script
               : query.type === 'style'
               ? descriptor.styles[query.index]
               : typeof query.index === 'number'
@@ -142,36 +143,16 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
         if (!query.src && !filter(query.filename)) return null
 
         const descriptor = getDescriptor(query.filename)
-        const hasScoped = descriptor.styles.some((s) => s.scoped)
         if (query.src) {
           this.addWatchFile(query.filename)
         }
 
         if (query.type === 'template') {
           debug(`transform(${id})`)
-          const block = descriptor.template!
-          const preprocessLang = block.lang
-          const preprocessOptions =
-            preprocessLang &&
-            options.templatePreprocessOptions &&
-            options.templatePreprocessOptions[preprocessLang]
           const result = compileTemplate({
-            filename: query.filename,
+            ...getTemplateCompilerOptions(options, descriptor, query.id),
             source: code,
-            inMap: query.src ? undefined : block.map,
-            preprocessLang,
-            preprocessOptions,
-            preprocessCustomRequire: options.preprocessCustomRequire,
-            compiler: options.compiler,
-            ssr: isServer,
-            compilerOptions: {
-              ...options.compilerOptions,
-              scopeId: hasScoped ? `data-v-${query.id}` : undefined,
-              bindingMetadata: descriptor.script
-                ? descriptor.script.bindings
-                : undefined,
-            },
-            transformAssetUrls: options.transformAssetUrls,
+            filename: query.filename,
           })
 
           if (result.errors.length) {
@@ -232,10 +213,10 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
 
           const result = await compileStyleAsync({
             filename: query.filename,
-            id: `data-v-${query.id!}`,
+            id: `data-v-${query.id}`,
+            isProd: isProduction,
             source: code,
             scoped: block.scoped,
-            vars: !!block.vars,
             modules: !!block.module,
             postcssOptions: options.postcssOptions,
             postcssPlugins: options.postcssPlugins,
@@ -300,6 +281,47 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
   }
 }
 
+function getTemplateCompilerOptions(
+  options: Options,
+  descriptor: SFCDescriptor,
+  scopeId: string
+): Omit<SFCTemplateCompileOptions, 'source'> | undefined {
+  const block = descriptor.template
+  if (!block) {
+    return
+  }
+
+  const isServer = options.target === 'node'
+  const isProduction =
+    process.env.NODE_ENV === 'production' || process.env.BUILD === 'production'
+  const hasScoped = descriptor.styles.some((s) => s.scoped)
+  const preprocessLang = block.lang
+  const preprocessOptions =
+    preprocessLang &&
+    options.templatePreprocessOptions &&
+    options.templatePreprocessOptions[preprocessLang]
+  return {
+    filename: descriptor.filename,
+    inMap: block.src ? undefined : block.map,
+    preprocessLang,
+    preprocessOptions,
+    preprocessCustomRequire: options.preprocessCustomRequire,
+    compiler: options.compiler,
+    ssr: isServer,
+    compilerOptions: {
+      ...options.compilerOptions,
+      scopeId: hasScoped ? `data-v-${scopeId}` : undefined,
+      bindingMetadata: descriptor.scriptCompiled
+        ? descriptor.scriptCompiled.bindings
+        : undefined,
+      ssrCssVars: isServer
+        ? generateCssVars(descriptor, scopeId, isProduction)
+        : undefined,
+    },
+    transformAssetUrls: options.transformAssetUrls,
+  }
+}
+
 function createCustomBlockFilter(
   queries?: string[]
 ): (type: string) => boolean {
@@ -336,7 +358,7 @@ type Query =
       filename: string
       vue: true
       type: 'template'
-      id?: string
+      id: string
       src?: true
     }
   | {
@@ -344,7 +366,7 @@ type Query =
       vue: true
       type: 'style'
       index: number
-      id?: string
+      id: string
       scoped?: boolean
       module?: string | boolean
       src?: true
@@ -418,25 +440,39 @@ function transformVueSFC(
   const shortFilePath = relative(rootContext, resourcePath)
     .replace(/^(\.\.[\/\\])+/, '')
     .replace(/\\/g, '/')
-  const id = hash(isProduction ? shortFilePath + '\n' + code : shortFilePath)
+  const scopeId = hash(
+    isProduction ? shortFilePath + '\n' + code : shortFilePath
+  )
   // feature information
   const hasScoped = descriptor.styles.some((s) => s.scoped)
 
-  const templateImport = !descriptor.template
-    ? ''
-    : getTemplateCode(descriptor, resourcePath, id, hasScoped, isServer)
+  const hasTemplateImport =
+    descriptor.template &&
+    // script setup compiles template inline, do not import again
+    (isServer || !descriptor.scriptSetup)
 
-  const renderReplace = !descriptor.template
-    ? ''
-    : isServer
-    ? `script.ssrRender = ssrRender`
-    : `script.render = render`
+  const templateImport = hasTemplateImport
+    ? getTemplateCode(descriptor, resourcePath, scopeId, isServer)
+    : ''
 
-  const scriptImport = getScriptCode(descriptor, resourcePath)
+  const renderReplace = hasTemplateImport
+    ? isServer
+      ? `script.ssrRender = ssrRender`
+      : `script.render = render`
+    : ''
+
+  const scriptImport = getScriptCode(
+    descriptor,
+    resourcePath,
+    scopeId,
+    isProduction,
+    isServer,
+    getTemplateCompilerOptions(options, descriptor, scopeId)
+  )
   const stylesCode = getStyleCode(
     descriptor,
     resourcePath,
-    id,
+    scopeId,
     options.preprocessStyles
   )
   const customBlocksCode = getCustomBlock(
@@ -452,7 +488,7 @@ function transformVueSFC(
     renderReplace,
   ]
   if (hasScoped) {
-    output.push(`script.__scopeId = ${_(`data-v-${id}`)}`)
+    output.push(`script.__scopeId = ${_(`data-v-${scopeId}`)}`)
   }
   if (!isProduction) {
     output.push(`script.__file = ${_(shortFilePath)}`)
@@ -467,7 +503,6 @@ function getTemplateCode(
   descriptor: SFCDescriptor,
   resourcePath: string,
   id: string,
-  hasScoped: boolean,
   isServer: boolean
 ) {
   const renderFnName = isServer ? 'ssrRender' : 'render'
@@ -476,10 +511,9 @@ function getTemplateCode(
   if (descriptor.template) {
     const src = descriptor.template.src || resourcePath
     const idQuery = `&id=${id}`
-    const scopedQuery = hasScoped ? `&scoped=true` : ``
     const srcQuery = descriptor.template.src ? `&src` : ``
     const attrsQuery = attrsToQuery(descriptor.template.attrs, 'js', true)
-    const query = `?vue&type=template${idQuery}${srcQuery}${scopedQuery}${attrsQuery}`
+    const query = `?vue&type=template${idQuery}${srcQuery}${attrsQuery}`
     templateRequest = _(src + query)
     templateImport = `import { ${renderFnName} } from ${templateRequest}`
   }
@@ -487,16 +521,29 @@ function getTemplateCode(
   return templateImport
 }
 
-function getScriptCode(descriptor: SFCDescriptor, resourcePath: string) {
+function getScriptCode(
+  descriptor: SFCDescriptor,
+  resourcePath: string,
+  id: string,
+  isProd: boolean,
+  isServer: boolean,
+  templateOptions?: Partial<SFCTemplateCompileOptions>
+) {
   let scriptImport = `const script = {}`
   if (descriptor.script || descriptor.scriptSetup) {
     if (compileScript) {
-      descriptor.script = compileScript(descriptor)
+      descriptor.scriptCompiled = compileScript(descriptor, {
+        id,
+        isProd,
+        inlineTemplate: !isServer,
+        templateOptions,
+      })
     }
-    if (descriptor.script) {
-      const src = descriptor.script.src || resourcePath
-      const attrsQuery = attrsToQuery(descriptor.script.attrs, 'js')
-      const srcQuery = descriptor.script.src ? `&src` : ``
+    const script = descriptor.scriptCompiled || descriptor.script
+    if (script) {
+      const src = script.src || resourcePath
+      const attrsQuery = attrsToQuery(script.attrs, 'js')
+      const srcQuery = script.src ? `&src` : ``
       const query = `?vue&type=script${srcQuery}${attrsQuery}`
       const scriptRequest = _(src + query)
       scriptImport =
@@ -527,7 +574,7 @@ function getStyleCode(
       )
       // make sure to only pass id when necessary so that we don't inject
       // duplicate tags when multiple components import the same css file
-      const idQuery = style.scoped ? `&id=${id}` : ``
+      const idQuery = `&id=${id}`
       const srcQuery = style.src ? `&src` : ``
       const query = `?vue&type=style&index=${i}${srcQuery}${idQuery}`
       const styleRequest = src + query + attrsQuery
