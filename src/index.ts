@@ -8,25 +8,20 @@ try {
 }
 
 import {
-  CompilerError,
-  compileStyleAsync,
-  compileTemplate,
-  parse,
-  compileScript,
-  SFCBlock,
-  SFCDescriptor,
   SFCTemplateCompileOptions,
-  SFCTemplateCompileResults,
   SFCAsyncStyleCompileOptions,
-  generateCssVars,
 } from '@vue/compiler-sfc'
 import fs from 'fs'
 import createDebugger from 'debug'
-import hash from 'hash-sum'
-import { basename, relative } from 'path'
-import qs from 'querystring'
-import { Plugin, RollupError } from 'rollup'
+import { Plugin } from 'rollup'
 import { createFilter } from 'rollup-pluginutils'
+import { transformSFCEntry } from './sfc'
+import { transformTemplate } from './template'
+import { transformStyle } from './style'
+import { createCustomBlockFilter } from './utils/customBlockFilter'
+import { getDescriptor, setDescriptor } from './utils/descriptorCache'
+import { parseVuePartRequest } from './utils/query'
+import { normalizeSourceMap } from './utils/sourceMap'
 
 const debug = createDebugger('rollup-plugin-vue')
 
@@ -92,18 +87,18 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             skipSelf: true,
           })
           if (resolved) {
-            cache.set(resolved.id, getDescriptor(importer!))
+            setDescriptor(resolved.id, getDescriptor(importer!))
             const [, originalQuery] = id.split('?', 2)
             resolved.id += `?${originalQuery}`
             return resolved
           }
         } else if (!filter(query.filename)) {
-          return undefined
+          return null
         }
         debug(`resolveId(${id})`)
         return id
       }
-      return undefined
+      return null
     },
 
     load(id) {
@@ -133,595 +128,51 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           }
         }
       }
-
-      return undefined
+      return null
     },
 
     async transform(code, id) {
       const query = parseVuePartRequest(id)
-      if (query.vue) {
-        if (!query.src && !filter(query.filename)) return null
 
-        const descriptor = getDescriptor(query.filename)
+      // *.vue file
+      // generate an entry module that imports the actual blocks of the SFC
+      if (!query.vue && filter(id)) {
+        debug(`transform SFC entry (${id})`)
+        const output = transformSFCEntry(
+          code,
+          id,
+          options,
+          rootContext,
+          isProduction,
+          isServer,
+          filterCustomBlock,
+          this
+        )
+        if (output) {
+          debug('SFC entry code:', '\n' + output.code + '\n')
+        }
+        return output
+      }
+
+      // sub request for blocks
+      if (query.vue) {
+        if (!query.src && !filter(query.filename)) {
+          return null
+        }
         if (query.src) {
           this.addWatchFile(query.filename)
         }
-
         if (query.type === 'template') {
-          debug(`transform(${id})`)
-          const result = compileTemplate({
-            ...getTemplateCompilerOptions(options, descriptor, query.id),
-            source: code,
-            filename: query.filename,
-          })
-
-          if (result.errors.length) {
-            result.errors.forEach((error) =>
-              this.error(
-                typeof error === 'string'
-                  ? { id: query.filename, message: error }
-                  : createRollupError(query.filename, error)
-              )
-            )
-            return null
-          }
-
-          if (result.tips.length) {
-            result.tips.forEach((tip) =>
-              this.warn({
-                id: query.filename,
-                message: tip,
-              })
-            )
-          }
-
-          return {
-            code: result.code,
-            map: normalizeSourceMap(result.map!, id),
-          }
+          debug(`transform template (${id})`)
+          return transformTemplate(code, id, options, query, this)
         } else if (query.type === 'style') {
-          debug(`transform(${id})`)
-          const block = descriptor.styles[query.index]!
-
-          let preprocessOptions = options.preprocessOptions || {}
-          const preprocessLang = (options.preprocessStyles
-            ? block.lang
-            : undefined) as SFCAsyncStyleCompileOptions['preprocessLang']
-
-          if (preprocessLang) {
-            preprocessOptions =
-              preprocessOptions[preprocessLang] || preprocessOptions
-            // include node_modules for imports by default
-            switch (preprocessLang) {
-              case 'scss':
-              case 'sass':
-                preprocessOptions = {
-                  includePaths: ['node_modules'],
-                  ...preprocessOptions,
-                }
-                break
-              case 'less':
-              case 'stylus':
-                preprocessOptions = {
-                  paths: ['node_modules'],
-                  ...preprocessOptions,
-                }
-            }
-          } else {
-            preprocessOptions = {}
-          }
-
-          const result = await compileStyleAsync({
-            filename: query.filename,
-            id: `data-v-${query.id}`,
-            isProd: isProduction,
-            source: code,
-            scoped: block.scoped,
-            modules: !!block.module,
-            postcssOptions: options.postcssOptions,
-            postcssPlugins: options.postcssPlugins,
-            modulesOptions: options.cssModulesOptions,
-            preprocessLang,
-            preprocessCustomRequire: options.preprocessCustomRequire,
-            preprocessOptions,
-          })
-
-          if (result.errors.length) {
-            result.errors.forEach((error) =>
-              this.error({
-                id: query.filename,
-                message: error.message,
-              })
-            )
-            return null
-          }
-
-          if (query.module) {
-            return {
-              code: `export default ${_(result.modules)}`,
-              map: null,
-            }
-          } else {
-            return {
-              code: result.code,
-              map: normalizeSourceMap(result.map!, id),
-            }
-          }
+          debug(`transform style (${id})`)
+          return transformStyle(code, id, options, query, isProduction, this)
         }
-        return null
-      } else if (filter(id)) {
-        debug(`transform(${id})`)
-        const { descriptor, errors } = parseSFC(code, id, rootContext)
-
-        if (errors.length) {
-          errors.forEach((error) => this.error(createRollupError(id, error)))
-          return null
-        }
-
-        // module id for scoped CSS & hot-reload
-        const output = transformVueSFC(
-          code,
-          id,
-          descriptor,
-          { rootContext, isProduction, isServer, filterCustomBlock },
-          options
-        )
-        debug('transient .vue file:', '\n' + output + '\n')
-
-        return {
-          code: output,
-          map: {
-            mappings: '',
-          },
-        }
-      } else {
-        return null
       }
+      return null
     },
   }
-}
-
-function getTemplateCompilerOptions(
-  options: Options,
-  descriptor: SFCDescriptor,
-  scopeId: string
-): Omit<SFCTemplateCompileOptions, 'source'> | undefined {
-  const block = descriptor.template
-  if (!block) {
-    return
-  }
-
-  const isServer = options.target === 'node'
-  const isProduction =
-    process.env.NODE_ENV === 'production' || process.env.BUILD === 'production'
-  const hasScoped = descriptor.styles.some((s) => s.scoped)
-  const preprocessLang = block.lang
-  const preprocessOptions =
-    preprocessLang &&
-    options.templatePreprocessOptions &&
-    options.templatePreprocessOptions[preprocessLang]
-  return {
-    filename: descriptor.filename,
-    inMap: block.src ? undefined : block.map,
-    preprocessLang,
-    preprocessOptions,
-    preprocessCustomRequire: options.preprocessCustomRequire,
-    compiler: options.compiler,
-    ssr: isServer,
-    compilerOptions: {
-      ...options.compilerOptions,
-      scopeId: hasScoped ? `data-v-${scopeId}` : undefined,
-      bindingMetadata: descriptor.scriptCompiled
-        ? descriptor.scriptCompiled.bindings
-        : undefined,
-      ssrCssVars: isServer
-        ? generateCssVars(descriptor, scopeId, isProduction)
-        : undefined,
-    },
-    transformAssetUrls: options.transformAssetUrls,
-  }
-}
-
-function createCustomBlockFilter(
-  queries?: string[]
-): (type: string) => boolean {
-  if (!queries || queries.length === 0) return () => false
-
-  const allowed = new Set(queries.filter((query) => /^[a-z]/i.test(query)))
-  const disallowed = new Set(
-    queries
-      .filter((query) => /^![a-z]/i.test(query))
-      .map((query) => query.substr(1))
-  )
-  const allowAll = queries.includes('*') || !queries.includes('!*')
-
-  return (type: string) => {
-    if (allowed.has(type)) return true
-    if (disallowed.has(type)) return true
-
-    return allowAll
-  }
-}
-
-type Query =
-  | {
-      filename: string
-      vue: false
-    }
-  | {
-      filename: string
-      vue: true
-      type: 'script'
-      src?: true
-    }
-  | {
-      filename: string
-      vue: true
-      type: 'template'
-      id: string
-      src?: true
-    }
-  | {
-      filename: string
-      vue: true
-      type: 'style'
-      index: number
-      id: string
-      scoped?: boolean
-      module?: string | boolean
-      src?: true
-    }
-  | {
-      filename: string
-      vue: true
-      type: 'custom'
-      index: number
-      src?: true
-    }
-
-function parseVuePartRequest(id: string): Query {
-  const [filename, query] = id.split('?', 2)
-
-  if (!query) return { vue: false, filename }
-
-  const raw = qs.parse(query)
-
-  if ('vue' in raw) {
-    return {
-      ...raw,
-      filename,
-      vue: true,
-      index: Number(raw.index),
-      src: 'src' in raw,
-      scoped: 'scoped' in raw,
-    } as any
-  }
-
-  return { vue: false, filename }
-}
-
-const cache = new Map<string, SFCDescriptor>()
-
-function getDescriptor(id: string) {
-  if (cache.has(id)) {
-    return cache.get(id)!
-  }
-
-  throw new Error(`${id} is not parsed yet`)
-}
-
-function parseSFC(code: string, id: string, sourceRoot: string) {
-  const { descriptor, errors } = parse(code, {
-    sourceMap: true,
-    filename: id,
-    sourceRoot: sourceRoot,
-  })
-  cache.set(id, descriptor)
-  return { descriptor, errors: errors }
-}
-
-function transformVueSFC(
-  code: string,
-  resourcePath: string,
-  descriptor: SFCDescriptor,
-  {
-    rootContext,
-    isProduction,
-    isServer,
-    filterCustomBlock,
-  }: {
-    rootContext: string
-    isProduction: boolean
-    isServer: boolean
-    filterCustomBlock: (type: string) => boolean
-  },
-  options: Options
-) {
-  const shortFilePath = relative(rootContext, resourcePath)
-    .replace(/^(\.\.[\/\\])+/, '')
-    .replace(/\\/g, '/')
-  const scopeId = hash(
-    isProduction ? shortFilePath + '\n' + code : shortFilePath
-  )
-  // feature information
-  const hasScoped = descriptor.styles.some((s) => s.scoped)
-
-  const hasTemplateImport =
-    descriptor.template &&
-    // script setup compiles template inline, do not import again
-    (isServer || !descriptor.scriptSetup)
-
-  const templateImport = hasTemplateImport
-    ? getTemplateCode(descriptor, resourcePath, scopeId, isServer)
-    : ''
-
-  const renderReplace = hasTemplateImport
-    ? isServer
-      ? `script.ssrRender = ssrRender`
-      : `script.render = render`
-    : ''
-
-  const scriptImport = getScriptCode(
-    descriptor,
-    resourcePath,
-    scopeId,
-    isProduction,
-    isServer,
-    getTemplateCompilerOptions(options, descriptor, scopeId)
-  )
-  const stylesCode = getStyleCode(
-    descriptor,
-    resourcePath,
-    scopeId,
-    options.preprocessStyles
-  )
-  const customBlocksCode = getCustomBlock(
-    descriptor,
-    resourcePath,
-    filterCustomBlock
-  )
-  const output = [
-    scriptImport,
-    templateImport,
-    stylesCode,
-    customBlocksCode,
-    renderReplace,
-  ]
-  if (hasScoped) {
-    output.push(`script.__scopeId = ${_(`data-v-${scopeId}`)}`)
-  }
-  if (!isProduction) {
-    output.push(`script.__file = ${_(shortFilePath)}`)
-  } else if (options.exposeFilename) {
-    output.push(`script.__file = ${_(basename(shortFilePath))}`)
-  }
-  output.push('export default script')
-  return output.join('\n')
-}
-
-function getTemplateCode(
-  descriptor: SFCDescriptor,
-  resourcePath: string,
-  id: string,
-  isServer: boolean
-) {
-  const renderFnName = isServer ? 'ssrRender' : 'render'
-  let templateImport = `const ${renderFnName} = () => {}`
-  let templateRequest
-  if (descriptor.template) {
-    const src = descriptor.template.src || resourcePath
-    const idQuery = `&id=${id}`
-    const srcQuery = descriptor.template.src ? `&src` : ``
-    const attrsQuery = attrsToQuery(descriptor.template.attrs, 'js', true)
-    const query = `?vue&type=template${idQuery}${srcQuery}${attrsQuery}`
-    templateRequest = _(src + query)
-    templateImport = `import { ${renderFnName} } from ${templateRequest}`
-  }
-
-  return templateImport
-}
-
-function getScriptCode(
-  descriptor: SFCDescriptor,
-  resourcePath: string,
-  id: string,
-  isProd: boolean,
-  isServer: boolean,
-  templateOptions?: Partial<SFCTemplateCompileOptions>
-) {
-  let scriptImport = `const script = {}`
-  if (descriptor.script || descriptor.scriptSetup) {
-    if (compileScript) {
-      descriptor.scriptCompiled = compileScript(descriptor, {
-        id,
-        isProd,
-        inlineTemplate: !isServer,
-        templateOptions,
-      })
-    }
-    const script = descriptor.scriptCompiled || descriptor.script
-    if (script) {
-      const src = script.src || resourcePath
-      const attrsQuery = attrsToQuery(script.attrs, 'js')
-      const srcQuery = script.src ? `&src` : ``
-      const query = `?vue&type=script${srcQuery}${attrsQuery}`
-      const scriptRequest = _(src + query)
-      scriptImport =
-        `import script from ${scriptRequest}\n` +
-        `export * from ${scriptRequest}` // support named exports
-    }
-  }
-  return scriptImport
-}
-
-function getStyleCode(
-  descriptor: SFCDescriptor,
-  resourcePath: string,
-  id: string,
-  preprocessStyles?: boolean
-) {
-  let stylesCode = ``
-  let hasCSSModules = false
-  if (descriptor.styles.length) {
-    descriptor.styles.forEach((style, i) => {
-      const src = style.src || resourcePath
-      // do not include module in default query, since we use it to indicate
-      // that the module needs to export the modules json
-      const attrsQuery = attrsToQuery(style.attrs, 'css', preprocessStyles)
-      const attrsQueryWithoutModule = attrsQuery.replace(
-        /&module(=true|=[^&]+)?/,
-        ''
-      )
-      // make sure to only pass id when necessary so that we don't inject
-      // duplicate tags when multiple components import the same css file
-      const idQuery = `&id=${id}`
-      const srcQuery = style.src ? `&src` : ``
-      const query = `?vue&type=style&index=${i}${srcQuery}${idQuery}`
-      const styleRequest = src + query + attrsQuery
-      const styleRequestWithoutModule = src + query + attrsQueryWithoutModule
-      if (style.module) {
-        if (!hasCSSModules) {
-          stylesCode += `\nconst cssModules = script.__cssModules = {}`
-          hasCSSModules = true
-        }
-        stylesCode += genCSSModulesCode(
-          id,
-          i,
-          styleRequest,
-          styleRequestWithoutModule,
-          style.module
-        )
-      } else {
-        stylesCode += `\nimport ${_(styleRequest)}`
-      }
-      // TODO SSR critical CSS collection
-    })
-  }
-  return stylesCode
-}
-
-function getCustomBlock(
-  descriptor: SFCDescriptor,
-  resourcePath: string,
-  filter: (type: string) => boolean
-) {
-  let code = ''
-
-  descriptor.customBlocks.forEach((block, index) => {
-    if (filter(block.type)) {
-      const src = block.src || resourcePath
-      const attrsQuery = attrsToQuery(block.attrs, block.type)
-      const srcQuery = block.src ? `&src` : ``
-      const query = `?vue&type=${block.type}&index=${index}${srcQuery}${attrsQuery}`
-      const request = _(src + query)
-      code += `import block${index} from ${request}\n`
-      code += `if (typeof block${index} === 'function') block${index}(script)\n`
-    }
-  })
-
-  return code
-}
-
-function createRollupError(
-  id: string,
-  error: CompilerError | SyntaxError
-): RollupError {
-  if ('code' in error) {
-    return {
-      id,
-      plugin: 'vue',
-      pluginCode: String(error.code),
-      message: error.message,
-      frame: error.loc!.source,
-      parserError: error,
-      loc: error.loc
-        ? {
-            file: id,
-            line: error.loc.start.line,
-            column: error.loc.start.column,
-          }
-        : undefined,
-    }
-  } else {
-    return {
-      id,
-      plugin: 'vue',
-      message: error.message,
-      parserError: error,
-    }
-  }
-}
-
-// these are built-in query parameters so should be ignored
-// if the user happen to add them as attrs
-const ignoreList = ['id', 'index', 'src', 'type', 'lang']
-
-function attrsToQuery(
-  attrs: SFCBlock['attrs'],
-  langFallback?: string,
-  forceLangFallback = false
-): string {
-  let query = ``
-  for (const name in attrs) {
-    const value = attrs[name]
-    if (!ignoreList.includes(name)) {
-      query += `&${qs.escape(name)}${
-        value ? `=${qs.escape(String(value))}` : ``
-      }`
-    }
-  }
-  if (langFallback || attrs.lang) {
-    query +=
-      `lang` in attrs
-        ? forceLangFallback
-          ? `&lang.${langFallback}`
-          : `&lang.${attrs.lang}`
-        : `&lang.${langFallback}`
-  }
-  return query
-}
-
-function _(any: any) {
-  return JSON.stringify(any)
-}
-
-function normalizeSourceMap(
-  map: SFCTemplateCompileResults['map'],
-  id: string
-): any {
-  if (!map) return null as any
-
-  if (!id.includes('type=script')) {
-    map.file = id
-    map.sources[0] = id
-  }
-
-  return {
-    ...map,
-    version: Number(map.version),
-    mappings: typeof map.mappings === 'string' ? map.mappings : '',
-  }
-}
-
-function genCSSModulesCode(
-  // @ts-ignore
-  id: string,
-  index: number,
-  request: string,
-  requestWithoutModule: string,
-  moduleName: string | boolean
-): string {
-  const styleVar = `style${index}`
-  let code =
-    // first import the CSS for extraction
-    `\nimport ${_(requestWithoutModule)}` +
-    // then import the json file to expose to component...
-    `\nimport ${styleVar} from ${_(request + '.js')}`
-
-  // inject variable
-  const name = typeof moduleName === 'string' ? moduleName : '$style'
-  code += `\ncssModules["${name}"] = ${styleVar}`
-  return code
 }
 
 // overwrite for cjs require('rollup-plugin-vue')() usage

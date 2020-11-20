@@ -1,0 +1,93 @@
+import {
+  generateCssVars,
+  compileTemplate,
+  SFCDescriptor,
+  SFCTemplateCompileOptions,
+} from '@vue/compiler-sfc'
+import { TransformPluginContext } from 'rollup'
+import { Options } from '.'
+import { getDescriptor } from './utils/descriptorCache'
+import { createRollupError } from './utils/error'
+import { TemplateBlockQuery } from './utils/query'
+import { normalizeSourceMap } from './utils/sourceMap'
+
+export function transformTemplate(
+  code: string,
+  resourcePath: string,
+  options: Options,
+  query: TemplateBlockQuery,
+  pluginContext: TransformPluginContext
+) {
+  const descriptor = getDescriptor(query.filename)
+  const result = compileTemplate({
+    ...getTemplateCompilerOptions(options, descriptor, query.id),
+    source: code,
+    filename: query.filename,
+  })
+
+  if (result.errors.length) {
+    result.errors.forEach((error) =>
+      pluginContext.error(
+        typeof error === 'string'
+          ? { id: query.filename, message: error }
+          : createRollupError(query.filename, error)
+      )
+    )
+    return null
+  }
+
+  if (result.tips.length) {
+    result.tips.forEach((tip) =>
+      pluginContext.warn({
+        id: query.filename,
+        message: tip,
+      })
+    )
+  }
+
+  return {
+    code: result.code,
+    map: normalizeSourceMap(result.map!, resourcePath),
+  }
+}
+
+export function getTemplateCompilerOptions(
+  options: Options,
+  descriptor: SFCDescriptor,
+  scopeId: string
+): Omit<SFCTemplateCompileOptions, 'source'> | undefined {
+  const block = descriptor.template
+  if (!block) {
+    return
+  }
+
+  const isServer = options.target === 'node'
+  const isProduction =
+    process.env.NODE_ENV === 'production' || process.env.BUILD === 'production'
+  const hasScoped = descriptor.styles.some((s) => s.scoped)
+  const preprocessLang = block.lang
+  const preprocessOptions =
+    preprocessLang &&
+    options.templatePreprocessOptions &&
+    options.templatePreprocessOptions[preprocessLang]
+  return {
+    filename: descriptor.filename,
+    inMap: block.src ? undefined : block.map,
+    preprocessLang,
+    preprocessOptions,
+    preprocessCustomRequire: options.preprocessCustomRequire,
+    compiler: options.compiler,
+    ssr: isServer,
+    compilerOptions: {
+      ...options.compilerOptions,
+      scopeId: hasScoped ? `data-v-${scopeId}` : undefined,
+      bindingMetadata: descriptor.scriptCompiled
+        ? descriptor.scriptCompiled.bindings
+        : undefined,
+      ssrCssVars: isServer
+        ? generateCssVars(descriptor, scopeId, isProduction)
+        : undefined,
+    },
+    transformAssetUrls: options.transformAssetUrls,
+  }
+}

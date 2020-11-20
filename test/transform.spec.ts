@@ -1,4 +1,4 @@
-import PluginVue from './index'
+import PluginVue from '../src/index'
 
 describe('Rollup Plugin Vue', () => {
   describe('transform', () => {

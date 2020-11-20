@@ -1,5 +1,5 @@
 {
-  "include": ["src", "types"],
+  "include": ["src"],
   "exclude": ["**/*.spec.ts"],
   "compilerOptions": {
     "target": "esnext",

@@ -14,7 +14,7 @@
     "dev": "tsc -w -p .",
     "test": "run-p test:*",
     "test:unit": "jest",
-    "test:e2e": "jest --config jest.e2e.config.js"
+    "test:e2e": "jest --testMatch '**/*.e2e.ts'"
   },
   "dependencies": {
     "debug": "^4.1.1",
@@ -27,6 +27,7 @@
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^9.0.0",
     "@types/debug": "^4.1.5",
+    "@types/hash-sum": "^1.0.0",
     "@types/jest": "^25.2.3",
     "@types/node": "^13.13.2",
     "@vue/compiler-sfc": "^3.0.2",
