@@ -114,7 +114,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             query.type === 'template'
               ? descriptor.template!
               : query.type === 'script'
-              ? getResolvedScript(descriptor, isServer)
+              ? getResolvedScript(descriptor, !isServer)
               : query.type === 'style'
               ? descriptor.styles[query.index]
               : typeof query.index === 'number'

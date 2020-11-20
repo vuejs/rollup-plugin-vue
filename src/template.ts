@@ -71,7 +71,7 @@ export function getTemplateCompilerOptions(
     preprocessLang &&
     options.templatePreprocessOptions &&
     options.templatePreprocessOptions[preprocessLang]
-  const resolvedScript = getResolvedScript(descriptor, isServer)
+  const resolvedScript = getResolvedScript(descriptor, !isServer)
   return {
     filename: descriptor.filename,
     inMap: block.src ? undefined : block.map,

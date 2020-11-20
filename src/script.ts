@@ -1,6 +1,8 @@
 import { compileScript, SFCDescriptor, SFCScriptBlock } from '@vue/compiler-sfc'
+import { TransformPluginContext } from 'rollup'
 import { Options } from '.'
 import { getTemplateCompilerOptions } from './template'
+import { createRollupError } from './utils/error'
 
 // since we generate different output based on whether the template is inlined
 // or not, we need to cache the results separately
@@ -9,9 +11,9 @@ const normalCache = new WeakMap<SFCDescriptor, SFCScriptBlock | null>()
 
 export function getResolvedScript(
   descriptor: SFCDescriptor,
-  isServer: boolean
+  enableInline: boolean
 ): SFCScriptBlock | null | undefined {
-  const cacheToUse = isServer ? normalCache : inlinedCache
+  const cacheToUse = enableInline ? inlinedCache : normalCache
   return cacheToUse.get(descriptor)
 }
 
@@ -20,28 +22,37 @@ export function resolveScript(
   scopeId: string,
   isProd: boolean,
   isServer: boolean,
-  options: Options
+  options: Options,
+  pluginContext: TransformPluginContext
 ) {
   if (!descriptor.script && !descriptor.scriptSetup) {
     return null
   }
 
-  const cached = getResolvedScript(descriptor, isServer)
+  const enableInline = !isServer
+  const cacheToUse = enableInline ? inlinedCache : normalCache
+  const cached = cacheToUse.get(descriptor)
   if (cached) {
     return cached
   }
 
-  let resolved: SFCScriptBlock | null
+  let resolved: SFCScriptBlock | null = null
 
   if (compileScript) {
-    resolved = compileScript(descriptor, {
-      id: scopeId,
-      isProd,
-      inlineTemplate: !isServer,
-      templateOptions: getTemplateCompilerOptions(options, descriptor, scopeId),
-    })
+    try {
+      resolved = compileScript(descriptor, {
+        id: scopeId,
+        isProd,
+        inlineTemplate: enableInline,
+        templateOptions: enableInline
+          ? getTemplateCompilerOptions(options, descriptor, scopeId)
+          : undefined,
+      })
+    } catch (e) {
+      pluginContext.error(createRollupError(descriptor.filename, e))
+    }
   } else if (descriptor.scriptSetup) {
-    throw new Error(
+    pluginContext.error(
       `<script setup> is not supported by the installed version of ` +
         `@vue/compiler-sfc - please upgrade.`
     )
@@ -49,11 +60,6 @@ export function resolveScript(
     resolved = descriptor.script
   }
 
-  if (isServer) {
-    normalCache.set(descriptor, resolved)
-  } else {
-    inlinedCache.set(descriptor, resolved)
-  }
-
+  cacheToUse.set(descriptor, resolved)
   return resolved
 }

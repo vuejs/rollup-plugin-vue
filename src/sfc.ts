@@ -42,10 +42,8 @@ export function transformSFCEntry(
   // feature information
   const hasScoped = descriptor.styles.some((s) => s.scoped)
 
-  const hasTemplateImport =
-    descriptor.template &&
-    // script setup compiles template inline, do not import again
-    (isServer || !descriptor.scriptSetup)
+  const useInlineTemplate = descriptor.scriptSetup && !isServer
+  const hasTemplateImport = descriptor.template && !useInlineTemplate
 
   const templateImport = hasTemplateImport
     ? genTemplateCode(descriptor, scopeId, isServer)
@@ -62,7 +60,8 @@ export function transformSFCEntry(
     scopeId,
     isProduction,
     isServer,
-    options
+    options,
+    pluginContext
   )
   const stylesCode = genStyleCode(descriptor, scopeId, options.preprocessStyles)
   const customBlocksCode = getCustomBlock(descriptor, filterCustomBlock)
@@ -118,10 +117,18 @@ function genScriptCode(
   scopeId: string,
   isProd: boolean,
   isServer: boolean,
-  options: Options
+  options: Options,
+  pluginContext: TransformPluginContext
 ) {
   let scriptImport = `const script = {}`
-  const script = resolveScript(descriptor, scopeId, isProd, isServer, options)
+  const script = resolveScript(
+    descriptor,
+    scopeId,
+    isProd,
+    isServer,
+    options,
+    pluginContext
+  )
   if (script) {
     const src = script.src || descriptor.filename
     const attrsQuery = attrsToQuery(script.attrs, 'js')
