@@ -1,22 +1,16 @@
 import hash from 'hash-sum'
 import path from 'path'
 import qs from 'querystring'
-import {
-  compileScript,
-  parse,
-  SFCBlock,
-  SFCDescriptor,
-  SFCTemplateCompileOptions,
-} from '@vue/compiler-sfc'
+import { parse, SFCBlock, SFCDescriptor } from '@vue/compiler-sfc'
 import { Options } from '.'
-import { getTemplateCompilerOptions } from './template'
 import { setDescriptor } from './utils/descriptorCache'
 import { TransformPluginContext } from 'rollup'
 import { createRollupError } from './utils/error'
+import { resolveScript } from './script'
 
 export function transformSFCEntry(
   code: string,
-  resourcePath: string,
+  filename: string,
   options: Options,
   sourceRoot: string,
   isProduction: boolean,
@@ -26,20 +20,20 @@ export function transformSFCEntry(
 ) {
   const { descriptor, errors } = parse(code, {
     sourceMap: true,
-    filename: resourcePath,
+    filename,
     sourceRoot,
   })
-  setDescriptor(resourcePath, descriptor)
+  setDescriptor(filename, descriptor)
 
   if (errors.length) {
     errors.forEach((error) =>
-      pluginContext.error(createRollupError(resourcePath, error))
+      pluginContext.error(createRollupError(filename, error))
     )
     return null
   }
 
   const shortFilePath = path
-    .relative(sourceRoot, resourcePath)
+    .relative(sourceRoot, filename)
     .replace(/^(\.\.[\/\\])+/, '')
     .replace(/\\/g, '/')
   const scopeId = hash(
@@ -54,7 +48,7 @@ export function transformSFCEntry(
     (isServer || !descriptor.scriptSetup)
 
   const templateImport = hasTemplateImport
-    ? genTemplateCode(descriptor, resourcePath, scopeId, isServer)
+    ? genTemplateCode(descriptor, scopeId, isServer)
     : ''
 
   const renderReplace = hasTemplateImport
@@ -65,23 +59,13 @@ export function transformSFCEntry(
 
   const scriptImport = genScriptCode(
     descriptor,
-    resourcePath,
     scopeId,
     isProduction,
     isServer,
-    getTemplateCompilerOptions(options, descriptor, scopeId)
+    options
   )
-  const stylesCode = genStyleCode(
-    descriptor,
-    resourcePath,
-    scopeId,
-    options.preprocessStyles
-  )
-  const customBlocksCode = getCustomBlock(
-    descriptor,
-    resourcePath,
-    filterCustomBlock
-  )
+  const stylesCode = genStyleCode(descriptor, scopeId, options.preprocessStyles)
+  const customBlocksCode = getCustomBlock(descriptor, filterCustomBlock)
   const output = [
     scriptImport,
     templateImport,
@@ -110,7 +94,6 @@ export function transformSFCEntry(
 
 function genTemplateCode(
   descriptor: SFCDescriptor,
-  resourcePath: string,
   id: string,
   isServer: boolean
 ) {
@@ -118,7 +101,7 @@ function genTemplateCode(
   let templateImport = `const ${renderFnName} = () => {}`
   let templateRequest
   if (descriptor.template) {
-    const src = descriptor.template.src || resourcePath
+    const src = descriptor.template.src || descriptor.filename
     const idQuery = `&id=${id}`
     const srcQuery = descriptor.template.src ? `&src` : ``
     const attrsQuery = attrsToQuery(descriptor.template.attrs, 'js', true)
@@ -132,48 +115,35 @@ function genTemplateCode(
 
 function genScriptCode(
   descriptor: SFCDescriptor,
-  resourcePath: string,
-  id: string,
+  scopeId: string,
   isProd: boolean,
   isServer: boolean,
-  templateOptions?: Partial<SFCTemplateCompileOptions>
+  options: Options
 ) {
   let scriptImport = `const script = {}`
-  if (descriptor.script || descriptor.scriptSetup) {
-    if (compileScript) {
-      descriptor.scriptCompiled = compileScript(descriptor, {
-        id,
-        isProd,
-        inlineTemplate: !isServer,
-        templateOptions,
-      })
-    }
-    const script = descriptor.scriptCompiled || descriptor.script
-    if (script) {
-      const src = script.src || resourcePath
-      const attrsQuery = attrsToQuery(script.attrs, 'js')
-      const srcQuery = script.src ? `&src` : ``
-      const query = `?vue&type=script${srcQuery}${attrsQuery}`
-      const scriptRequest = JSON.stringify(src + query)
-      scriptImport =
-        `import script from ${scriptRequest}\n` +
-        `export * from ${scriptRequest}` // support named exports
-    }
+  const script = resolveScript(descriptor, scopeId, isProd, isServer, options)
+  if (script) {
+    const src = script.src || descriptor.filename
+    const attrsQuery = attrsToQuery(script.attrs, 'js')
+    const srcQuery = script.src ? `&src` : ``
+    const query = `?vue&type=script${srcQuery}${attrsQuery}`
+    const scriptRequest = JSON.stringify(src + query)
+    scriptImport =
+      `import script from ${scriptRequest}\n` + `export * from ${scriptRequest}` // support named exports
   }
   return scriptImport
 }
 
 function genStyleCode(
   descriptor: SFCDescriptor,
-  resourcePath: string,
-  id: string,
+  scopeId: string,
   preprocessStyles?: boolean
 ) {
   let stylesCode = ``
   let hasCSSModules = false
   if (descriptor.styles.length) {
     descriptor.styles.forEach((style, i) => {
-      const src = style.src || resourcePath
+      const src = style.src || descriptor.filename
       // do not include module in default query, since we use it to indicate
       // that the module needs to export the modules json
       const attrsQuery = attrsToQuery(style.attrs, 'css', preprocessStyles)
@@ -183,7 +153,7 @@ function genStyleCode(
       )
       // make sure to only pass id when necessary so that we don't inject
       // duplicate tags when multiple components import the same css file
-      const idQuery = `&id=${id}`
+      const idQuery = `&id=${scopeId}`
       const srcQuery = style.src ? `&src` : ``
       const query = `?vue&type=style&index=${i}${srcQuery}${idQuery}`
       const styleRequest = src + query + attrsQuery
@@ -194,7 +164,7 @@ function genStyleCode(
           hasCSSModules = true
         }
         stylesCode += genCSSModulesCode(
-          id,
+          scopeId,
           i,
           styleRequest,
           styleRequestWithoutModule,
@@ -211,14 +181,13 @@ function genStyleCode(
 
 function getCustomBlock(
   descriptor: SFCDescriptor,
-  resourcePath: string,
   filter: (type: string) => boolean
 ) {
   let code = ''
 
   descriptor.customBlocks.forEach((block, index) => {
     if (filter(block.type)) {
-      const src = block.src || resourcePath
+      const src = block.src || descriptor.filename
       const attrsQuery = attrsToQuery(block.attrs, block.type)
       const srcQuery = block.src ? `&src` : ``
       const query = `?vue&type=${block.type}&index=${index}${srcQuery}${attrsQuery}`

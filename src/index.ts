@@ -22,6 +22,7 @@ import { createCustomBlockFilter } from './utils/customBlockFilter'
 import { getDescriptor, setDescriptor } from './utils/descriptorCache'
 import { parseVuePartRequest } from './utils/query'
 import { normalizeSourceMap } from './utils/sourceMap'
+import { getResolvedScript } from './script'
 
 const debug = createDebugger('rollup-plugin-vue')
 
@@ -113,7 +114,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
             query.type === 'template'
               ? descriptor.template!
               : query.type === 'script'
-              ? descriptor.scriptCompiled || descriptor.script
+              ? getResolvedScript(descriptor, isServer)
               : query.type === 'style'
               ? descriptor.styles[query.index]
               : typeof query.index === 'number'

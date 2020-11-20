@@ -6,6 +6,7 @@ import {
 } from '@vue/compiler-sfc'
 import { TransformPluginContext } from 'rollup'
 import { Options } from '.'
+import { getResolvedScript } from './script'
 import { getDescriptor } from './utils/descriptorCache'
 import { createRollupError } from './utils/error'
 import { TemplateBlockQuery } from './utils/query'
@@ -13,7 +14,7 @@ import { normalizeSourceMap } from './utils/sourceMap'
 
 export function transformTemplate(
   code: string,
-  resourcePath: string,
+  request: string,
   options: Options,
   query: TemplateBlockQuery,
   pluginContext: TransformPluginContext
@@ -47,7 +48,7 @@ export function transformTemplate(
 
   return {
     code: result.code,
-    map: normalizeSourceMap(result.map!, resourcePath),
+    map: normalizeSourceMap(result.map!, request),
   }
 }
 
@@ -70,6 +71,7 @@ export function getTemplateCompilerOptions(
     preprocessLang &&
     options.templatePreprocessOptions &&
     options.templatePreprocessOptions[preprocessLang]
+  const resolvedScript = getResolvedScript(descriptor, isServer)
   return {
     filename: descriptor.filename,
     inMap: block.src ? undefined : block.map,
@@ -81,9 +83,7 @@ export function getTemplateCompilerOptions(
     compilerOptions: {
       ...options.compilerOptions,
       scopeId: hasScoped ? `data-v-${scopeId}` : undefined,
-      bindingMetadata: descriptor.scriptCompiled
-        ? descriptor.scriptCompiled.bindings
-        : undefined,
+      bindingMetadata: resolvedScript ? resolvedScript.bindings : undefined,
       ssrCssVars: isServer
         ? generateCssVars(descriptor, scopeId, isProduction)
         : undefined,

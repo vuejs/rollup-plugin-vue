@@ -2,13 +2,13 @@ import { SFCTemplateCompileResults } from '@vue/compiler-sfc'
 
 export function normalizeSourceMap(
   map: SFCTemplateCompileResults['map'],
-  id: string
+  request: string
 ): any {
   if (!map) return null as any
 
-  if (!id.includes('type=script')) {
-    map.file = id
-    map.sources[0] = id
+  if (!request.includes('type=script')) {
+    map.file = request
+    map.sources[0] = request
   }
 
   return {
