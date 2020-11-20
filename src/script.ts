@@ -41,7 +41,7 @@ export function resolveScript(
   if (compileScript) {
     try {
       resolved = compileScript(descriptor, {
-        id: scopeId,
+        scopeId,
         isProd,
         inlineTemplate: enableInline,
         templateOptions: enableInline
