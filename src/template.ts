@@ -1,5 +1,4 @@
 import {
-  generateCssVars,
   compileTemplate,
   SFCDescriptor,
   SFCTemplateCompileOptions,
@@ -22,6 +21,7 @@ export function transformTemplate(
   const descriptor = getDescriptor(query.filename)
   const result = compileTemplate({
     ...getTemplateCompilerOptions(options, descriptor, query.id),
+    id: query.id,
     source: code,
     filename: query.filename,
   })
@@ -62,17 +62,20 @@ export function getTemplateCompilerOptions(
     return
   }
 
-  const isServer = options.target === 'node'
-  const isProduction =
+  const isProd =
     process.env.NODE_ENV === 'production' || process.env.BUILD === 'production'
+  const isServer = options.target === 'node'
   const hasScoped = descriptor.styles.some((s) => s.scoped)
   const preprocessLang = block.lang
   const preprocessOptions =
     preprocessLang &&
     options.templatePreprocessOptions &&
     options.templatePreprocessOptions[preprocessLang]
-  const resolvedScript = getResolvedScript(descriptor, !isServer)
+  const resolvedScript = getResolvedScript(descriptor, isServer)
   return {
+    id: scopeId,
+    scoped: hasScoped,
+    isProd,
     filename: descriptor.filename,
     inMap: block.src ? undefined : block.map,
     preprocessLang,
@@ -80,13 +83,11 @@ export function getTemplateCompilerOptions(
     preprocessCustomRequire: options.preprocessCustomRequire,
     compiler: options.compiler,
     ssr: isServer,
+    ssrCssVars: descriptor.cssVars,
     compilerOptions: {
       ...options.compilerOptions,
       scopeId: hasScoped ? `data-v-${scopeId}` : undefined,
       bindingMetadata: resolvedScript ? resolvedScript.bindings : undefined,
-      ssrCssVars: isServer
-        ? generateCssVars(descriptor, scopeId, isProduction)
-        : undefined,
     },
     transformAssetUrls: options.transformAssetUrls,
   }

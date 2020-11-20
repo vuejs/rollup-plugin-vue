@@ -4,17 +4,15 @@ import { Options } from '.'
 import { getTemplateCompilerOptions } from './template'
 import { createRollupError } from './utils/error'
 
-// since we generate different output based on whether the template is inlined
-// or not, we need to cache the results separately
-const inlinedCache = new WeakMap<SFCDescriptor, SFCScriptBlock | null>()
-const normalCache = new WeakMap<SFCDescriptor, SFCScriptBlock | null>()
+// ssr and non ssr builds would output different script content
+const clientCache = new WeakMap<SFCDescriptor, SFCScriptBlock | null>()
+const serverCache = new WeakMap<SFCDescriptor, SFCScriptBlock | null>()
 
 export function getResolvedScript(
   descriptor: SFCDescriptor,
-  enableInline: boolean
+  isServer: boolean
 ): SFCScriptBlock | null | undefined {
-  const cacheToUse = enableInline ? inlinedCache : normalCache
-  return cacheToUse.get(descriptor)
+  return (isServer ? serverCache : clientCache).get(descriptor)
 }
 
 export function resolveScript(
@@ -29,8 +27,7 @@ export function resolveScript(
     return null
   }
 
-  const enableInline = !isServer
-  const cacheToUse = enableInline ? inlinedCache : normalCache
+  const cacheToUse = isServer ? serverCache : clientCache
   const cached = cacheToUse.get(descriptor)
   if (cached) {
     return cached
@@ -41,12 +38,14 @@ export function resolveScript(
   if (compileScript) {
     try {
       resolved = compileScript(descriptor, {
-        scopeId,
+        id: scopeId,
         isProd,
-        inlineTemplate: enableInline,
-        templateOptions: enableInline
-          ? getTemplateCompilerOptions(options, descriptor, scopeId)
-          : undefined,
+        inlineTemplate: true,
+        templateOptions: getTemplateCompilerOptions(
+          options,
+          descriptor,
+          scopeId
+        ),
       })
     } catch (e) {
       pluginContext.error(createRollupError(descriptor.filename, e))

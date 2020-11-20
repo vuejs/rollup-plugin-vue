@@ -42,8 +42,9 @@ export function transformSFCEntry(
   // feature information
   const hasScoped = descriptor.styles.some((s) => s.scoped)
 
-  const useInlineTemplate = descriptor.scriptSetup && !isServer
-  const hasTemplateImport = descriptor.template && !useInlineTemplate
+  const isTemplateInlined =
+    descriptor.scriptSetup && !(descriptor.template && descriptor.template.src)
+  const hasTemplateImport = descriptor.template && !isTemplateInlined
 
   const templateImport = hasTemplateImport
     ? genTemplateCode(descriptor, scopeId, isServer)
