@@ -172,7 +172,6 @@ function genStyleCode(
           hasCSSModules = true
         }
         stylesCode += genCSSModulesCode(
-          scopeId,
           i,
           styleRequest,
           styleRequestWithoutModule,
@@ -209,8 +208,6 @@ function getCustomBlock(
 }
 
 function genCSSModulesCode(
-  // @ts-ignore
-  id: string,
   index: number,
   request: string,
   requestWithoutModule: string,

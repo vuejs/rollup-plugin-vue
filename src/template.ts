@@ -21,6 +21,7 @@ export function transformTemplate(
   const descriptor = getDescriptor(query.filename)
   const result = compileTemplate({
     ...getTemplateCompilerOptions(options, descriptor, query.id),
+    id: query.id,
     source: code,
     filename: query.filename,
   })
@@ -72,7 +73,6 @@ export function getTemplateCompilerOptions(
     options.templatePreprocessOptions[preprocessLang]
   const resolvedScript = getResolvedScript(descriptor, isServer)
   return {
-    // @ts-ignore
     id: scopeId,
     scoped: hasScoped,
     isProd,
@@ -83,7 +83,6 @@ export function getTemplateCompilerOptions(
     preprocessCustomRequire: options.preprocessCustomRequire,
     compiler: options.compiler,
     ssr: isServer,
-    // @ts-ignore
     ssrCssVars: descriptor.cssVars,
     compilerOptions: {
       ...options.compilerOptions,

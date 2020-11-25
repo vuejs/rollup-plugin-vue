@@ -49,7 +49,6 @@ export async function transformStyle(
   const result = await compileStyleAsync({
     filename: query.filename,
     id: `data-v-${query.id}`,
-    // @ts-ignore
     isProd: isProduction,
     source: code,
     scoped: block.scoped,
