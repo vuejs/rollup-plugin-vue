@@ -10,11 +10,12 @@
   ],
   "scripts": {
     "build": "tsc -p .",
-    "prepublishOnly": "tsc -p .",
+    "prepublishOnly": "run-s build changelog",
     "dev": "tsc -w -p .",
     "test": "run-p test:*",
     "test:unit": "jest",
-    "test:e2e": "jest --testMatch '**/*.e2e.ts'"
+    "test:e2e": "jest --testMatch '**/*.e2e.ts'",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 2"
   },
   "dependencies": {
     "debug": "^4.1.1",
@@ -31,6 +32,7 @@
     "@types/jest": "^25.2.3",
     "@types/node": "^13.13.2",
     "@vue/compiler-sfc": "^3.0.3",
+    "conventional-changelog-cli": "^2.1.1",
     "husky": "^4.2.0",
     "jest": "^26.0.1",
     "lint-staged": "^10.1.7",
