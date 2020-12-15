@@ -10,6 +10,5 @@ export function getDescriptor(id: string) {
   if (cache.has(id)) {
     return cache.get(id)!
   }
-
   throw new Error(`${id} is not parsed yet`)
 }

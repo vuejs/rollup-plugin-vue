@@ -2,6 +2,7 @@ import fs from 'fs'
 import _debug from 'debug'
 import { parse, SFCBlock } from '@vue/compiler-sfc'
 import { getDescriptor, setDescriptor } from './utils/descriptorCache'
+import { getResolvedScript, setResolvedScript } from './script'
 
 const debug = _debug('vite:hmr')
 
@@ -50,6 +51,11 @@ export async function handleHotUpdate(file: string, modules: any[]) {
   }
 
   if (!isEqualBlock(descriptor.template, prevDescriptor.template)) {
+    // when a <script setup> component's template changes, it will need correct
+    // binding metadata. However, when reloading the template alone the binding
+    // metadata will not be available since the script part isn't loaded.
+    // in this case, reuse the compiled script from previous descriptor.
+    setResolvedScript(descriptor, getResolvedScript(prevDescriptor)!)
     needRerender = true
   }
 
@@ -75,13 +81,6 @@ export async function handleHotUpdate(file: string, modules: any[]) {
     const prev = prevStyles[i]
     const next = nextStyles[i]
     if (!prev || !isEqualBlock(prev, next)) {
-      // css modules update causes a reload because the $style object is changed
-      // and it may be used in JS.
-      // if (prev.module != null || next.module != null) {
-      //   return modules.filter(
-      //     (m) => !/type=/.test(m.id) || /type=script/.test(m.id)
-      //   )
-      // }
       didUpdateStyle = true
       filteredModules.push(modules.find((m) => m.id.includes(`index=${i}`)))
     }

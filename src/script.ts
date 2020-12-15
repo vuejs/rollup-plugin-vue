@@ -10,9 +10,17 @@ const serverCache = new WeakMap<SFCDescriptor, SFCScriptBlock | null>()
 
 export function getResolvedScript(
   descriptor: SFCDescriptor,
-  isServer: boolean
+  isServer = false
 ): SFCScriptBlock | null | undefined {
   return (isServer ? serverCache : clientCache).get(descriptor)
+}
+
+export function setResolvedScript(
+  descriptor: SFCDescriptor,
+  script: SFCScriptBlock,
+  isServer = false
+) {
+  ;(isServer ? serverCache : clientCache).set(descriptor, script)
 }
 
 export function resolveScript(
