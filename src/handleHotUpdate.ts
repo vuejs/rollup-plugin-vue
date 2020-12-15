@@ -1,6 +1,9 @@
 import fs from 'fs'
+import _debug from 'debug'
 import { parse, SFCBlock } from '@vue/compiler-sfc'
 import { getDescriptor, setDescriptor } from './utils/descriptorCache'
+
+const debug = _debug('vite:hmr')
 
 /**
  * Vite-specific HMR handling
@@ -33,8 +36,10 @@ export async function handleHotUpdate(file: string, modules: any[]) {
   const filteredModules = []
 
   const reload = () => {
-    console.log(`[vue:reload] ${file}`)
-    return modules.filter((m) => /type=script/.test(m.id))
+    debug(`[vue:reload] ${file}`)
+    return modules.filter(
+      (m) => !/type=/.test(m.id) || /type=script/.test(m.id)
+    )
   }
 
   if (
@@ -52,16 +57,6 @@ export async function handleHotUpdate(file: string, modules: any[]) {
   const prevStyles = prevDescriptor.styles || []
   const nextStyles = descriptor.styles || []
 
-  // css modules update causes a reload because the $style object is changed
-  // and it may be used in JS. It also needs to trigger a vue-style-update
-  // event so the client busts the sw cache.
-  if (
-    prevStyles.some((s) => s.module != null) ||
-    nextStyles.some((s) => s.module != null)
-  ) {
-    return reload()
-  }
-
   // force reload if CSS vars injection changed
   if (descriptor.cssVars) {
     if (prevDescriptor.cssVars.join('') !== descriptor.cssVars.join('')) {
@@ -76,12 +71,21 @@ export async function handleHotUpdate(file: string, modules: any[]) {
 
   // only need to update styles if not reloading, since reload forces
   // style updates as well.
-  nextStyles.forEach((_, i) => {
-    if (!prevStyles[i] || !isEqualBlock(prevStyles[i], nextStyles[i])) {
+  for (let i = 0; i < nextStyles.length; i++) {
+    const prev = prevStyles[i]
+    const next = nextStyles[i]
+    if (!prev || !isEqualBlock(prev, next)) {
+      // css modules update causes a reload because the $style object is changed
+      // and it may be used in JS.
+      // if (prev.module != null || next.module != null) {
+      //   return modules.filter(
+      //     (m) => !/type=/.test(m.id) || /type=script/.test(m.id)
+      //   )
+      // }
       didUpdateStyle = true
       filteredModules.push(modules.find((m) => m.id.includes(`index=${i}`)))
     }
-  })
+  }
 
   const prevCustoms = prevDescriptor.customBlocks || []
   const nextCustoms = descriptor.customBlocks || []
@@ -108,7 +112,7 @@ export async function handleHotUpdate(file: string, modules: any[]) {
     updateType.push(`style`)
   }
   if (updateType.length) {
-    console.log(`[vue:update(${updateType.join('&')})] ${file}`)
+    debug(`[vue:update(${updateType.join('&')})] ${file}`)
   }
   return filteredModules
 }

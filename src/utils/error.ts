@@ -5,7 +5,6 @@ export function createRollupError(
   id: string,
   error: CompilerError | SyntaxError
 ): RollupError {
-  debugger
   if ('code' in error) {
     return {
       id,

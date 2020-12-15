@@ -31,9 +31,9 @@ export interface Options {
   include: string | RegExp | (string | RegExp)[]
   exclude: string | RegExp | (string | RegExp)[]
   target: 'node' | 'browser'
+  vite: boolean
   hmr: boolean
   exposeFilename: boolean
-
   customBlocks?: string[]
 
   // if true, handle preprocessors directly instead of delegating to other
@@ -60,6 +60,7 @@ export interface Options {
 const defaultOptions: Options = {
   include: /\.vue$/,
   exclude: [],
+  vite: false,
   hmr: false,
   target: 'browser',
   exposeFilename: false,
@@ -70,6 +71,10 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
   const options: Options = {
     ...defaultOptions,
     ...userOptions,
+  }
+
+  if (options.vite) {
+    options.preprocessStyles = false
   }
 
   const isServer = options.target === 'node'

@@ -66,7 +66,12 @@ export function transformSFCEntry(
     options,
     pluginContext
   )
-  const stylesCode = genStyleCode(descriptor, scopeId, options.preprocessStyles)
+  const stylesCode = genStyleCode(
+    descriptor,
+    scopeId,
+    options.preprocessStyles,
+    options.vite
+  )
   const customBlocksCode = getCustomBlock(descriptor, filterCustomBlock)
   const output = [
     scriptImport,
@@ -158,7 +163,8 @@ function genScriptCode(
 function genStyleCode(
   descriptor: SFCDescriptor,
   scopeId: string,
-  preprocessStyles?: boolean
+  preprocessStyles?: boolean,
+  isVite?: boolean
 ) {
   let stylesCode = ``
   let hasCSSModules = false
@@ -188,7 +194,8 @@ function genStyleCode(
           i,
           styleRequest,
           styleRequestWithoutModule,
-          style.module
+          style.module,
+          isVite
         )
       } else {
         stylesCode += `\nimport ${JSON.stringify(styleRequest)}`
@@ -224,14 +231,22 @@ function genCSSModulesCode(
   index: number,
   request: string,
   requestWithoutModule: string,
-  moduleName: string | boolean
+  moduleName: string | boolean,
+  isVite?: boolean
 ): string {
   const styleVar = `style${index}`
-  let code =
-    // first import the CSS for extraction
-    `\nimport ${JSON.stringify(requestWithoutModule)}` +
-    // then import the json file to expose to component...
-    `\nimport ${styleVar} from ${JSON.stringify(request + '.js')}`
+  let code
+  if (!isVite) {
+    code =
+      // first import the CSS for extraction
+      `\nimport ${JSON.stringify(requestWithoutModule)}` +
+      // then import the json file to expose to component...
+      `\nimport ${styleVar} from ${JSON.stringify(request + '.js')}`
+  } else {
+    // vite handles module.ext in a single import
+    request = request.replace(/\.(\w+)$/, '.module.$1.js')
+    code = `\n import ${styleVar} from ${JSON.stringify(request)}`
+  }
 
   // inject variable
   const name = typeof moduleName === 'string' ? moduleName : '$style'
