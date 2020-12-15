@@ -40,7 +40,7 @@ export function resolveScript(
       resolved = compileScript(descriptor, {
         id: scopeId,
         isProd,
-        inlineTemplate: true,
+        inlineTemplate: !options.hmr,
         templateOptions: getTemplateCompilerOptions(
           options,
           descriptor,

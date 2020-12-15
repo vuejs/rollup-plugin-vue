@@ -14,7 +14,7 @@ import {
 import fs from 'fs'
 import createDebugger from 'debug'
 import { Plugin } from 'rollup'
-import { createFilter } from 'rollup-pluginutils'
+import { createFilter } from '@rollup/pluginutils'
 import { transformSFCEntry } from './sfc'
 import { transformTemplate } from './template'
 import { transformStyle } from './style'
@@ -23,6 +23,7 @@ import { getDescriptor, setDescriptor } from './utils/descriptorCache'
 import { parseVuePartRequest } from './utils/query'
 import { normalizeSourceMap } from './utils/sourceMap'
 import { getResolvedScript } from './script'
+import { handleHotUpdate } from './handleHotUpdate'
 
 const debug = createDebugger('rollup-plugin-vue')
 
@@ -30,6 +31,7 @@ export interface Options {
   include: string | RegExp | (string | RegExp)[]
   exclude: string | RegExp | (string | RegExp)[]
   target: 'node' | 'browser'
+  hmr: boolean
   exposeFilename: boolean
 
   customBlocks?: string[]
@@ -58,6 +60,7 @@ export interface Options {
 const defaultOptions: Options = {
   include: /\.vue$/,
   exclude: [],
+  hmr: false,
   target: 'browser',
   exposeFilename: false,
   customBlocks: [],
@@ -173,6 +176,9 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
       }
       return null
     },
+
+    // @ts-ignore
+    handleHotUpdate,
   }
 }
 

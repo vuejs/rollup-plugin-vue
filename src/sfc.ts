@@ -42,9 +42,11 @@ export function transformSFCEntry(
   // feature information
   const hasScoped = descriptor.styles.some((s) => s.scoped)
 
-  const isTemplateInlined =
-    descriptor.scriptSetup && !(descriptor.template && descriptor.template.src)
-  const hasTemplateImport = descriptor.template && !isTemplateInlined
+  const useInlineTemplate =
+    !options.hmr &&
+    descriptor.scriptSetup &&
+    !(descriptor.template && descriptor.template.src)
+  const hasTemplateImport = descriptor.template && !useInlineTemplate
 
   const templateImport = hasTemplateImport
     ? genTemplateCode(descriptor, scopeId, isServer)
@@ -84,6 +86,17 @@ export function transformSFCEntry(
     )
   }
   output.push('export default script')
+
+  if (options.hmr) {
+    output.push(`script.__hmrId = ${JSON.stringify(scopeId)}`)
+    output.push(`__VUE_HMR_RUNTIME__.createRecord(script.__hmrId, script)`)
+    output.push(
+      `import.meta.hot.accept(({ default: script }) => {
+  __VUE_HMR_RUNTIME__.reload(script.__hmrId, script)
+})`
+    )
+  }
+
   return {
     code: output.join('\n'),
     map: {

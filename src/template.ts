@@ -46,8 +46,15 @@ export function transformTemplate(
     )
   }
 
+  let returnCode = result.code
+  if (options.hmr) {
+    returnCode += `\nimport.meta.hot.accept(({ render }) => {
+      __VUE_HMR_RUNTIME__.rerender(${JSON.stringify(query.id)}, render)
+    })`
+  }
+
   return {
-    code: result.code,
+    code: returnCode,
     map: normalizeSourceMap(result.map!, request),
   }
 }
