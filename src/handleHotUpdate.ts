@@ -34,20 +34,17 @@ export async function handleHotUpdate(file: string, modules: any[]) {
   setDescriptor(file, descriptor)
 
   let needRerender = false
-  const filteredModules = []
-
-  const reload = () => {
-    debug(`[vue:reload] ${file}`)
-    return modules.filter(
-      (m) => !/type=/.test(m.id) || /type=script/.test(m.id)
-    )
-  }
+  const filteredModules = new Set()
+  const mainModule = modules.find(
+    (m) => !/type=/.test(m.id) || /type=script/.test(m.id)
+  )
+  const templateModule = modules.find((m) => /type=template/.test(m.id))
 
   if (
     !isEqualBlock(descriptor.script, prevDescriptor.script) ||
     !isEqualBlock(descriptor.scriptSetup, prevDescriptor.scriptSetup)
   ) {
-    return reload()
+    filteredModules.add(mainModule)
   }
 
   if (!isEqualBlock(descriptor.template, prevDescriptor.template)) {
@@ -56,7 +53,7 @@ export async function handleHotUpdate(file: string, modules: any[]) {
     // metadata will not be available since the script part isn't loaded.
     // in this case, reuse the compiled script from previous descriptor.
     setResolvedScript(descriptor, getResolvedScript(prevDescriptor)!)
-    needRerender = true
+    filteredModules.add(templateModule)
   }
 
   let didUpdateStyle = false
@@ -66,13 +63,15 @@ export async function handleHotUpdate(file: string, modules: any[]) {
   // force reload if CSS vars injection changed
   if (descriptor.cssVars) {
     if (prevDescriptor.cssVars.join('') !== descriptor.cssVars.join('')) {
-      return reload()
+      filteredModules.add(mainModule)
     }
   }
 
   // force reload if scoped status has changed
   if (prevStyles.some((s) => s.scoped) !== nextStyles.some((s) => s.scoped)) {
-    return reload()
+    // template needs to be invalidated as well
+    filteredModules.add(templateModule)
+    filteredModules.add(mainModule)
   }
 
   // only need to update styles if not reloading, since reload forces
@@ -82,8 +81,18 @@ export async function handleHotUpdate(file: string, modules: any[]) {
     const next = nextStyles[i]
     if (!prev || !isEqualBlock(prev, next)) {
       didUpdateStyle = true
-      filteredModules.push(modules.find((m) => m.id.includes(`index=${i}`)))
+      const mod = modules.find((m) => m.id.includes(`type=style&index=${i}`))
+      if (mod) {
+        filteredModules.add(mod)
+      } else {
+        // new style block - force reload
+        filteredModules.add(mainModule)
+      }
     }
+  }
+  if (prevStyles.length > nextStyles.length) {
+    // style block removed - force reload
+    filteredModules.add(mainModule)
   }
 
   const prevCustoms = prevDescriptor.customBlocks || []
@@ -91,16 +100,23 @@ export async function handleHotUpdate(file: string, modules: any[]) {
 
   // custom blocks update causes a reload
   // because the custom block contents is changed and it may be used in JS.
-  if (
-    nextCustoms.some(
-      (_, i) => !prevCustoms[i] || !isEqualBlock(prevCustoms[i], nextCustoms[i])
-    )
-  ) {
-    return reload()
+  for (let i = 0; i < nextCustoms.length; i++) {
+    const prev = prevCustoms[i]
+    const next = nextCustoms[i]
+    if (!prev || !isEqualBlock(prev, next)) {
+      const mod = modules.find((m) =>
+        m.id.includes(`type=${prev.type}&index=${i}`)
+      )
+      if (mod) {
+        filteredModules.add(mod)
+      } else {
+        filteredModules.add(mainModule)
+      }
+    }
   }
-
-  if (needRerender) {
-    filteredModules.push(modules.find((m) => /type=template/.test(m.id)))
+  if (prevCustoms.length > nextCustoms.length) {
+    // block rmeoved, force reload
+    filteredModules.add(mainModule)
   }
 
   let updateType = []
@@ -113,7 +129,7 @@ export async function handleHotUpdate(file: string, modules: any[]) {
   if (updateType.length) {
     debug(`[vue:update(${updateType.join('&')})] ${file}`)
   }
-  return filteredModules
+  return [...filteredModules].filter(Boolean)
 }
 
 // vitejs/vite#610 when hot-reloading Vue files, we read immediately on file
