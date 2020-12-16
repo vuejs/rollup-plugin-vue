@@ -15,7 +15,7 @@ import { resolveScript } from './script'
 import { transformTemplateInMain } from './template'
 import { isOnlyTemplateChanged } from './handleHotUpdate'
 
-export function genSfcFacade(
+export async function genSfcFacade(
   code: string,
   filename: string,
   options: Options,
@@ -52,7 +52,7 @@ export function genSfcFacade(
   const hasScoped = descriptor.styles.some((s) => s.scoped)
 
   // script
-  const { code: scriptCode, map } = genScriptCode(
+  const { code: scriptCode, map } = await genScriptCode(
     descriptor,
     scopeId,
     isProduction,
@@ -166,7 +166,7 @@ function genTemplateCode(
   }
 }
 
-function genScriptCode(
+async function genScriptCode(
   descriptor: SFCDescriptor,
   scopeId: string,
   isProd: boolean,
@@ -186,9 +186,23 @@ function genScriptCode(
   )
   if (script) {
     // js or ts can be directly placed in the main module
-    if ((!script.lang || script.lang === 'ts') && !script.src) {
+    if (
+      (!script.lang ||
+        (script.lang === 'ts' && (pluginContext as any).server)) &&
+      !script.src
+    ) {
       scriptCode = rewriteDefault(script.content, `_sfc_main`)
       map = script.map
+      if (script.lang === 'ts') {
+        const result = await (pluginContext as any).server.transformWithEsbuild(
+          scriptCode,
+          descriptor.filename,
+          { loader: 'ts' },
+          map
+        )
+        scriptCode = result.code
+        map = result.map
+      }
     } else {
       const src = script.src || descriptor.filename
       const attrsQuery = attrsToQuery(script.attrs, 'js')

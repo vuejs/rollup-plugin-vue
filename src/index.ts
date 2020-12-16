@@ -145,7 +145,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
       // generate an entry module that imports the actual blocks of the SFC
       if (!query.vue && filter(id)) {
         debug(`transform SFC entry (${id})`)
-        const output = genSfcFacade(
+        const output = await genSfcFacade(
           code,
           id,
           options,
