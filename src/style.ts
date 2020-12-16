@@ -6,11 +6,9 @@ import { TransformPluginContext } from 'rollup'
 import { Options } from '.'
 import { getDescriptor } from './utils/descriptorCache'
 import { StyleBlockQuery } from './utils/query'
-import { normalizeSourceMap } from './utils/sourceMap'
 
 export async function transformStyle(
   code: string,
-  request: string,
   options: Options,
   query: StyleBlockQuery,
   isProduction: boolean,
@@ -85,7 +83,7 @@ export async function transformStyle(
   } else {
     return {
       code: result.code,
-      map: normalizeSourceMap(result.map!, request),
+      map: result.map as any,
     }
   }
 }

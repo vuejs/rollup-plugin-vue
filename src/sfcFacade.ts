@@ -14,6 +14,7 @@ import { createRollupError } from './utils/error'
 import { resolveScript } from './script'
 import { transformTemplateInMain } from './template'
 import { isOnlyTemplateChanged } from './handleHotUpdate'
+import { RawSourceMap, SourceMapConsumer, SourceMapGenerator } from 'source-map'
 
 export async function genSfcFacade(
   code: string,
@@ -30,7 +31,6 @@ export async function genSfcFacade(
   const { descriptor, errors } = parse(code, {
     sourceMap: true,
     filename,
-    sourceRoot,
   })
   setDescriptor(filename, descriptor)
 
@@ -68,9 +68,17 @@ export async function genSfcFacade(
     !(descriptor.template && descriptor.template.src)
   const hasTemplateImport = descriptor.template && !useInlineTemplate
 
-  const templateCode = hasTemplateImport
-    ? genTemplateCode(descriptor, scopeId, options, isServer, pluginContext)
-    : ''
+  let templateCode = ''
+  let templateMap
+  if (hasTemplateImport) {
+    ;({ code: templateCode, map: templateMap } = genTemplateCode(
+      descriptor,
+      scopeId,
+      options,
+      isServer,
+      pluginContext
+    ))
+  }
 
   const renderReplace = hasTemplateImport
     ? isServer
@@ -128,9 +136,34 @@ export async function genSfcFacade(
     )
   }
 
+  // if the template is inlined into the main module (indicated by the presence
+  // of templateMap, we need to concatenate the two source maps.
+  let resolvedMap = map
+  if (map && templateMap) {
+    const generator = SourceMapGenerator.fromSourceMap(
+      new SourceMapConsumer(map)
+    )
+    const offset = scriptCode.match(/\r?\n/g)?.length || 1
+    const templateMapConsumer = new SourceMapConsumer(templateMap)
+    templateMapConsumer.eachMapping((m) => {
+      generator.addMapping({
+        source: m.source,
+        original: { line: m.originalLine, column: m.originalColumn },
+        generated: {
+          line: m.generatedLine + offset,
+          column: m.generatedColumn,
+        },
+      })
+    })
+    resolvedMap = (generator as any).toJSON()
+    // if this is a template only update, we will be reusing a cached version
+    // of the main module compile result, which has outdated sourcesContent.
+    resolvedMap.sourcesContent = templateMap.sourcesContent
+  }
+
   return {
     code: output.join('\n'),
-    map: map || {
+    map: resolvedMap || {
       mappings: '',
     },
   }
@@ -146,6 +179,9 @@ function genTemplateCode(
   const renderFnName = isServer ? 'ssrRender' : 'render'
   const template = descriptor.template!
 
+  // If the template is not using pre-processor AND is not using external src,
+  // compile and inline it directly in the main module. When served in vite this
+  // saves an extra request per SFC which can improve load performance.
   if (!template.lang && !template.src) {
     return transformTemplateInMain(
       template.content,
@@ -160,9 +196,12 @@ function genTemplateCode(
     const srcQuery = template.src ? `&src` : ``
     const attrsQuery = attrsToQuery(template.attrs, 'js', true)
     const query = `?vue&type=template${idQuery}${srcQuery}${attrsQuery}`
-    return `import { ${renderFnName} as _sfc_${renderFnName} } from ${JSON.stringify(
-      src + query
-    )}`
+    return {
+      code: `import { ${renderFnName} as _sfc_${renderFnName} } from ${JSON.stringify(
+        src + query
+      )}`,
+      map: undefined,
+    }
   }
 }
 
@@ -173,7 +212,10 @@ async function genScriptCode(
   isServer: boolean,
   options: Options,
   pluginContext: TransformPluginContext
-) {
+): Promise<{
+  code: string
+  map: RawSourceMap
+}> {
   let scriptCode = `const _sfc_main = {}`
   let map
   const script = resolveScript(
@@ -185,7 +227,8 @@ async function genScriptCode(
     pluginContext
   )
   if (script) {
-    // js or ts can be directly placed in the main module
+    // If the script is js/ts and has no external src, it can be directly placed
+    // in the main module.
     if (
       (!script.lang ||
         (script.lang === 'ts' && (pluginContext as any).server)) &&

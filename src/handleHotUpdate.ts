@@ -33,7 +33,6 @@ export async function handleHotUpdate(file: string, modules: any[]) {
   const { descriptor } = parse(content, {
     filename: file,
     sourceMap: true,
-    sourceRoot: process.cwd(),
   })
   setDescriptor(file, descriptor)
   setPrevDescriptor(file, prevDescriptor)

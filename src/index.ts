@@ -21,7 +21,6 @@ import { transformStyle } from './style'
 import { createCustomBlockFilter } from './utils/customBlockFilter'
 import { getDescriptor, setDescriptor } from './utils/descriptorCache'
 import { parseVuePartRequest } from './utils/query'
-import { normalizeSourceMap } from './utils/sourceMap'
 import { getResolvedScript } from './script'
 import { handleHotUpdate } from './handleHotUpdate'
 
@@ -131,7 +130,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
         if (block) {
           return {
             code: block.content,
-            map: normalizeSourceMap(block.map, id),
+            map: block.map as any,
           }
         }
       }
@@ -171,10 +170,10 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
         }
         if (query.type === 'template') {
           debug(`transform template (${id})`)
-          return transformTemplateAsModule(code, id, options, query, this)
+          return transformTemplateAsModule(code, options, query, this)
         } else if (query.type === 'style') {
           debug(`transform style (${id})`)
-          return transformStyle(code, id, options, query, isProduction, this)
+          return transformStyle(code, options, query, isProduction, this)
         }
       }
       return null

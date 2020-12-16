@@ -9,11 +9,9 @@ import { getResolvedScript } from './script'
 import { getDescriptor } from './utils/descriptorCache'
 import { createRollupError } from './utils/error'
 import { TemplateBlockQuery } from './utils/query'
-import { normalizeSourceMap } from './utils/sourceMap'
 
 export function transformTemplateAsModule(
   code: string,
-  request: string,
   options: Options,
   query: TemplateBlockQuery,
   pluginContext: TransformPluginContext
@@ -37,7 +35,7 @@ export function transformTemplateAsModule(
 
   return {
     code: returnCode,
-    map: normalizeSourceMap(result.map!, request),
+    map: result.map as any,
   }
 }
 
@@ -52,11 +50,13 @@ export function transformTemplateInMain(
   pluginContext: PluginContext
 ) {
   const result = compileTemplate(code, descriptor, id, options, pluginContext)
-  // TODO figure out how to merge the source map with the script map
-  return result.code.replace(
-    /\nexport (function|const) (render|ssrRender)/,
-    '\n$1 _sfc_$2'
-  )
+  return {
+    ...result,
+    code: result.code.replace(
+      /\nexport (function|const) (render|ssrRender)/,
+      '\n$1 _sfc_$2'
+    ),
+  }
 }
 
 export function compileTemplate(
@@ -67,8 +67,9 @@ export function compileTemplate(
   pluginContext: PluginContext
 ) {
   const filename = descriptor.filename
+  const compileOptions = getTemplateCompilerOptions(options, descriptor, id)
   const result = compile({
-    ...getTemplateCompilerOptions(options, descriptor, id),
+    ...compileOptions,
     id,
     source: code,
     filename,
