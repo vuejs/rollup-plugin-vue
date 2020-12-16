@@ -1,9 +1,9 @@
 import {
-  compileTemplate,
+  compileTemplate as compile,
   SFCDescriptor,
   SFCTemplateCompileOptions,
 } from '@vue/compiler-sfc'
-import { TransformPluginContext } from 'rollup'
+import { PluginContext, TransformPluginContext } from 'rollup'
 import { Options } from '.'
 import { getResolvedScript } from './script'
 import { getDescriptor } from './utils/descriptorCache'
@@ -11,7 +11,7 @@ import { createRollupError } from './utils/error'
 import { TemplateBlockQuery } from './utils/query'
 import { normalizeSourceMap } from './utils/sourceMap'
 
-export function transformTemplate(
+export function transformTemplateAsModule(
   code: string,
   request: string,
   options: Options,
@@ -19,32 +19,14 @@ export function transformTemplate(
   pluginContext: TransformPluginContext
 ) {
   const descriptor = getDescriptor(query.filename)
-  const result = compileTemplate({
-    ...getTemplateCompilerOptions(options, descriptor, query.id),
-    id: query.id,
-    source: code,
-    filename: query.filename,
-  })
 
-  if (result.errors.length) {
-    result.errors.forEach((error) =>
-      pluginContext.error(
-        typeof error === 'string'
-          ? { id: query.filename, message: error }
-          : createRollupError(query.filename, error)
-      )
-    )
-    return null
-  }
-
-  if (result.tips.length) {
-    result.tips.forEach((tip) =>
-      pluginContext.warn({
-        id: query.filename,
-        message: tip,
-      })
-    )
-  }
+  const result = compileTemplate(
+    code,
+    descriptor,
+    query.id,
+    options,
+    pluginContext
+  )
 
   let returnCode = result.code
   if (options.hmr) {
@@ -57,6 +39,61 @@ export function transformTemplate(
     code: returnCode,
     map: normalizeSourceMap(result.map!, request),
   }
+}
+
+/**
+ * transform the template directly in the main SFC module
+ */
+export function transformTemplateInMain(
+  code: string,
+  descriptor: SFCDescriptor,
+  id: string,
+  options: Options,
+  pluginContext: PluginContext
+) {
+  const result = compileTemplate(code, descriptor, id, options, pluginContext)
+  // TODO figure out how to merge the source map with the script map
+  return result.code.replace(
+    /\nexport (function|const) (render|ssrRender)/,
+    '\n$1 _sfc_$2'
+  )
+}
+
+export function compileTemplate(
+  code: string,
+  descriptor: SFCDescriptor,
+  id: string,
+  options: Options,
+  pluginContext: PluginContext
+) {
+  const filename = descriptor.filename
+  const result = compile({
+    ...getTemplateCompilerOptions(options, descriptor, id),
+    id,
+    source: code,
+    filename,
+  })
+
+  if (result.errors.length) {
+    result.errors.forEach((error) =>
+      pluginContext.error(
+        typeof error === 'string'
+          ? { id: filename, message: error }
+          : createRollupError(filename, error)
+      )
+    )
+  }
+
+  if (result.tips.length) {
+    result.tips.forEach((tip) =>
+      pluginContext.warn({
+        id: filename,
+        message: tip,
+      })
+    )
+  }
+
+  return result
 }
 
 export function getTemplateCompilerOptions(

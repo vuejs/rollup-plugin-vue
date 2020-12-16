@@ -1,7 +1,11 @@
 import fs from 'fs'
 import _debug from 'debug'
-import { parse, SFCBlock } from '@vue/compiler-sfc'
-import { getDescriptor, setDescriptor } from './utils/descriptorCache'
+import { parse, SFCBlock, SFCDescriptor } from '@vue/compiler-sfc'
+import {
+  getDescriptor,
+  setDescriptor,
+  setPrevDescriptor,
+} from './utils/descriptorCache'
 import { getResolvedScript, setResolvedScript } from './script'
 
 const debug = _debug('vite:hmr')
@@ -32,6 +36,7 @@ export async function handleHotUpdate(file: string, modules: any[]) {
     sourceRoot: process.cwd(),
   })
   setDescriptor(file, descriptor)
+  setPrevDescriptor(file, prevDescriptor)
 
   let needRerender = false
   const filteredModules = new Set()
@@ -52,8 +57,11 @@ export async function handleHotUpdate(file: string, modules: any[]) {
     // binding metadata. However, when reloading the template alone the binding
     // metadata will not be available since the script part isn't loaded.
     // in this case, reuse the compiled script from previous descriptor.
-    setResolvedScript(descriptor, getResolvedScript(prevDescriptor)!)
+    if (!filteredModules.has(mainModule)) {
+      setResolvedScript(descriptor, getResolvedScript(prevDescriptor)!)
+    }
     filteredModules.add(templateModule)
+    needRerender = true
   }
 
   let didUpdateStyle = false
@@ -122,6 +130,10 @@ export async function handleHotUpdate(file: string, modules: any[]) {
   let updateType = []
   if (needRerender) {
     updateType.push(`template`)
+    // template is inlined into main, add main module instead
+    if (!templateModule) {
+      filteredModules.add(mainModule)
+    }
   }
   if (didUpdateStyle) {
     updateType.push(`style`)
@@ -164,4 +176,18 @@ function isEqualBlock(a: SFCBlock | null, b: SFCBlock | null) {
     return false
   }
   return keysA.every((key) => a.attrs[key] === b.attrs[key])
+}
+
+export function isOnlyTemplateChanged(
+  prev: SFCDescriptor,
+  next: SFCDescriptor
+) {
+  return (
+    isEqualBlock(prev.script, next.script) &&
+    isEqualBlock(prev.scriptSetup, next.scriptSetup) &&
+    prev.styles.length === next.styles.length &&
+    prev.styles.every((s, i) => isEqualBlock(s, next.styles[i])) &&
+    prev.customBlocks.length === next.customBlocks.length &&
+    prev.customBlocks.every((s, i) => isEqualBlock(s, next.customBlocks[i]))
+  )
 }

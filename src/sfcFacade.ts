@@ -1,14 +1,21 @@
 import hash from 'hash-sum'
 import path from 'path'
 import qs from 'querystring'
-import { parse, SFCBlock, SFCDescriptor } from '@vue/compiler-sfc'
+import {
+  parse,
+  rewriteDefault,
+  SFCBlock,
+  SFCDescriptor,
+} from '@vue/compiler-sfc'
 import { Options } from '.'
-import { setDescriptor } from './utils/descriptorCache'
-import { TransformPluginContext } from 'rollup'
+import { getPrevDescriptor, setDescriptor } from './utils/descriptorCache'
+import { PluginContext, TransformPluginContext } from 'rollup'
 import { createRollupError } from './utils/error'
 import { resolveScript } from './script'
+import { transformTemplateInMain } from './template'
+import { isOnlyTemplateChanged } from './handleHotUpdate'
 
-export function transformSFCEntry(
+export function genSfcFacade(
   code: string,
   filename: string,
   options: Options,
@@ -18,6 +25,8 @@ export function transformSFCEntry(
   filterCustomBlock: (type: string) => boolean,
   pluginContext: TransformPluginContext
 ) {
+  // prev descriptor is only set and used for hmr
+  const prevDescriptor = getPrevDescriptor(filename)
   const { descriptor, errors } = parse(code, {
     sourceMap: true,
     filename,
@@ -42,23 +51,8 @@ export function transformSFCEntry(
   // feature information
   const hasScoped = descriptor.styles.some((s) => s.scoped)
 
-  const useInlineTemplate =
-    !options.hmr &&
-    descriptor.scriptSetup &&
-    !(descriptor.template && descriptor.template.src)
-  const hasTemplateImport = descriptor.template && !useInlineTemplate
-
-  const templateImport = hasTemplateImport
-    ? genTemplateCode(descriptor, scopeId, isServer)
-    : ''
-
-  const renderReplace = hasTemplateImport
-    ? isServer
-      ? `script.ssrRender = ssrRender`
-      : `script.render = render`
-    : ''
-
-  const scriptImport = genScriptCode(
+  // script
+  const { code: scriptCode, map } = genScriptCode(
     descriptor,
     scopeId,
     isProduction,
@@ -66,45 +60,77 @@ export function transformSFCEntry(
     options,
     pluginContext
   )
+
+  // template
+  const useInlineTemplate =
+    !options.hmr &&
+    descriptor.scriptSetup &&
+    !(descriptor.template && descriptor.template.src)
+  const hasTemplateImport = descriptor.template && !useInlineTemplate
+
+  const templateCode = hasTemplateImport
+    ? genTemplateCode(descriptor, scopeId, options, isServer, pluginContext)
+    : ''
+
+  const renderReplace = hasTemplateImport
+    ? isServer
+      ? `_sfc_main.ssrRender = _sfc_ssrRender`
+      : `_sfc_main.render = _sfc_render`
+    : ''
+
+  // styles
   const stylesCode = genStyleCode(
     descriptor,
     scopeId,
     options.preprocessStyles,
     options.vite
   )
+
+  // custom blocks
   const customBlocksCode = getCustomBlock(descriptor, filterCustomBlock)
-  const output = [
-    scriptImport,
-    templateImport,
+
+  const output: string[] = [
+    scriptCode,
+    templateCode,
     stylesCode,
     customBlocksCode,
     renderReplace,
   ]
   if (hasScoped) {
-    output.push(`script.__scopeId = ${JSON.stringify(`data-v-${scopeId}`)}`)
+    output.push(`_sfc_main.__scopeId = ${JSON.stringify(`data-v-${scopeId}`)}`)
   }
   if (!isProduction) {
-    output.push(`script.__file = ${JSON.stringify(shortFilePath)}`)
+    output.push(`_sfc_main.__file = ${JSON.stringify(shortFilePath)}`)
   } else if (options.exposeFilename) {
     output.push(
-      `script.__file = ${JSON.stringify(path.basename(shortFilePath))}`
+      `_sfc_main.__file = ${JSON.stringify(path.basename(shortFilePath))}`
     )
   }
-  output.push('export default script')
+  output.push('export default _sfc_main')
 
   if (options.hmr) {
-    output.push(`script.__hmrId = ${JSON.stringify(scopeId)}`)
-    output.push(`__VUE_HMR_RUNTIME__.createRecord(script.__hmrId, script)`)
+    // check if the template is the only thing that changed
+    if (prevDescriptor && isOnlyTemplateChanged(prevDescriptor, descriptor)) {
+      output.push(`export const _rerender_only = true`)
+    }
+    output.push(`_sfc_main.__hmrId = ${JSON.stringify(scopeId)}`)
     output.push(
-      `import.meta.hot.accept(({ default: script }) => {
-  __VUE_HMR_RUNTIME__.reload(script.__hmrId, script)
-})`
+      `__VUE_HMR_RUNTIME__.createRecord(_sfc_main.__hmrId, _sfc_main)`
+    )
+    output.push(
+      `import.meta.hot.accept(({ default: updated, _rerender_only }) => {`,
+      `  if (_rerender_only) {`,
+      `    __VUE_HMR_RUNTIME__.rerender(updated.__hmrId, updated.render)`,
+      `  } else {`,
+      `    __VUE_HMR_RUNTIME__.reload(updated.__hmrId, updated)`,
+      `  }`,
+      `})`
     )
   }
 
   return {
     code: output.join('\n'),
-    map: {
+    map: map || {
       mappings: '',
     },
   }
@@ -113,22 +139,31 @@ export function transformSFCEntry(
 function genTemplateCode(
   descriptor: SFCDescriptor,
   id: string,
-  isServer: boolean
+  options: Options,
+  isServer: boolean,
+  pluginContext: PluginContext
 ) {
   const renderFnName = isServer ? 'ssrRender' : 'render'
-  let templateImport = `const ${renderFnName} = () => {}`
-  let templateRequest
-  if (descriptor.template) {
-    const src = descriptor.template.src || descriptor.filename
-    const idQuery = `&id=${id}`
-    const srcQuery = descriptor.template.src ? `&src` : ``
-    const attrsQuery = attrsToQuery(descriptor.template.attrs, 'js', true)
-    const query = `?vue&type=template${idQuery}${srcQuery}${attrsQuery}`
-    templateRequest = JSON.stringify(src + query)
-    templateImport = `import { ${renderFnName} } from ${templateRequest}`
-  }
+  const template = descriptor.template!
 
-  return templateImport
+  if (!template.lang && !template.src) {
+    return transformTemplateInMain(
+      template.content,
+      descriptor,
+      id,
+      options,
+      pluginContext
+    )
+  } else {
+    const src = template.src || descriptor.filename
+    const idQuery = `&id=${id}`
+    const srcQuery = template.src ? `&src` : ``
+    const attrsQuery = attrsToQuery(template.attrs, 'js', true)
+    const query = `?vue&type=template${idQuery}${srcQuery}${attrsQuery}`
+    return `import { ${renderFnName} as _sfc_${renderFnName} } from ${JSON.stringify(
+      src + query
+    )}`
+  }
 }
 
 function genScriptCode(
@@ -139,7 +174,8 @@ function genScriptCode(
   options: Options,
   pluginContext: TransformPluginContext
 ) {
-  let scriptImport = `const script = {}`
+  let scriptCode = `const _sfc_main = {}`
+  let map
   const script = resolveScript(
     descriptor,
     scopeId,
@@ -149,15 +185,25 @@ function genScriptCode(
     pluginContext
   )
   if (script) {
-    const src = script.src || descriptor.filename
-    const attrsQuery = attrsToQuery(script.attrs, 'js')
-    const srcQuery = script.src ? `&src` : ``
-    const query = `?vue&type=script${srcQuery}${attrsQuery}`
-    const scriptRequest = JSON.stringify(src + query)
-    scriptImport =
-      `import script from ${scriptRequest}\n` + `export * from ${scriptRequest}` // support named exports
+    // js or ts can be directly placed in the main module
+    if ((!script.lang || script.lang === 'ts') && !script.src) {
+      scriptCode = rewriteDefault(script.content, `_sfc_main`)
+      map = script.map
+    } else {
+      const src = script.src || descriptor.filename
+      const attrsQuery = attrsToQuery(script.attrs, 'js')
+      const srcQuery = script.src ? `&src` : ``
+      const query = `?vue&type=script${srcQuery}${attrsQuery}`
+      const scriptRequest = JSON.stringify(src + query)
+      scriptCode =
+        `import _sfc_main from ${scriptRequest}\n` +
+        `export * from ${scriptRequest}` // support named exports
+    }
   }
-  return scriptImport
+  return {
+    code: scriptCode,
+    map,
+  }
 }
 
 function genStyleCode(
@@ -187,7 +233,7 @@ function genStyleCode(
       const styleRequestWithoutModule = src + query + attrsQueryWithoutModule
       if (style.module) {
         if (!hasCSSModules) {
-          stylesCode += `\nconst cssModules = script.__cssModules = {}`
+          stylesCode += `\nconst cssModules = _sfc_main.__cssModules = {}`
           hasCSSModules = true
         }
         stylesCode += genCSSModulesCode(
@@ -220,7 +266,7 @@ function getCustomBlock(
       const query = `?vue&type=${block.type}&index=${index}${srcQuery}${attrsQuery}`
       const request = JSON.stringify(src + query)
       code += `import block${index} from ${request}\n`
-      code += `if (typeof block${index} === 'function') block${index}(script)\n`
+      code += `if (typeof block${index} === 'function') block${index}(_sfc_main)\n`
     }
   })
 

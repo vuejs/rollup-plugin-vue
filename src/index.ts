@@ -15,8 +15,8 @@ import fs from 'fs'
 import createDebugger from 'debug'
 import { Plugin } from 'rollup'
 import { createFilter } from '@rollup/pluginutils'
-import { transformSFCEntry } from './sfc'
-import { transformTemplate } from './template'
+import { genSfcFacade } from './sfcFacade'
+import { transformTemplateAsModule } from './template'
 import { transformStyle } from './style'
 import { createCustomBlockFilter } from './utils/customBlockFilter'
 import { getDescriptor, setDescriptor } from './utils/descriptorCache'
@@ -117,23 +117,21 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
           return fs.readFileSync(query.filename, 'utf-8')
         }
         const descriptor = getDescriptor(query.filename)
-        if (descriptor) {
-          const block =
-            query.type === 'template'
-              ? descriptor.template!
-              : query.type === 'script'
-              ? getResolvedScript(descriptor, isServer)
-              : query.type === 'style'
-              ? descriptor.styles[query.index]
-              : typeof query.index === 'number'
-              ? descriptor.customBlocks[query.index]
-              : null
+        const block =
+          query.type === 'template'
+            ? descriptor.template!
+            : query.type === 'script'
+            ? getResolvedScript(descriptor, isServer)
+            : query.type === 'style'
+            ? descriptor.styles[query.index]
+            : typeof query.index === 'number'
+            ? descriptor.customBlocks[query.index]
+            : null
 
-          if (block) {
-            return {
-              code: block.content,
-              map: normalizeSourceMap(block.map, id),
-            }
+        if (block) {
+          return {
+            code: block.content,
+            map: normalizeSourceMap(block.map, id),
           }
         }
       }
@@ -147,7 +145,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
       // generate an entry module that imports the actual blocks of the SFC
       if (!query.vue && filter(id)) {
         debug(`transform SFC entry (${id})`)
-        const output = transformSFCEntry(
+        const output = genSfcFacade(
           code,
           id,
           options,
@@ -173,7 +171,7 @@ export default function PluginVue(userOptions: Partial<Options> = {}): Plugin {
         }
         if (query.type === 'template') {
           debug(`transform template (${id})`)
-          return transformTemplate(code, id, options, query, this)
+          return transformTemplateAsModule(code, id, options, query, this)
         } else if (query.type === 'style') {
           debug(`transform style (${id})`)
           return transformStyle(code, id, options, query, isProduction, this)
