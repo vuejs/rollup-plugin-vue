@@ -74,7 +74,7 @@
     "postcss": "^7.0.11",
     "postcss-assets": "^5.0.0",
     "prettier": "^1.12.1",
-    "pug": "^3.0.1",
+    "pug": "^3.0.2",
     "puppeteer": "^1.4.0",
     "rollup": "^1.1.0",
     "rollup-plugin-babel": "^4.0.0-beta.4",
