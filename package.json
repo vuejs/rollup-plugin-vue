@@ -12,7 +12,7 @@
     "vue"
   ],
   "license": "MIT",
-  "main": "dist/rollup-plugin-vue.js",
+  "main": "dist/index.js",
   "module": "dist/rollup-plugin-vue.mjs",
   "typings": "dist/index.d.ts",
   "repository": {
@@ -26,10 +26,10 @@
   },
   "scripts": {
     "prepublishOnly": "rm -rf dist/ && yarn build",
-    "build": "yarn :build",
+    "dev": "tsc -w",
+    "build": "tsc",
     "docs": "yarn :docs",
     "pre:build": "yarn lint",
-    ":build": "rollup -c",
     "pre:build:docs": "cp CHANGELOG.md docs/changelog.md",
     ":build:docs": "vuepress build docs/",
     "post:build:docs": "rm docs/changelog.md",
@@ -62,8 +62,9 @@
     "@babel/preset-env": "^7.0.0-beta.46",
     "@babel/runtime": "^7.0.0-beta.46",
     "@types/debug": "^0.0.31",
+    "@types/hash-sum": "^1.0.0",
     "@types/jest": "^23.3.12",
-    "@types/node": "^10.12.18",
+    "@types/node": "^16.10.3",
     "@types/puppeteer": "^1.3.1",
     "@znck/promised": "^1.0.0",
     "babel-core": "7.0.0-bridge.0",
@@ -73,10 +74,10 @@
     "jest": "^23.6.0",
     "postcss": "^7.0.11",
     "postcss-assets": "^5.0.0",
-    "prettier": "^1.12.1",
+    "prettier": "^2.5.1",
     "pug": "^2.0.3",
     "puppeteer": "^1.4.0",
-    "rollup": "^1.1.0",
+    "rollup": "^2.7.2",
     "rollup-plugin-babel": "^4.0.0-beta.4",
     "rollup-plugin-commonjs": "^9.1.3",
     "rollup-plugin-css-only": "^0.4.0",
@@ -88,13 +89,19 @@
     "rollup-plugin-url": "^2.1.0",
     "sass": "^1.18.0",
     "ts-jest": "^23.10.5",
-    "typescript": "^3.2.2",
-    "vue": "^2.5.16",
+    "typescript": "^4.4.4",
+    "vue": "^2.6.14",
     "vue-class-component": "^6.2.0",
-    "vue-template-compiler": "^2.5.16",
+    "vue-template-compiler": "^2.6.14",
     "vuepress": "^0.14.8"
   },
   "peerDependencies": {
     "vue-template-compiler": "*"
+  },
+  "prettier": {
+    "printWidth": 80,
+    "trailingComma": "es5",
+    "semi": false,
+    "singleQuote": true
   }
 }

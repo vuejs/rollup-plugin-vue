@@ -2,11 +2,12 @@
   "compilerOptions": {
     "baseUrl": ".",
     "outDir": "dist",
-    "sourceMap": false,
+    "sourceMap": true,
     "target": "ES2015",
-    "module": "es6",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "esModuleInterop": true,
     "declaration": true,
     "allowJs": false,
     "allowSyntheticDefaultImports": true,
@@ -16,6 +17,6 @@
     "removeComments": false,
     "lib": ["es2015", "es6", "es7", "dom"]
   },
-  "include": ["src", "typings"],
+  "include": ["src"],
   "exclude": ["node_modules"]
 }
