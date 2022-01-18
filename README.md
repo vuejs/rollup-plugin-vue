@@ -1,3 +1,9 @@
+# Archived
+
+This is no longer maintained. Use [Vite](https://vitejs.dev/) and [`@vitejs/plugin-vue`](https://github.com/vitejs/vite/tree/main/packages/plugin-vue) instead.
+
+---
+
 # rollup-plugin-vue@next
 
 > Roll Vue 3 SFCs with Rollup.
