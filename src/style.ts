@@ -6,11 +6,9 @@ import { TransformPluginContext } from 'rollup'
 import { Options } from '.'
 import { getDescriptor } from './utils/descriptorCache'
 import { StyleBlockQuery } from './utils/query'
-import { normalizeSourceMap } from './utils/sourceMap'
 
 export async function transformStyle(
   code: string,
-  request: string,
   options: Options,
   query: StyleBlockQuery,
   isProduction: boolean,
@@ -20,7 +18,7 @@ export async function transformStyle(
   const block = descriptor.styles[query.index]!
 
   let preprocessOptions = options.preprocessOptions || {}
-  const preprocessLang = (options.preprocessStyles
+  const preprocessLang = (options.preprocessStyles && !options.vite
     ? block.lang
     : undefined) as SFCAsyncStyleCompileOptions['preprocessLang']
 
@@ -52,7 +50,8 @@ export async function transformStyle(
     isProd: isProduction,
     source: code,
     scoped: block.scoped,
-    modules: !!block.module,
+    // vite handle CSS modules
+    modules: !!block.module && !options.vite,
     postcssOptions: options.postcssOptions,
     postcssPlugins: options.postcssPlugins,
     modulesOptions: options.cssModulesOptions,
@@ -62,16 +61,21 @@ export async function transformStyle(
   })
 
   if (result.errors.length) {
-    result.errors.forEach((error) =>
-      pluginContext.error({
-        id: query.filename,
-        message: error.message,
-      })
-    )
+    result.errors.forEach((error: any) => {
+      if (error.line && error.column) {
+        error.loc = {
+          file: query.filename,
+          line: error.line + block.loc.start.line,
+          column: error.column,
+        }
+      }
+      pluginContext.error(error)
+    })
     return null
   }
 
-  if (query.module) {
+  if (query.module && !options.vite) {
+    // vite handles css modules code generation down the stream
     return {
       code: `export default ${JSON.stringify(result.modules)}`,
       map: null,
@@ -79,7 +83,7 @@ export async function transformStyle(
   } else {
     return {
       code: result.code,
-      map: normalizeSourceMap(result.map!, request),
+      map: result.map as any,
     }
   }
 }

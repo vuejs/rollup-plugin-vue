@@ -1,55 +1,100 @@
 import {
-  compileTemplate,
+  compileTemplate as compile,
   SFCDescriptor,
   SFCTemplateCompileOptions,
 } from '@vue/compiler-sfc'
-import { TransformPluginContext } from 'rollup'
+import { PluginContext, TransformPluginContext } from 'rollup'
 import { Options } from '.'
 import { getResolvedScript } from './script'
 import { getDescriptor } from './utils/descriptorCache'
 import { createRollupError } from './utils/error'
 import { TemplateBlockQuery } from './utils/query'
-import { normalizeSourceMap } from './utils/sourceMap'
 
-export function transformTemplate(
+export function transformTemplateAsModule(
   code: string,
-  request: string,
   options: Options,
   query: TemplateBlockQuery,
   pluginContext: TransformPluginContext
 ) {
   const descriptor = getDescriptor(query.filename)
-  const result = compileTemplate({
-    ...getTemplateCompilerOptions(options, descriptor, query.id),
-    id: query.id,
+
+  const result = compileTemplate(
+    code,
+    descriptor,
+    query.id,
+    options,
+    pluginContext
+  )
+
+  let returnCode = result.code
+  if (options.hmr) {
+    returnCode += `\nimport.meta.hot.accept(({ render }) => {
+      __VUE_HMR_RUNTIME__.rerender(${JSON.stringify(query.id)}, render)
+    })`
+  }
+
+  return {
+    code: returnCode,
+    map: result.map as any,
+  }
+}
+
+/**
+ * transform the template directly in the main SFC module
+ */
+export function transformTemplateInMain(
+  code: string,
+  descriptor: SFCDescriptor,
+  id: string,
+  options: Options,
+  pluginContext: PluginContext
+) {
+  const result = compileTemplate(code, descriptor, id, options, pluginContext)
+  return {
+    ...result,
+    code: result.code.replace(
+      /\nexport (function|const) (render|ssrRender)/,
+      '\n$1 _sfc_$2'
+    ),
+  }
+}
+
+export function compileTemplate(
+  code: string,
+  descriptor: SFCDescriptor,
+  id: string,
+  options: Options,
+  pluginContext: PluginContext
+) {
+  const filename = descriptor.filename
+  const compileOptions = getTemplateCompilerOptions(options, descriptor, id)
+  const result = compile({
+    ...compileOptions,
+    id,
     source: code,
-    filename: query.filename,
+    filename,
   })
 
   if (result.errors.length) {
     result.errors.forEach((error) =>
       pluginContext.error(
         typeof error === 'string'
-          ? { id: query.filename, message: error }
-          : createRollupError(query.filename, error)
+          ? { id: filename, message: error }
+          : createRollupError(filename, error)
       )
     )
-    return null
   }
 
   if (result.tips.length) {
     result.tips.forEach((tip) =>
       pluginContext.warn({
-        id: query.filename,
+        id: filename,
         message: tip,
       })
     )
   }
 
-  return {
-    code: result.code,
-    map: normalizeSourceMap(result.map!, request),
-  }
+  return result
 }
 
 export function getTemplateCompilerOptions(
