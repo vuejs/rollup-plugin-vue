@@ -8,6 +8,10 @@
   "files": [
     "dist"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vuejs/rollup-plugin-vue.git"
+  },
   "scripts": {
     "build": "tsc -p .",
     "prepublishOnly": "run-s build changelog",
